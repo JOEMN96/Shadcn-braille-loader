@@ -1,29 +1,34 @@
 import * as React from "react"
 import { OpenInV0Button } from "@/components/open-in-v0-button"
 import { BrailleLoaderShowcase } from "@/registry/new-york/blocks/braille-loader-showcase/braille-loader-showcase"
+import { BrailleLoader } from "@/components/ui/braille-loader"
+import { CodeBlock } from "@/components/code-block"
+import { VariantCard } from "@/components/variant-card"
+import { brailleLoaderVariants, type BrailleLoaderVariant } from "@/lib/braille-loader"
 
-const variants = [
-  "braille",
-  "orbit",
-  "breathe",
-  "snake",
-  "fill-sweep",
-  "pulse",
-  "columns",
-  "checkerboard",
-  "scan",
-  "rain",
-  "cascade",
-  "sparkle",
-  "wave-rows",
-  "helix",
-  "diagonal-swipe",
-]
+const variantLabel: Record<BrailleLoaderVariant, string> = {
+  braille: "Braille",
+  orbit: "Orbit",
+  breathe: "Breathe",
+  snake: "Snake",
+  "fill-sweep": "Fill Sweep",
+  pulse: "Pulse",
+  columns: "Columns",
+  checkerboard: "Checkerboard",
+  scan: "Scan",
+  rain: "Rain",
+  cascade: "Cascade",
+  sparkle: "Sparkle",
+  "wave-rows": "Wave Rows",
+  helix: "Helix",
+  "diagonal-swipe": "Diagonal Swipe",
+}
 
-const installCode = `npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader.json
-npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json`
+const installCode = `npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader.json`
 
-const usageCode = `import { BrailleLoader } from "@/components/ui/braille-loader"
+const showcaseInstallCode = `npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json`
+
+const basicUsageCode = `import { BrailleLoader } from "@/components/ui/braille-loader"
 
 export function Example() {
   return (
@@ -37,200 +42,407 @@ export function Example() {
   )
 }`
 
-const customGridCode = `<BrailleLoader variant="rain" size="sm" grid={[4, 6]} speed="fast" />
-<BrailleLoader variant="pulse" size="lg" gridSize="xl" speed="slow" />`
+const sizeExampleCode = `<BrailleLoader variant="braille" size="sm" />
+<BrailleLoader variant="braille" size="md" />
+<BrailleLoader variant="braille" size="lg" />`
+
+const gridExampleCode = `<BrailleLoader variant="rain" gridSize="sm" />
+<BrailleLoader variant="rain" gridSize="md" />
+<BrailleLoader variant="rain" gridSize="lg" />
+<BrailleLoader variant="rain" gridSize="xl" />`
+
+const customGridCode = `<BrailleLoader variant="snake" grid={[5, 8]} />
+<BrailleLoader variant="pulse" grid={[6, 6]} size="lg" />`
+
+const speedExampleCode = `<BrailleLoader variant="orbit" speed="slow" />
+<BrailleLoader variant="orbit" speed="normal" />
+<BrailleLoader variant="orbit" speed="fast" />`
+
+const themingCode = `<BrailleLoader 
+  variant="sparkle" 
+  className="text-blue-500" 
+/>
+
+<BrailleLoader 
+  variant="helix" 
+  className="text-emerald-600 dark:text-emerald-400" 
+/>
+
+<BrailleLoader 
+  variant="breathe" 
+  dotClassName="opacity-100" 
+/>`
+
+const formExampleCode = `import { BrailleLoader } from "@/components/ui/braille-loader"
+import { Button } from "@/components/ui/button"
+
+function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
+  return (
+    <Button disabled={isSubmitting}>
+      {isSubmitting ? (
+        <>
+          <BrailleLoader variant="pulse" size="sm" className="text-primary-foreground" />
+          Processing...
+        </>
+      ) : (
+        "Submit"
+      )}
+    </Button>
+  )
+}`
+
+const propsData = [
+  { prop: "variant", type: "string", default: '"braille"', description: "Animation pattern. One of 15 variants." },
+  { prop: "size", type: '"sm" | "md" | "lg"', default: '"md"', description: "Dot size and gap scale." },
+  { prop: "gridSize", type: '"sm" | "md" | "lg" | "xl"', default: '"md"', description: "Preset grid dimensions (3x3 to 6x6)." },
+  { prop: "grid", type: "[rows, cols]", default: "-", description: "Custom grid override. Takes precedence over gridSize." },
+  { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Frame interval speed." },
+  { prop: "className", type: "string", default: "-", description: "Additional classes for the wrapper." },
+  { prop: "dotClassName", type: "string", default: "-", description: "Additional classes for each dot." },
+  { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
+]
 
 export default function Home() {
   return (
-    <div className="max-w-3xl mx-auto flex flex-col min-h-svh px-4 py-8 gap-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">Braille Loader Registry</h1>
-        <p className="text-muted-foreground">
-          Complete documentation and examples for the shadcn braille loading
-          components.
-        </p>
-      </header>
-
-      <main className="flex flex-col flex-1 gap-8">
-        <section className="flex flex-col gap-4 border rounded-lg p-4 min-h-[450px] relative">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm text-muted-foreground sm:pl-3">
-              Braille loader variants for dark and light themes.
-            </h2>
-            <OpenInV0Button name="braille-loader-showcase" className="w-fit" />
+    <div className="min-h-screen bg-background">
+      <div className="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+        <header className="mb-16 text-center">
+          <div className="inline-flex items-center justify-center mb-6 p-4 rounded-2xl bg-primary/5 border">
+            <BrailleLoader variant="helix" size="lg" gridSize="lg" speed="normal" />
           </div>
-          <div className="flex items-center justify-center min-h-[400px] relative">
-            <BrailleLoaderShowcase />
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+            Braille Loader
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            A collection of 15 accessible, animated loading indicators for shadcn/ui.
+            Registry-ready with full TypeScript support.
+          </p>
+          <div className="flex items-center justify-center gap-3 mt-8">
+            <OpenInV0Button name="braille-loader-showcase" />
+            <a
+              href="#installation"
+              className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium border bg-background hover:bg-accent transition-colors"
+            >
+              Get Started
+            </a>
           </div>
-        </section>
+        </header>
 
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Features</h2>
-          <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
-            <li>15 distinct animation variants powered by a matrix engine.</li>
-            <li>Configurable dot size, speed mode, and grid mode.</li>
-            <li>Default grid preset is 4x4 via gridSize=md.</li>
-            <li>Custom grid override with grid=[rows, cols].</li>
-            <li>Accessible defaults with reduced-motion fallback support.</li>
-          </ul>
-        </section>
-
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Installation</h2>
-          <p className="text-sm text-muted-foreground">
-            Install the core component, then optional showcase block.
-          </p>
-          <pre className="rounded-md border bg-muted/40 p-4 text-xs overflow-x-auto">
-            <code>{installCode}</code>
-          </pre>
-        </section>
-
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">How To Use</h2>
-          <pre className="rounded-md border bg-muted/40 p-4 text-xs overflow-x-auto">
-            <code>{usageCode}</code>
-          </pre>
-          <pre className="rounded-md border bg-muted/40 p-4 text-xs overflow-x-auto">
-            <code>{customGridCode}</code>
-          </pre>
-        </section>
-
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Variants</h2>
-          <p className="text-sm text-muted-foreground">
-            Available values for the variant prop:
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {variants.map((variant) => (
-              <div
-                key={variant}
-                className="rounded-md border bg-muted/30 px-3 py-2 text-xs font-mono"
-              >
-                {variant}
+        <main className="space-y-24">
+          <section id="showcase">
+            <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
+              <div className="border-b bg-muted/30 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold">All Variants</h2>
+                  <p className="text-sm text-muted-foreground">Dark and light theme preview</p>
+                </div>
+                <OpenInV0Button name="braille-loader-showcase" />
               </div>
-            ))}
-          </div>
-        </section>
+              <div className="p-6">
+                <BrailleLoaderShowcase />
+              </div>
+            </div>
+          </section>
 
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
-            Modes And Configuration
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-md border p-4 space-y-2">
-              <h3 className="text-sm font-medium">Grid Modes</h3>
-              <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
-                <li>sm = 3x3</li>
-                <li>md = 4x4 (default)</li>
-                <li>lg = 5x5</li>
-                <li>xl = 6x6</li>
-                <li>grid=[rows, cols] overrides presets</li>
-              </ul>
-            </div>
-            <div className="rounded-md border p-4 space-y-2">
-              <h3 className="text-sm font-medium">Speed Modes</h3>
-              <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
-                <li>slow</li>
-                <li>normal (default)</li>
-                <li>fast</li>
-              </ul>
-            </div>
-            <div className="rounded-md border p-4 space-y-2 sm:col-span-2">
-              <h3 className="text-sm font-medium">Theme Modes</h3>
-              <p className="text-sm text-muted-foreground">
-                Designed for light and dark backgrounds. The showcase panel
-                demonstrates both modes side by side.
+          <section id="installation">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold tracking-tight">Installation</h2>
+              <p className="text-muted-foreground">
+                Install the core component using the shadcn CLI:
               </p>
+              <CodeBlock code={installCode} language="bash" filename="Terminal" />
+              <p className="text-muted-foreground mt-4">
+                Optional: Install the showcase block for the demo preview:
+              </p>
+              <CodeBlock code={showcaseInstallCode} language="bash" filename="Terminal" />
+            </div>
+          </section>
+
+          <section id="quick-start">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold tracking-tight">Quick Start</h2>
+              <p className="text-muted-foreground">
+                Import and use the component with your preferred variant:
+              </p>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="flex items-center justify-center p-8 rounded-xl border bg-muted/30">
+                  <BrailleLoader variant="helix" size="lg" gridSize="lg" />
+                </div>
+                <CodeBlock code={basicUsageCode} language="tsx" filename="example.tsx" showLineNumbers />
+              </div>
+            </div>
+          </section>
+
+          <section id="variants">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">Variant Gallery</h2>
+                <p className="text-muted-foreground mt-2">
+                  Click any card to copy the code. Each variant offers a unique animation pattern.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {brailleLoaderVariants.map((variant) => (
+                  <VariantCard
+                    key={variant}
+                    variant={variant}
+                    label={variantLabel[variant]}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="customization">
+            <div className="space-y-12">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight mb-2">Customization</h2>
+                <p className="text-muted-foreground">
+                  Configure size, grid dimensions, and speed to match your design.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Size</h3>
+                <p className="text-sm text-muted-foreground">
+                  Three size presets control dot size and spacing.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
+                    <div className="text-center">
+                      <BrailleLoader variant="braille" size="sm" />
+                      <span className="block mt-3 text-xs text-muted-foreground">sm</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="braille" size="md" />
+                      <span className="block mt-3 text-xs text-muted-foreground">md</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="braille" size="lg" />
+                      <span className="block mt-3 text-xs text-muted-foreground">lg</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={sizeExampleCode} language="tsx" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Grid Size</h3>
+                <p className="text-sm text-muted-foreground">
+                  Four presets from 3x3 to 6x6 grids.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-6 p-8 rounded-xl border bg-muted/30 flex-wrap">
+                    <div className="text-center">
+                      <BrailleLoader variant="rain" gridSize="sm" />
+                      <span className="block mt-3 text-xs text-muted-foreground">sm (3x3)</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="rain" gridSize="md" />
+                      <span className="block mt-3 text-xs text-muted-foreground">md (4x4)</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="rain" gridSize="lg" />
+                      <span className="block mt-3 text-xs text-muted-foreground">lg (5x5)</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="rain" gridSize="xl" />
+                      <span className="block mt-3 text-xs text-muted-foreground">xl (6x6)</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={gridExampleCode} language="tsx" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Custom Grid</h3>
+                <p className="text-sm text-muted-foreground">
+                  Override presets with any grid dimensions from 2x2 to 12x12.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-10 p-8 rounded-xl border bg-muted/30">
+                    <div className="text-center">
+                      <BrailleLoader variant="snake" grid={[5, 8]} />
+                      <span className="block mt-3 text-xs text-muted-foreground">5x8</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="pulse" grid={[6, 6]} size="lg" />
+                      <span className="block mt-3 text-xs text-muted-foreground">6x6</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={customGridCode} language="tsx" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Speed</h3>
+                <p className="text-sm text-muted-foreground">
+                  Control animation speed with three presets.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
+                    <div className="text-center">
+                      <BrailleLoader variant="orbit" speed="slow" />
+                      <span className="block mt-3 text-xs text-muted-foreground">slow</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="orbit" speed="normal" />
+                      <span className="block mt-3 text-xs text-muted-foreground">normal</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="orbit" speed="fast" />
+                      <span className="block mt-3 text-xs text-muted-foreground">fast</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={speedExampleCode} language="tsx" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Theming</h3>
+                <p className="text-sm text-muted-foreground">
+                  Apply custom colors using Tailwind classes.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
+                    <BrailleLoader variant="sparkle" className="text-blue-500" />
+                    <BrailleLoader variant="helix" className="text-emerald-600" />
+                    <BrailleLoader variant="breathe" className="text-purple-500" />
+                  </div>
+                  <CodeBlock code={themingCode} language="tsx" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="examples">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold tracking-tight">Usage Examples</h2>
+              
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Form Submit Button</h3>
+                <p className="text-sm text-muted-foreground">
+                  Use the loader inside a button during form submission.
+                </p>
+                <CodeBlock code={formExampleCode} language="tsx" filename="submit-button.tsx" showLineNumbers />
+              </div>
+            </div>
+          </section>
+
+          <section id="api">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold tracking-tight">API Reference</h2>
+              <div className="rounded-xl border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr className="text-left">
+                      <th className="px-4 py-3 font-medium">Prop</th>
+                      <th className="px-4 py-3 font-medium">Type</th>
+                      <th className="px-4 py-3 font-medium">Default</th>
+                      <th className="px-4 py-3 font-medium">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {propsData.map((row) => (
+                      <tr key={row.prop} className="hover:bg-muted/30">
+                        <td className="px-4 py-3 font-mono text-xs text-primary">{row.prop}</td>
+                        <td className="px-4 py-3 font-mono text-xs">{row.type}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{row.default}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{row.description}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="accessibility">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold tracking-tight">Accessibility</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="font-medium">Screen Reader Support</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Uses <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{`role="status"`}</code> and{" "}
+                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{`aria-live="polite"`}</code> for live region announcements.
+                  </p>
+                </div>
+                <div className="rounded-xl border p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="font-medium">Reduced Motion</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Respects <code className="text-xs bg-muted px-1.5 py-0.5 rounded">prefers-reduced-motion</code> and renders a static, non-zero frame.
+                  </p>
+                </div>
+                <div className="rounded-xl border p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="font-medium">Custom Labels</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    The <code className="text-xs bg-muted px-1.5 py-0.5 rounded">label</code> prop provides context-specific loading text for screen readers.
+                  </p>
+                </div>
+                <div className="rounded-xl border p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="font-medium">Theme Support</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Uses <code className="text-xs bg-muted px-1.5 py-0.5 rounded">currentColor</code> for automatic light/dark theme adaptation.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="mt-24 pt-8 border-t">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <p>Built for shadcn/ui with React and Tailwind CSS</p>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://ui.shadcn.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                shadcn/ui
+              </a>
+              <a
+                href="https://v0.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                v0
+              </a>
             </div>
           </div>
-        </section>
-
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Props</h2>
-          <div className="overflow-x-auto rounded-md border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40">
-                <tr className="text-left">
-                  <th className="p-3 font-medium">Prop</th>
-                  <th className="p-3 font-medium">Type</th>
-                  <th className="p-3 font-medium">Default</th>
-                  <th className="p-3 font-medium">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">variant</td>
-                  <td className="p-3">15 variant names</td>
-                  <td className="p-3">braille</td>
-                  <td className="p-3">Animation pattern.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">size</td>
-                  <td className="p-3">sm | md | lg</td>
-                  <td className="p-3">md</td>
-                  <td className="p-3">Dot size and gap scale.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">gridSize</td>
-                  <td className="p-3">sm | md | lg | xl</td>
-                  <td className="p-3">md (4x4)</td>
-                  <td className="p-3">Preset matrix dimensions.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">grid</td>
-                  <td className="p-3">[rows, cols]</td>
-                  <td className="p-3">-</td>
-                  <td className="p-3">Manual matrix override.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">speed</td>
-                  <td className="p-3">slow | normal | fast</td>
-                  <td className="p-3">normal</td>
-                  <td className="p-3">Frame interval speed.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">dotClassName</td>
-                  <td className="p-3">string</td>
-                  <td className="p-3">-</td>
-                  <td className="p-3">Extra class for each dot.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">className</td>
-                  <td className="p-3">string</td>
-                  <td className="p-3">-</td>
-                  <td className="p-3">Wrapper classes.</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-3 font-mono text-xs">label</td>
-                  <td className="p-3">string</td>
-                  <td className="p-3">Loading</td>
-                  <td className="p-3">Screen-reader label.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">Accessibility</h2>
-          <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
-            <li>Uses role=status and aria-live=polite.</li>
-            <li>Uses label for readable status text.</li>
-            <li>Respects prefers-reduced-motion with static fallback frame.</li>
-            <li>Works in light and dark modes with current color tokens.</li>
-          </ul>
-        </section>
-
-        <section className="rounded-lg border p-6 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">v0 And Registry</h2>
-          <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
-            <li>Use the Open in v0 button in the showcase card.</li>
-            <li>Installable JSON artifacts are served from /r/*.json.</li>
-            <li>Use braille-loader-showcase for the demo board.</li>
-            <li>Use braille-loader for the reusable core component.</li>
-          </ul>
-        </section>
-      </main>
+        </footer>
+      </div>
     </div>
   )
 }

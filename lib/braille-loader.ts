@@ -202,7 +202,7 @@ function buildBreatheFrames(rows: number, cols: number): Frame[] {
         )
         if (distance <= threshold) {
           frame.push(toIndex(row, col, cols))
-        }``
+        }
       }
     }
     return frame
