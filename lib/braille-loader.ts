@@ -336,12 +336,21 @@ function helix(
 ): DotState {
   const centerX = (cols - 1) / 2
   const centerY = (rows - 1) / 2
-  const angle = Math.atan2(row - centerY, col - centerX)
-  const normalizedAngle = (angle + Math.PI) / (2 * Math.PI)
-  const delta = Math.abs(normalizedAngle - time)
+  const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY)
 
-  if (delta < 0.08) {
-    return { opacity: 1, scale: 1 }
+  const angle = Math.atan2(row - centerY, col - centerX)
+  const radius = Math.sqrt(Math.pow(row - centerY, 2) + Math.pow(col - centerX, 2))
+  const normalizedRadius = maxDistance > 0 ? radius / maxDistance : 0
+  const normalizedAngle = (angle + Math.PI) / (2 * Math.PI)
+
+  const k = 0.5
+  const spiralIndex = (normalizedAngle + normalizedRadius * k) % 1
+  const delta = Math.abs(spiralIndex - time)
+  const delta2 = Math.abs((spiralIndex + 0.5) % 1 - time)
+  const minDelta = Math.min(delta, delta2)
+
+  if (minDelta < 0.08) {
+    return { opacity: 1, scale: 1.2 }
   }
   return { opacity: 0.2, scale: 1 }
 }

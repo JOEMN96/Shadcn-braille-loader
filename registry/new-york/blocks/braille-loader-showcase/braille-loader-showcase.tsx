@@ -51,11 +51,10 @@ function Panel({ panelClassName, textClassName, dotClassName, agentClassName }: 
                 gridSize="md"
                 speed="normal"
                 dotClassName={dotClassName}
-                label={`Agent ${variantLabel[variant]} loading`}
+                label={`Animation ${variantLabel[variant]} loading`}
               />
             </span>
             <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
-              <span className={cn("font-medium", agentClassName)}>Agent</span>
               <span className="font-semibold">{variantLabel[variant]}</span>
             </span>
           </li>
