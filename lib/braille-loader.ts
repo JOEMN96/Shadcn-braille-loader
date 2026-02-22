@@ -29,6 +29,8 @@ export type BrailleGrid = [rows: number, cols: number];
 export type DotState = {
   opacity: number;
   scale: number;
+  translateX: number;
+  translateY: number;
 };
 
 const GRID_PRESETS: Record<BrailleGridSize, BrailleGrid> = {
@@ -43,7 +45,7 @@ const MAX_GRID_DIMENSION = 12;
 
 export const speedToDuration: Record<BrailleLoaderSpeed, number> = {
   slow: 3000,
-  normal: 2000,
+  normal: 2400,
   fast: 1200,
 };
 
@@ -63,10 +65,27 @@ function circularDelta(a: number, b: number): number {
   return Math.min(d, 1 - d);
 }
 
-function softState(strength: number, scaleAmp = 0.3): DotState {
+function ambientField(row: number, col: number, time: number) {
+  const phase = time * 2 * Math.PI;
   return {
-    opacity: 0.35 + 0.65 * strength,
-    scale: 1 + scaleAmp * strength,
+    x: Math.sin(phase + row * 0.2 + col * 0.15) * 0.8,
+    y: Math.cos(phase + row * 0.18 - col * 0.12) * 0.8,
+  };
+}
+
+function smoothState(
+  energy: number,
+  row: number,
+  col: number,
+  time: number,
+  scaleAmp = 0.22
+): DotState {
+  const drift = ambientField(row, col, time);
+  return {
+    opacity: 0.45 + 0.45 * energy,
+    scale: 1 + scaleAmp * energy,
+    translateX: drift.x * energy,
+    translateY: drift.y * energy,
   };
 }
 
@@ -123,9 +142,9 @@ function getBrailleClusterIndex(row: number, col: number, totalClusterCols: numb
 
 /* ---------------- VARIANTS ---------------- */
 
-function breathe(_: number, __: number, time: number): DotState {
+function breathe(row: number, col: number, time: number): DotState {
   const phase = (Math.sin(time * 2 * Math.PI) + 1) / 2;
-  return softState(phase, 0.15);
+  return smoothState(phase, row, col, time, 0.15);
 }
 
 function pulse(row: number, col: number, time: number, rows: number, cols: number): DotState {
@@ -136,8 +155,8 @@ function pulse(row: number, col: number, time: number, rows: number, cols: numbe
   const dist = Math.sqrt(dx * dx + dy * dy);
   const maxDist = Math.sqrt(cx * cx + cy * cy);
   const normalized = maxDist > 0 ? dist / maxDist : 0;
-  const strength = smoothFalloff(Math.abs(normalized - time), 0.18);
-  return softState(strength, 0.35);
+  const energy = smoothFalloff(Math.abs(normalized - time), 0.2);
+  return smoothState(energy, row, col, time);
 }
 
 function orbit(row: number, col: number, time: number, rows: number, cols: number): DotState {
@@ -145,89 +164,103 @@ function orbit(row: number, col: number, time: number, rows: number, cols: numbe
   const cy = (rows - 1) / 2;
   const angle = Math.atan2(row - cy, col - cx);
   const norm = (angle + Math.PI) / (2 * Math.PI);
-  const strength = smoothFalloff(circularDelta(norm, time), 0.12);
-  return softState(strength, 0.28);
+  const energy = smoothFalloff(circularDelta(norm, time), 0.14);
+  return smoothState(energy, row, col, time, 0.18);
 }
 
 function snake(row: number, col: number, time: number, path: [number, number][]): DotState {
   const total = path.length;
   const head = time * total;
   const index = getSnakeIndex(row, col, path);
-  if (index === -1) return { opacity: 0.3, scale: 1 };
+  if (index === -1) return smoothState(0, row, col, time);
   let distance = head - index;
   if (distance < 0) distance += total;
-  const strength = Math.exp(-distance * 0.35);
-  return softState(strength, 0.3);
+  const energy = Math.exp(-distance * 0.45);
+  return smoothState(energy, row, col, time, 0.2);
 }
 
-function fillSweep(row: number, _: number, time: number, rows: number): DotState {
-  const progress = time * rows;
-  const strength = smoothFalloff(Math.abs(row - progress), 0.9);
-  return softState(strength, 0.2);
+function fillSweep(row: number, col: number, time: number, rows: number): DotState {
+  const activeRow = Math.floor(time * rows);
+  if (row <= activeRow) return smoothState(1, row, col, time, 0.2);
+  return smoothState(0.15, row, col, time);
 }
 
-function scan(row: number, _: number, time: number, rows: number): DotState {
-  const pos = time * rows;
-  const strength = smoothFalloff(Math.abs(row - pos), 1.2);
-  return softState(strength, 0.25);
+function scan(row: number, col: number, time: number, rows: number): DotState {
+  const scanRow = Math.floor(time * rows);
+  const distance = Math.abs(row - scanRow);
+  if (distance === 0) return smoothState(1, row, col, time, 0.2);
+  if (distance === 1) return smoothState(0.5, row, col, time);
+  return smoothState(0.1, row, col, time);
 }
 
 function rain(row: number, col: number, time: number, rows: number, offsets: number[]): DotState {
   const local = (time + offsets[col]) % 1;
-  const pos = local * rows;
-  const strength = smoothFalloff(Math.abs(row - pos), 0.9);
-  return softState(strength, 0.2);
+  const activeRow = Math.floor(local * rows);
+  if (row === activeRow) return smoothState(1, row, col, time);
+  return smoothState(0.1, row, col, time);
 }
 
 function cascade(row: number, col: number, time: number, rows: number, cols: number): DotState {
   const delay = (row + col) / (rows + cols);
-  const strength = smoothFalloff(Math.abs(delay - time), 0.16);
-  return softState(strength, 0.2);
+  const delta = Math.abs(delay - time);
+  if (delta < 0.1) return smoothState(1, row, col, time);
+  return smoothState(0.1, row, col, time);
 }
 
 function checkerboard(row: number, col: number, time: number): DotState {
-  const phase = (Math.sin(time * 2 * Math.PI) + 1) / 2;
-  const parity = (row + col) % 2;
-  const strength = parity === 0 ? phase : 1 - phase;
-  return softState(strength, 0.15);
+  const phase = Math.floor(time * 2) % 2;
+  if ((row + col) % 2 === phase) return smoothState(1, row, col, time, 0.12);
+  return smoothState(0.1, row, col, time);
 }
 
 function columns(col: number, time: number, cols: number): DotState {
-  const pos = time * cols;
-  const strength = smoothFalloff(Math.abs(col - pos), 0.9);
-  return softState(strength, 0.2);
+  const delay = col / cols;
+  const delta = Math.abs(delay - time);
+  if (delta < 0.1) return { opacity: 1, scale: 1, translateX: 0, translateY: 0 };
+  return { opacity: 0.2, scale: 1, translateX: 0, translateY: 0 };
 }
 
-function waveRows(row: number, _: number, time: number): DotState {
-  const phase = (Math.sin(time * 2 * Math.PI + row * 0.5) + 1) / 2;
-  return softState(phase, 0.15);
+function waveRows(row: number, col: number, time: number): DotState {
+  const phase = Math.sin(time * 2 * Math.PI + row * 0.5);
+  return {
+    opacity: 0.45 + 0.45 * ((phase + 1) / 2),
+    scale: 1 + 0.1 * phase,
+    translateX: Math.sin(time * 2 * Math.PI + row * 0.2 + col * 0.15) * 0.8 * ((phase + 1) / 2),
+    translateY: Math.cos(time * 2 * Math.PI + row * 0.18 - col * 0.12) * 0.8 * ((phase + 1) / 2),
+  };
 }
 
 function diagonalSwipe(row: number, col: number, time: number, rows: number): DotState {
+  const threshold = 0.1;
   const position = (row - col) / rows;
-  const strength = smoothFalloff(Math.abs(position - (time * 2 - 1)), 0.15);
-  return softState(strength, 0.2);
+  const delta = Math.abs(position - (time * 2 - 1));
+  if (delta < threshold) return smoothState(1, row, col, time);
+  return smoothState(0.1, row, col, time);
 }
 
 function sparkle(row: number, col: number, time: number, offsets: number[][]): DotState {
-  const local = (time + (offsets[row]?.[col] ?? 0)) % 1;
-  const phase = (Math.sin(local * 2 * Math.PI) + 1) / 2;
-  return softState(phase, 0.35);
+  const dotOffset = offsets[row]?.[col] ?? 0;
+  const local = (time + dotOffset) % 1;
+  const pulse = Math.sin(local * 2 * Math.PI);
+  if (pulse > 0.8) return smoothState(1, row, col, time, 0.22);
+  return smoothState(0.2, row, col, time);
 }
 
 function helix(row: number, col: number, time: number, rows: number, cols: number): DotState {
   const cx = (cols - 1) / 2;
   const cy = (rows - 1) / 2;
-  const dx = col - cx;
-  const dy = row - cy;
-  const angle = Math.atan2(dy, dx);
-  const radius = Math.sqrt(dx * dx + dy * dy);
   const maxDist = Math.sqrt(cx * cx + cy * cy);
+  const angle = Math.atan2(row - cy, col - cx);
+  const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
   const normRadius = maxDist > 0 ? radius / maxDist : 0;
   const normAngle = (angle + Math.PI) / (2 * Math.PI);
-  const index = (normAngle + normRadius * 0.6) % 1;
-  const strength = smoothFalloff(circularDelta(index, time), 0.1);
-  return softState(strength, 0.25);
+  const k = 0.5;
+  const spiralIndex = (normAngle + normRadius * k) % 1;
+  const delta1 = Math.abs(spiralIndex - time);
+  const delta2 = Math.abs((spiralIndex + 0.5) % 1 - time);
+  const minDelta = Math.min(delta1, delta2);
+  if (minDelta < 0.08) return smoothState(1, row, col, time, 0.2);
+  return smoothState(0.1, row, col, time);
 }
 
 function braille(row: number, col: number, time: number, rows: number, cols: number): DotState {
@@ -235,16 +268,21 @@ function braille(row: number, col: number, time: number, rows: number, cols: num
   const clusterCols = Math.ceil(cols / 2);
   const totalClusters = clusterRows * clusterCols;
   const clusterIndex = getBrailleClusterIndex(row, col, clusterCols);
-  const progress = time * totalClusters;
-  const strength = smoothFalloff(Math.abs(clusterIndex - progress), 0.9);
-  return softState(strength, 0.15);
+  const activeCluster = Math.floor(time * totalClusters);
+  if (clusterIndex === activeCluster) return smoothState(1, row, col, time);
+  return smoothState(0.1, row, col, time);
 }
 
 function interference(row: number, col: number, time: number): DotState {
   const waveA = Math.sin(time * 2 * Math.PI + row * 0.6);
   const waveB = Math.sin(time * 2 * Math.PI + col * 0.6);
-  const combined = (waveA + waveB + 2) / 4;
-  return softState(combined, 0.2);
+  const combined = (waveA + waveB) / 2;
+  return {
+    opacity: 0.45 + 0.45 * ((combined + 1) / 2),
+    scale: 1 + 0.15 * combined,
+    translateX: Math.sin(time * 2 * Math.PI + row * 0.2 + col * 0.15) * 0.8 * ((combined + 1) / 2),
+    translateY: Math.cos(time * 2 * Math.PI + row * 0.18 - col * 0.12) * 0.8 * ((combined + 1) / 2),
+  };
 }
 
 function gravityWell(row: number, col: number, time: number, rows: number, cols: number): DotState {
@@ -255,41 +293,55 @@ function gravityWell(row: number, col: number, time: number, rows: number, cols:
   const dist = Math.sqrt(dx * dx + dy * dy);
   const maxDist = Math.sqrt(cx * cx + cy * cy);
   const norm = maxDist > 0 ? dist / maxDist : 0;
-  const pulse = (Math.sin(time * 2 * Math.PI) + 1) / 2;
-  return softState((1 - norm) * pulse, 0.2);
+  const phase = Math.sin(time * 2 * Math.PI);
+  const pullStrength = 0.4 * phase;
+  const scale = 1 - pullStrength * norm;
+  const opacity = 0.4 + 0.6 * (1 - norm);
+  const drift = ambientField(row, col, time);
+  return {
+    opacity,
+    scale,
+    translateX: drift.x * (1 - norm),
+    translateY: drift.y * (1 - norm),
+  };
 }
 
 function phaseShift(row: number, col: number, time: number, rows: number, cols: number): DotState {
   const midRow = rows / 2;
   const midCol = cols / 2;
-  let offset = 0;
-  if (row < midRow && col >= midCol) offset = Math.PI / 2;
-  else if (row >= midRow && col < midCol) offset = Math.PI;
-  else if (row >= midRow && col >= midCol) offset = (3 * Math.PI) / 2;
-  const phase = (Math.sin(time * 2 * Math.PI + offset) + 1) / 2;
-  return softState(phase, 0.15);
+  let phaseOffset = 0;
+  if (row < midRow && col >= midCol) phaseOffset = Math.PI / 2;
+  else if (row >= midRow && col < midCol) phaseOffset = Math.PI;
+  else if (row >= midRow && col >= midCol) phaseOffset = (3 * Math.PI) / 2;
+  const phase = Math.sin(time * 2 * Math.PI + phaseOffset);
+  return {
+    opacity: 0.45 + 0.45 * ((phase + 1) / 2),
+    scale: 1 + 0.15 * phase,
+    translateX: Math.sin(time * 2 * Math.PI + row * 0.2 + col * 0.15) * 0.8 * ((phase + 1) / 2),
+    translateY: Math.cos(time * 2 * Math.PI + row * 0.18 - col * 0.12) * 0.8 * ((phase + 1) / 2),
+  };
 }
 
 function spiral(row: number, col: number, time: number, rows: number, cols: number): DotState {
   const cx = (cols - 1) / 2;
   const cy = (rows - 1) / 2;
-  const dx = col - cx;
-  const dy = row - cy;
-  const angle = Math.atan2(dy, dx);
-  const radius = Math.sqrt(dx * dx + dy * dy);
   const maxDist = Math.sqrt(cx * cx + cy * cy);
+  const angle = Math.atan2(row - cy, col - cx);
+  const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
   const normRadius = maxDist > 0 ? radius / maxDist : 0;
   const normAngle = (angle + Math.PI) / (2 * Math.PI);
-  const index = (normAngle + normRadius) % 1;
-  const strength = smoothFalloff(circularDelta(index, time), 0.12);
-  return softState(strength, 0.35);
+  const spiralIndex = (normAngle + normRadius) % 1;
+  const delta = Math.abs(spiralIndex - time);
+  if (delta < 0.07) return smoothState(1, row, col, time, 0.22);
+  return smoothState(0.1, row, col, time);
 }
 
 function reflectedRipple(col: number, time: number, cols: number): DotState {
-  const pos = time < 0.5 ? time * 2 : (1 - time) * 2;
+  const position = time < 0.5 ? time * 2 : (1 - time) * 2;
   const normalized = col / cols;
-  const strength = smoothFalloff(Math.abs(normalized - pos), 0.18);
-  return softState(strength, 0.3);
+  const delta = Math.abs(normalized - position);
+  if (delta < 0.1) return { opacity: 1, scale: 1.2, translateX: 0, translateY: 0 };
+  return { opacity: 0.2, scale: 1, translateX: 0, translateY: 0 };
 }
 
 /* ---------------- CONTEXT ---------------- */
@@ -375,7 +427,7 @@ export function getDotState(
     case "reflected-ripple":
       return reflectedRipple(col, normalizedTime, cols);
     default:
-      return { opacity: 0.5, scale: 1 };
+      return { opacity: 0.5, scale: 1, translateX: 0, translateY: 0 };
   }
 }
 
@@ -399,14 +451,9 @@ export function getDuration(speed: BrailleLoaderSpeed): number {
 }
 
 export function getStaticFrame(variant: BrailleLoaderVariant, rows: number, cols: number): DotState[] {
-  const context = getAnimationContext(rows, cols);
-  const states: DotState[] = [];
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      states.push(getDotState(variant, row, col, 0.5, rows, cols, context));
-    }
-  }
-  return states;
+  const totalCells = rows * cols;
+  const fixedState: DotState = { opacity: 0.5, scale: 1, translateX: 0, translateY: 0 };
+  return Array.from({ length: totalCells }, () => ({ ...fixedState }));
 }
 
 export { getAnimationContext };

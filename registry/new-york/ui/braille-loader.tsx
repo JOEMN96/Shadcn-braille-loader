@@ -11,7 +11,6 @@ import {
   type AnimationContext,
   getDotState,
   getDuration,
-  getStaticFrame,
   getAnimationContext,
   normalizeVariant,
   resolveGrid,
@@ -41,26 +40,6 @@ const GAP_PRESETS = {
   md: 10,
   lg: 14,
 } as const;
-
-function usePrefersReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setPrefersReducedMotion(mediaQuery.matches);
-
-    onChange();
-    mediaQuery.addEventListener("change", onChange);
-
-    return () => mediaQuery.removeEventListener("change", onChange);
-  }, []);
-
-  return prefersReducedMotion;
-}
 
 function resolveDimension(value: number | string | undefined, presets: Record<string, number>, defaultValue: number): number {
   if (typeof value === "number") {
@@ -92,8 +71,8 @@ function BrailleLoader({
   const resolvedDotSize = resolveDimension(dotSize, DOT_SIZE_PRESETS, 6);
   const resolvedGap = resolveDimension(gap, GAP_PRESETS, 10);
 
-  const prefersReducedMotion = usePrefersReducedMotion();
   const [normalizedTime, setNormalizedTime] = React.useState(0);
+  const [mounted, setMounted] = React.useState(false);
 
   const contextRef = React.useRef<AnimationContext | null>(null);
   if (!contextRef.current) {
@@ -101,9 +80,11 @@ function BrailleLoader({
   }
 
   React.useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!mounted) return;
 
     let animationId: number;
     let startTime: number | null = null;
@@ -127,9 +108,7 @@ function BrailleLoader({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [resolvedDuration, prefersReducedMotion]);
-
-  const staticStates = React.useMemo(() => getStaticFrame(resolvedVariant, rows, cols), [resolvedVariant, rows, cols]);
+  }, [resolvedDuration, mounted]);
 
   const totalCells = rows * cols;
   const context = contextRef.current;
@@ -137,20 +116,28 @@ function BrailleLoader({
   const getDotStyle = (index: number): React.CSSProperties => {
     const row = Math.floor(index / cols);
     const col = index % cols;
-
-    let state: DotState;
-    if (prefersReducedMotion) {
-      state = staticStates[index] ?? { opacity: 0.5, scale: 1 };
-    } else {
-      state = getDotState(resolvedVariant, row, col, normalizedTime, rows, cols, context);
-    }
+    const state = getDotState(resolvedVariant, row, col, normalizedTime, rows, cols, context);
 
     return {
       opacity: state.opacity,
-      transform: `scale(${state.scale})`,
-      transition: prefersReducedMotion ? "none" : "opacity 0.1s linear, transform 0.1s linear",
+      transform: `translate3d(${state.translateX}px, ${state.translateY}px, 0) scale(${state.scale})`,
+      transition: "opacity 0.1s linear, transform 0.1s linear",
     };
   };
+
+  if (!mounted) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className={cn("inline-flex items-center text-current", className)}
+        style={style}
+        {...props}
+      >
+        <span className="sr-only">{label}</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -165,7 +152,7 @@ function BrailleLoader({
         aria-hidden="true"
         className="grid"
         style={{
-          gap: resolvedGap,
+          gap: `${resolvedGap}px`,
           gridTemplateColumns: `repeat(${cols}, ${resolvedDotSize}px)`,
           gridTemplateRows: `repeat(${rows}, ${resolvedDotSize}px)`,
         }}
@@ -175,8 +162,8 @@ function BrailleLoader({
             key={dotIndex}
             className={cn("bg-current rounded-full", dotClassName)}
             style={{
-              width: resolvedDotSize,
-              height: resolvedDotSize,
+              width: `${resolvedDotSize}px`,
+              height: `${resolvedDotSize}px`,
               ...getDotStyle(dotIndex),
             }}
           />
