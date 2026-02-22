@@ -75,6 +75,35 @@
           "type": "registry:component"
         }
       ]
+    },
+    {
+      "name": "braille-loader",
+      "type": "registry:component",
+      "title": "Braille Loader",
+      "description": "Accessible braille-inspired loading indicator with 15 animation variants.",
+      "files": [
+        {
+          "path": "registry/new-york/ui/braille-loader.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "lib/braille-loader.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "braille-loader-showcase",
+      "type": "registry:component",
+      "title": "Braille Loader Showcase",
+      "description": "Dark and light preview board for all braille loader variants.",
+      "registryDependencies": ["braille-loader"],
+      "files": [
+        {
+          "path": "registry/new-york/blocks/braille-loader-showcase/braille-loader-showcase.tsx",
+          "type": "registry:component"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "braille-loader-showcase",
+  "title": "Braille Loader Showcase",
+  "description": "Dark and light preview board for all braille loader variants.",
+  "registryDependencies": [
+    "braille-loader"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/blocks/braille-loader-showcase/braille-loader-showcase.tsx",
+      "content": "import {\n  brailleLoaderVariants,\n  type BrailleLoaderVariant,\n} from \"@/lib/braille-loader\"\nimport { BrailleLoader } from \"@/components/ui/braille-loader\"\nimport { cn } from \"@/lib/utils\"\n\nconst variantLabel: Record<BrailleLoaderVariant, string> = {\n  braille: \"Braille\",\n  orbit: \"Orbit\",\n  breathe: \"Breathe\",\n  snake: \"Snake\",\n  \"fill-sweep\": \"Fill Sweep\",\n  pulse: \"Pulse\",\n  columns: \"Columns\",\n  checkerboard: \"Checkerboard\",\n  scan: \"Scan\",\n  rain: \"Rain\",\n  cascade: \"Cascade\",\n  sparkle: \"Sparkle\",\n  \"wave-rows\": \"Wave Rows\",\n  helix: \"Helix\",\n  \"diagonal-swipe\": \"Diagonal Swipe\",\n}\n\ntype PanelProps = {\n  panelClassName: string\n  textClassName: string\n  dotClassName: string\n}\n\nfunction Panel({ panelClassName, textClassName, dotClassName }: PanelProps) {\n  return (\n    <div className={cn(\"rounded-2xl p-6 shadow-sm\", panelClassName)}>\n      <ul className=\"space-y-3\">\n        {brailleLoaderVariants.map((variant) => (\n          <li\n            key={variant}\n            className={cn(\"flex items-center gap-4 text-[15px]\", textClassName)}\n          >\n            <BrailleLoader\n              variant={variant}\n              size=\"sm\"\n              gridSize=\"md\"\n              speed=\"normal\"\n              dotClassName={dotClassName}\n              label={`Agent ${variantLabel[variant]} loading`}\n            />\n            <span>\n              <span className=\"opacity-60\">Agent</span>{\" \"}\n              <span className=\"font-semibold\">{variantLabel[variant]}</span>\n            </span>\n          </li>\n        ))}\n      </ul>\n    </div>\n  )\n}\n\nexport function BrailleLoaderShowcase() {\n  return (\n    <div className=\"w-full rounded-3xl border border-border/60 bg-gradient-to-b from-background to-muted/30 p-6 shadow-sm\">\n      <div className=\"grid gap-4 md:grid-cols-2\">\n        <Panel\n          panelClassName=\"border border-white/5 bg-neutral-950 text-neutral-100\"\n          textClassName=\"text-neutral-100\"\n          dotClassName=\"bg-neutral-100\"\n        />\n        <Panel\n          panelClassName=\"border border-black/10 bg-neutral-50 text-neutral-900\"\n          textClassName=\"text-neutral-900\"\n          dotClassName=\"bg-neutral-900\"\n        />\n      </div>\n    </div>\n  )\n}\n",
+      "type": "registry:component"
+    }
+  ],
+  "type": "registry:component"
+}
