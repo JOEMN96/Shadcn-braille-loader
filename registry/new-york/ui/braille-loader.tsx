@@ -7,10 +7,12 @@ import {
   type BrailleGridSize,
   type BrailleLoaderSpeed,
   type BrailleLoaderVariant,
-  getFrameCount,
-  getFrameMs,
-  getReducedMotionFrame,
-  isDotActive,
+  type DotState,
+  type AnimationContext,
+  getDotState,
+  getDuration,
+  getStaticFrame,
+  getAnimationContext,
   normalizeVariant,
   resolveGrid,
 } from "@/lib/braille-loader"
@@ -18,18 +20,26 @@ import { cn } from "@/lib/utils"
 
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant
-  size?: "sm" | "md" | "lg"
+  dotSize?: number | "sm" | "md" | "lg"
+  gap?: number | "sm" | "md" | "lg"
   gridSize?: BrailleGridSize
   grid?: BrailleGrid
+  duration?: number
   speed?: BrailleLoaderSpeed
   dotClassName?: string
   label?: string
 }
 
-const sizeVars = {
-  sm: { dot: "5px", gap: "4px", radius: "9999px" },
-  md: { dot: "7px", gap: "5px", radius: "9999px" },
-  lg: { dot: "10px", gap: "6px", radius: "9999px" },
+const DOT_SIZE_PRESETS = {
+  sm: 4,
+  md: 6,
+  lg: 10,
+} as const
+
+const GAP_PRESETS = {
+  sm: 6,
+  md: 10,
+  lg: 14,
 } as const
 
 function usePrefersReducedMotion() {
@@ -52,11 +62,27 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion
 }
 
+function resolveDimension(
+  value: number | string | undefined,
+  presets: Record<string, number>,
+  defaultValue: number
+): number {
+  if (typeof value === "number") {
+    return Math.max(1, value)
+  }
+  if (typeof value === "string" && value in presets) {
+    return presets[value]
+  }
+  return defaultValue
+}
+
 function BrailleLoader({
-  variant = "braille",
-  size = "md",
-  gridSize = "md",
+  variant = "breathe",
+  dotSize = 6,
+  gap = 10,
+  gridSize,
   grid,
+  duration,
   speed = "normal",
   dotClassName,
   className,
@@ -66,43 +92,79 @@ function BrailleLoader({
 }: BrailleLoaderProps) {
   const resolvedVariant = normalizeVariant(variant)
   const [rows, cols] = resolveGrid(gridSize, grid)
-  const frameCount = getFrameCount(resolvedVariant, rows, cols)
+  const resolvedDuration = duration ?? getDuration(speed)
+  const resolvedDotSize = resolveDimension(dotSize, DOT_SIZE_PRESETS, 6)
+  const resolvedGap = resolveDimension(gap, GAP_PRESETS, 10)
+
   const prefersReducedMotion = usePrefersReducedMotion()
-  const [frameIndex, setFrameIndex] = React.useState(0)
+  const [normalizedTime, setNormalizedTime] = React.useState(0)
+
+  const contextRef = React.useRef<AnimationContext | null>(null)
+  if (!contextRef.current) {
+    contextRef.current = getAnimationContext(rows, cols)
+  }
 
   React.useEffect(() => {
     if (prefersReducedMotion) {
       return
     }
 
-    const intervalMs = getFrameMs(resolvedVariant, speed)
-    const timer = window.setInterval(() => {
-      setFrameIndex((current) => (current + 1) % frameCount)
-    }, intervalMs)
+    let animationId: number
+    let startTime: number | null = null
 
-    return () => window.clearInterval(timer)
-  }, [frameCount, prefersReducedMotion, resolvedVariant, speed, rows, cols])
+    const animate = (timestamp: number) => {
+      if (startTime === null) {
+        startTime = timestamp
+      }
 
-  const resolvedSize = sizeVars[size]
-  const staticFrame = React.useMemo(
-    () => new Set(getReducedMotionFrame(resolvedVariant, rows, cols)),
+      const elapsed = timestamp - startTime
+      const time = (elapsed % resolvedDuration) / resolvedDuration
+      setNormalizedTime(time)
+
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animationId = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId)
+      }
+    }
+  }, [resolvedDuration, prefersReducedMotion])
+
+  const staticStates = React.useMemo(
+    () => getStaticFrame(resolvedVariant, rows, cols),
     [resolvedVariant, rows, cols]
   )
+
   const totalCells = rows * cols
+  const context = contextRef.current
+
+  const getDotStyle = (index: number): React.CSSProperties => {
+    const row = Math.floor(index / cols)
+    const col = index % cols
+
+    let state: DotState
+    if (prefersReducedMotion) {
+      state = staticStates[index] ?? { opacity: 0.5, scale: 1 }
+    } else {
+      state = getDotState(resolvedVariant, row, col, normalizedTime, rows, cols, context)
+    }
+
+    return {
+      opacity: state.opacity,
+      transform: `scale(${state.scale})`,
+      transition: prefersReducedMotion ? "none" : "opacity 0.1s linear, transform 0.1s linear",
+    }
+  }
 
   return (
     <div
       role="status"
       aria-live="polite"
       className={cn("inline-flex items-center text-current", className)}
-      style={
-        {
-          "--bl-dot-size": resolvedSize.dot,
-          "--bl-gap": resolvedSize.gap,
-          "--bl-dot-radius": resolvedSize.radius,
-          ...style,
-        } as React.CSSProperties
-      }
+      style={style}
       {...props}
     >
       <span className="sr-only">{label}</span>
@@ -110,32 +172,25 @@ function BrailleLoader({
         aria-hidden="true"
         className="grid"
         style={{
-          gap: "var(--bl-gap)",
-          gridTemplateColumns: `repeat(${cols}, var(--bl-dot-size))`,
-          gridTemplateRows: `repeat(${rows}, var(--bl-dot-size))`,
+          gap: resolvedGap,
+          gridTemplateColumns: `repeat(${cols}, ${resolvedDotSize}px)`,
+          gridTemplateRows: `repeat(${rows}, ${resolvedDotSize}px)`,
         }}
       >
-        {Array.from({ length: totalCells }, (_, dotIndex) => {
-          const active = prefersReducedMotion
-            ? staticFrame.has(dotIndex)
-            : isDotActive(resolvedVariant, frameIndex, dotIndex, rows, cols)
-
-          return (
-            <span
-              key={dotIndex}
-              className={cn(
-                "bg-current transition-opacity duration-150 ease-linear",
-                active ? "opacity-90" : "opacity-20",
-                dotClassName
-              )}
-              style={{
-                width: "var(--bl-dot-size)",
-                height: "var(--bl-dot-size)",
-                borderRadius: "var(--bl-dot-radius)",
-              }}
-            />
-          )
-        })}
+        {Array.from({ length: totalCells }, (_, dotIndex) => (
+          <span
+            key={dotIndex}
+            className={cn(
+              "bg-current rounded-full",
+              dotClassName
+            )}
+            style={{
+              width: resolvedDotSize,
+              height: resolvedDotSize,
+              ...getDotStyle(dotIndex),
+            }}
+          />
+        ))}
       </div>
     </div>
   )

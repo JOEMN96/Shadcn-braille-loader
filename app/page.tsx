@@ -22,6 +22,11 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   "wave-rows": "Wave Rows",
   helix: "Helix",
   "diagonal-swipe": "Diagonal Swipe",
+  interference: "Interference",
+  "gravity-well": "Gravity Well",
+  "phase-shift": "Phase Shift",
+  spiral: "Spiral",
+  "reflected-ripple": "Reflected Ripple",
 }
 
 const installCode = `npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader.json`
@@ -34,7 +39,8 @@ export function Example() {
   return (
     <BrailleLoader
       variant="helix"
-      size="md"
+      dotSize="md"
+      gap="md"
       gridSize="md"
       speed="normal"
       label="Loading results"
@@ -42,9 +48,12 @@ export function Example() {
   )
 }`
 
-const sizeExampleCode = `<BrailleLoader variant="braille" size="sm" />
-<BrailleLoader variant="braille" size="md" />
-<BrailleLoader variant="braille" size="lg" />`
+const dotSizeExampleCode = `<BrailleLoader variant="breathe" dotSize="sm" gap="sm" />
+<BrailleLoader variant="breathe" dotSize="md" gap="md" />
+<BrailleLoader variant="breathe" dotSize="lg" gap="lg" />`
+
+const customDotCode = `<BrailleLoader variant="pulse" dotSize={8} gap={12} />
+<BrailleLoader variant="orbit" dotSize={4} gap={6} />`
 
 const gridExampleCode = `<BrailleLoader variant="rain" gridSize="sm" />
 <BrailleLoader variant="rain" gridSize="md" />
@@ -52,7 +61,7 @@ const gridExampleCode = `<BrailleLoader variant="rain" gridSize="sm" />
 <BrailleLoader variant="rain" gridSize="xl" />`
 
 const customGridCode = `<BrailleLoader variant="snake" grid={[5, 8]} />
-<BrailleLoader variant="pulse" grid={[6, 6]} size="lg" />`
+<BrailleLoader variant="pulse" grid={[6, 6]} dotSize="lg" />`
 
 const speedExampleCode = `<BrailleLoader variant="orbit" speed="slow" />
 <BrailleLoader variant="orbit" speed="normal" />
@@ -81,7 +90,7 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
     <Button disabled={isSubmitting}>
       {isSubmitting ? (
         <>
-          <BrailleLoader variant="pulse" size="sm" className="text-primary-foreground" />
+          <BrailleLoader variant="pulse" dotSize="sm" gap="sm" className="text-primary-foreground" />
           Processing...
         </>
       ) : (
@@ -92,11 +101,13 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 }`
 
 const propsData = [
-  { prop: "variant", type: "string", default: '"braille"', description: "Animation pattern. One of 15 variants." },
-  { prop: "size", type: '"sm" | "md" | "lg"', default: '"md"', description: "Dot size and gap scale." },
-  { prop: "gridSize", type: '"sm" | "md" | "lg" | "xl"', default: '"md"', description: "Preset grid dimensions (3x3 to 6x6)." },
-  { prop: "grid", type: "[rows, cols]", default: "-", description: "Custom grid override. Takes precedence over gridSize." },
-  { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Frame interval speed." },
+  { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 20 variants." },
+  { prop: "dotSize", type: 'number | "sm" | "md" | "lg"', default: "6", description: "Dot size in pixels. Presets: 4, 6, 10." },
+  { prop: "gap", type: 'number | "sm" | "md" | "lg"', default: "10", description: "Gap between dots in pixels. Presets: 6, 10, 14." },
+  { prop: "gridSize", type: '"sm" | "md" | "lg" | "xl"', default: "-", description: "Preset grid dimensions (3x3 to 6x6)." },
+  { prop: "grid", type: "[rows, cols]", default: "[4, 4]", description: "Custom grid override. 2x2 to 12x12 supported." },
+  { prop: "duration", type: "number", default: "2000", description: "Animation duration in milliseconds." },
+  { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Speed preset. Overrides duration." },
   { prop: "className", type: "string", default: "-", description: "Additional classes for the wrapper." },
   { prop: "dotClassName", type: "string", default: "-", description: "Additional classes for each dot." },
   { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
@@ -108,13 +119,13 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <header className="mb-16 text-center">
           <div className="inline-flex items-center justify-center mb-6 p-4 rounded-2xl bg-primary/5 border">
-            <BrailleLoader variant="helix" size="lg" gridSize="lg" speed="normal" />
+            <BrailleLoader variant="helix" dotSize="lg" gap="lg" gridSize="lg" speed="normal" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             Braille Loader
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A collection of 15 accessible, animated loading indicators for shadcn/ui.
+            A collection of 20 accessible, animated loading indicators for shadcn/ui.
             Registry-ready with full TypeScript support.
           </p>
           <div className="flex items-center justify-center gap-3 mt-8">
@@ -166,7 +177,7 @@ export default function Home() {
               </p>
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="flex items-center justify-center p-8 rounded-xl border bg-muted/30">
-                  <BrailleLoader variant="helix" size="lg" gridSize="lg" />
+                  <BrailleLoader variant="helix" dotSize="lg" gap="lg" gridSize="lg" />
                 </div>
                 <CodeBlock code={basicUsageCode} language="tsx" filename="example.tsx" showLineNumbers />
               </div>
@@ -203,26 +214,39 @@ export default function Home() {
               </div>
 
               <div className="space-y-6">
-                <h3 className="text-xl font-medium">Size</h3>
+                <h3 className="text-xl font-medium">Dot Size & Gap</h3>
                 <p className="text-sm text-muted-foreground">
-                  Three size presets control dot size and spacing.
+                  Three presets control dot size and spacing. Or use numeric values for precise control.
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
                     <div className="text-center">
-                      <BrailleLoader variant="braille" size="sm" />
-                      <span className="block mt-3 text-xs text-muted-foreground">sm</span>
+                      <BrailleLoader variant="breathe" dotSize="sm" gap="sm" />
+                      <span className="block mt-3 text-xs text-muted-foreground">sm (4px/6px)</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="braille" size="md" />
-                      <span className="block mt-3 text-xs text-muted-foreground">md</span>
+                      <BrailleLoader variant="breathe" dotSize="md" gap="md" />
+                      <span className="block mt-3 text-xs text-muted-foreground">md (6px/10px)</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="braille" size="lg" />
-                      <span className="block mt-3 text-xs text-muted-foreground">lg</span>
+                      <BrailleLoader variant="breathe" dotSize="lg" gap="lg" />
+                      <span className="block mt-3 text-xs text-muted-foreground">lg (10px/14px)</span>
                     </div>
                   </div>
-                  <CodeBlock code={sizeExampleCode} language="tsx" />
+                  <CodeBlock code={dotSizeExampleCode} language="tsx" />
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-10 p-8 rounded-xl border bg-muted/30">
+                    <div className="text-center">
+                      <BrailleLoader variant="pulse" dotSize={8} gap={12} />
+                      <span className="block mt-3 text-xs text-muted-foreground">8px/12px</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="orbit" dotSize={4} gap={6} />
+                      <span className="block mt-3 text-xs text-muted-foreground">4px/6px</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={customDotCode} language="tsx" />
                 </div>
               </div>
 
@@ -266,7 +290,7 @@ export default function Home() {
                       <span className="block mt-3 text-xs text-muted-foreground">5x8</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="pulse" grid={[6, 6]} size="lg" />
+                      <BrailleLoader variant="pulse" grid={[6, 6]} dotSize="lg" gap="lg" />
                       <span className="block mt-3 text-xs text-muted-foreground">6x6</span>
                     </div>
                   </div>
@@ -282,15 +306,15 @@ export default function Home() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
                     <div className="text-center">
-                      <BrailleLoader variant="orbit" speed="slow" />
+                      <BrailleLoader variant="orbit" gridSize="md" speed="slow" />
                       <span className="block mt-3 text-xs text-muted-foreground">slow</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="orbit" speed="normal" />
+                      <BrailleLoader variant="orbit" gridSize="md" speed="normal" />
                       <span className="block mt-3 text-xs text-muted-foreground">normal</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="orbit" speed="fast" />
+                      <BrailleLoader variant="orbit" gridSize="md" speed="fast" />
                       <span className="block mt-3 text-xs text-muted-foreground">fast</span>
                     </div>
                   </div>
@@ -305,9 +329,9 @@ export default function Home() {
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
-                    <BrailleLoader variant="sparkle" className="text-blue-500" />
-                    <BrailleLoader variant="helix" className="text-emerald-600" />
-                    <BrailleLoader variant="breathe" className="text-purple-500" />
+                    <BrailleLoader variant="sparkle" gridSize="md" className="text-blue-500" />
+                    <BrailleLoader variant="helix" gridSize="md" className="text-emerald-600" />
+                    <BrailleLoader variant="breathe" gridSize="md" className="text-purple-500" />
                   </div>
                   <CodeBlock code={themingCode} language="tsx" />
                 </div>

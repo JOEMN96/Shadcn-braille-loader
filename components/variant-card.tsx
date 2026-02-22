@@ -28,6 +28,11 @@ const variantDescriptions: Partial<Record<BrailleLoaderVariant, string>> = {
   "wave-rows": "Sine wave across rows",
   helix: "Double helix orbit pattern",
   "diagonal-swipe": "Diagonal reveal animation",
+  interference: "Dual wave interference pattern",
+  "gravity-well": "Center collapse and release",
+  "phase-shift": "Alternating quadrant phase",
+  spiral: "Logarithmic spiral activation",
+  "reflected-ripple": "Mirror bounce wave",
 }
 
 function VariantCard({ variant, label, className }: VariantCardProps) {
@@ -47,7 +52,8 @@ function VariantCard({ variant, label, className }: VariantCardProps) {
       <div className="flex items-center justify-center h-28 bg-gradient-to-br from-muted/30 to-muted/10">
         <BrailleLoader
           variant={variant}
-          size="md"
+          dotSize="md"
+          gap="md"
           gridSize="md"
           speed="normal"
           className="text-primary"

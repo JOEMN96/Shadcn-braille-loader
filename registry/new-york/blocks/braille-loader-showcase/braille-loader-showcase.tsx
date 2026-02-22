@@ -1,9 +1,6 @@
-import {
-  brailleLoaderVariants,
-  type BrailleLoaderVariant,
-} from "@/lib/braille-loader"
-import { BrailleLoader } from "@/components/ui/braille-loader"
-import { cn } from "@/lib/utils"
+import { brailleLoaderVariants, type BrailleLoaderVariant } from "@/lib/braille-loader";
+import { BrailleLoader } from "@/components/ui/braille-loader";
+import { cn } from "@/lib/utils";
 
 const variantLabel: Record<BrailleLoaderVariant, string> = {
   braille: "Braille",
@@ -21,41 +18,36 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   "wave-rows": "Wave Rows",
   helix: "Helix",
   "diagonal-swipe": "Diagonal Swipe",
-}
+  interference: "Interference",
+  "gravity-well": "Gravity Well",
+  "phase-shift": "Phase Shift",
+  spiral: "Spiral",
+  "reflected-ripple": "Reflected Ripple",
+};
 
 type PanelProps = {
-  panelClassName: string
-  textClassName: string
-  dotClassName: string
-  agentClassName: string
-}
+  panelClassName: string;
+  textClassName: string;
+  dotClassName: string;
+  agentClassName: string;
+};
 
-function Panel({
-  panelClassName,
-  textClassName,
-  dotClassName,
-  agentClassName,
-}: PanelProps) {
+function Panel({ panelClassName, textClassName, dotClassName, agentClassName }: PanelProps) {
   return (
     <div
       className={cn(
         "overflow-hidden rounded-[18px] border px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_0_rgba(0,0,0,0.12)]",
-        panelClassName
+        panelClassName,
       )}
     >
       <ul className="space-y-[7px]">
         {brailleLoaderVariants.map((variant) => (
-          <li
-            key={variant}
-            className={cn(
-              "flex min-h-[30px] items-center gap-4 text-[15px] leading-[1.2]",
-              textClassName
-            )}
-          >
-            <span className="inline-flex h-8 w-10 shrink-0 items-center justify-center overflow-hidden">
+          <li key={variant} className={cn("flex min-h-[30px] items-center gap-4 text-[15px] leading-[1.2]", textClassName)}>
+            <span className="inline-flex mb-3 shrink-0 items-center justify-center overflow-hidden">
               <BrailleLoader
                 variant={variant}
-                size="sm"
+                dotSize="sm"
+                gap="sm"
                 gridSize="md"
                 speed="normal"
                 dotClassName={dotClassName}
@@ -70,7 +62,7 @@ function Panel({
         ))}
       </ul>
     </div>
-  )
+  );
 }
 
 export function BrailleLoaderShowcase() {
@@ -91,5 +83,5 @@ export function BrailleLoaderShowcase() {
         />
       </div>
     </div>
-  )
+  );
 }
