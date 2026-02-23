@@ -7,131 +7,66 @@ import {
   type BrailleGridSize,
   type BrailleLoaderSpeed,
   type BrailleLoaderVariant,
-  type DotState,
-  type AnimationContext,
-  getDotState,
-  getDuration,
-  getAnimationContext,
+  generateFrames,
   normalizeVariant,
   resolveGrid,
 } from "@/lib/braille-loader";
 import { cn } from "@/lib/utils";
 
-type DotShape = "circle" | "square";
-
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant;
-  dotSize?: number | "sm" | "md" | "lg";
-  gap?: number | "sm" | "md" | "lg";
   gridSize?: BrailleGridSize;
   grid?: BrailleGrid;
-  duration?: number;
   speed?: BrailleLoaderSpeed;
-  dotClassName?: string;
   label?: string;
-  dotShape?: DotShape;
-  hideInactiveDots?: boolean;
+  fontSize?: number;
 };
-
-const DOT_SIZE_PRESETS = {
-  sm: 4,
-  md: 6,
-  lg: 10,
-} as const;
-
-const GAP_PRESETS = {
-  sm: 6,
-  md: 10,
-  lg: 14,
-} as const;
-
-function resolveDimension(value: number | string | undefined, presets: Record<string, number>, defaultValue: number): number {
-  if (typeof value === "number") {
-    return Math.max(1, value);
-  }
-  if (typeof value === "string" && value in presets) {
-    return presets[value];
-  }
-  return defaultValue;
-}
 
 function BrailleLoader({
   variant = "breathe",
-  dotSize = 6,
-  gap = 10,
   gridSize,
   grid,
-  duration,
   speed = "normal",
-  dotClassName,
   className,
   label = "Loading",
+  fontSize = 28,
   style,
-  dotShape = "circle",
-  hideInactiveDots = false,
   ...props
 }: BrailleLoaderProps) {
   const resolvedVariant = normalizeVariant(variant);
-  const [rows, cols] = resolveGrid(gridSize, grid);
-  const resolvedDuration = duration ?? getDuration(speed);
-  const resolvedDotSize = resolveDimension(dotSize, DOT_SIZE_PRESETS, 6);
-  const resolvedGap = resolveDimension(gap, GAP_PRESETS, 10);
-
-  const [normalizedTime, setNormalizedTime] = React.useState(0);
+  const [width, height] = resolveGrid(gridSize, grid);
+  const spanRef = React.useRef<HTMLSpanElement>(null);
   const [mounted, setMounted] = React.useState(false);
 
-  const contextRef = React.useRef<AnimationContext | null>(null);
-  if (!contextRef.current) {
-    contextRef.current = getAnimationContext(rows, cols);
-  }
+  const framesData = React.useMemo(() => {
+    return generateFrames(resolvedVariant, width, height);
+  }, [resolvedVariant, width, height]);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
   React.useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !spanRef.current) return;
 
-    let animationId: number;
-    let startTime: number | null = null;
+    const frames = framesData.frames;
+    let frameIndex = 0;
+    const interval = framesData.interval;
 
-    const animate = (timestamp: number) => {
-      if (startTime === null) {
-        startTime = timestamp;
+    const updateFrame = () => {
+      if (spanRef.current) {
+        spanRef.current.textContent = frames[frameIndex];
       }
-
-      const elapsed = timestamp - startTime;
-      const time = (elapsed % resolvedDuration) / resolvedDuration;
-      setNormalizedTime(time);
-
-      animationId = requestAnimationFrame(animate);
+      frameIndex = (frameIndex + 1) % frames.length;
     };
 
-    animationId = requestAnimationFrame(animate);
+    updateFrame();
+    const intervalId = setInterval(updateFrame, interval);
 
     return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
+      clearInterval(intervalId);
     };
-  }, [resolvedDuration, mounted]);
-
-  const totalCells = rows * cols;
-  const context = contextRef.current;
-
-  const getDotStyle = (index: number): React.CSSProperties => {
-    const row = Math.floor(index / cols);
-    const col = index % cols;
-    const state = getDotState(resolvedVariant, row, col, normalizedTime, rows, cols, context);
-
-    const opacity = hideInactiveDots && state.opacity < 0.5 ? 0 : state.opacity;
-
-    return {
-      opacity,
-      transform: `translate3d(${state.translateX}px, ${state.translateY}px, 0) scale(${state.scale})`,
-      transition: "opacity 0.1s linear, transform 0.1s linear",
-    };
-  };
+  }, [framesData, mounted]);
 
   if (!mounted) {
     return (
@@ -156,27 +91,19 @@ function BrailleLoader({
       {...props}
     >
       <span className="sr-only">{label}</span>
-      <div
+      <span
+        ref={spanRef}
         aria-hidden="true"
-        className="grid"
         style={{
-          gap: `${resolvedGap}px`,
-          gridTemplateColumns: `repeat(${cols}, ${resolvedDotSize}px)`,
-          gridTemplateRows: `repeat(${rows}, ${resolvedDotSize}px)`,
+          fontFamily: "monospace",
+          whiteSpace: "pre",
+          fontSize: `${fontSize}px`,
+          lineHeight: 1,
+          letterSpacing: 0,
         }}
       >
-        {Array.from({ length: totalCells }, (_, dotIndex) => (
-          <span
-            key={dotIndex}
-            className={cn("bg-current", dotShape === "circle" && "rounded-full", dotClassName)}
-            style={{
-              width: `${resolvedDotSize}px`,
-              height: `${resolvedDotSize}px`,
-              ...getDotStyle(dotIndex),
-            }}
-          />
-        ))}
-      </div>
+        {framesData.frames[0]}
+      </span>
     </div>
   );
 }

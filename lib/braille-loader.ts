@@ -19,19 +19,15 @@ export const brailleLoaderVariants = [
   "phase-shift",
   "spiral",
   "reflected-ripple",
+  "pendulum",
+  "compress",
+  "sort",
 ] as const;
 
 export type BrailleLoaderVariant = (typeof brailleLoaderVariants)[number];
 export type BrailleLoaderSpeed = "slow" | "normal" | "fast";
 export type BrailleGridSize = "sm" | "md" | "lg" | "xl";
 export type BrailleGrid = [rows: number, cols: number];
-
-export type DotState = {
-  opacity: number;
-  scale: number;
-  translateX: number;
-  translateY: number;
-};
 
 const GRID_PRESETS: Record<BrailleGridSize, BrailleGrid> = {
   sm: [3, 3],
@@ -49,400 +45,779 @@ export const speedToDuration: Record<BrailleLoaderSpeed, number> = {
   fast: 1200,
 };
 
+export const speedToInterval: Record<BrailleLoaderSpeed, number> = {
+  slow: 50,
+  normal: 40,
+  fast: 20,
+};
+
+const DOT_BITS = [
+  [0x01, 0x08],
+  [0x02, 0x10],
+  [0x04, 0x20],
+  [0x40, 0x80],
+];
+
+const BRAILLE_BASE = 0x2800;
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-/* ---------------- PREMIUM MOTION HELPERS ---------------- */
-
-function smoothFalloff(delta: number, width: number): number {
-  const x = clamp(1 - delta / width, 0, 1);
-  return x * x * (3 - 2 * x); // smoothstep
-}
-
-function circularDelta(a: number, b: number): number {
-  const d = Math.abs(a - b);
-  return Math.min(d, 1 - d);
-}
-
-function ambientField(row: number, col: number, time: number) {
-  const phase = time * 2 * Math.PI;
-  return {
-    x: Math.sin(phase + row * 0.2 + col * 0.15) * 0.8,
-    y: Math.cos(phase + row * 0.18 - col * 0.12) * 0.8,
-  };
-}
-
-function smoothState(
-  energy: number,
-  row: number,
-  col: number,
-  time: number,
-  scaleAmp = 0.22
-): DotState {
-  const drift = ambientField(row, col, time);
-  return {
-    opacity: 0.45 + 0.45 * energy,
-    scale: 1 + scaleAmp * energy,
-    translateX: drift.x * energy,
-    translateY: drift.y * energy,
-  };
-}
-
-/* ---------------- RANDOM ---------------- */
-
-function lcg(seed: number) {
-  let state = seed;
+export function seededRandom(seed: number): () => number {
+  let s = seed;
   return () => {
-    state = (state * 1664525 + 1013904223) % 0x100000000;
-    return state / 0x100000000;
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
   };
 }
 
-function precomputeRainOffsets(cols: number): number[] {
-  const random = lcg(cols * 7919);
-  return Array.from({ length: cols }, () => random());
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
 }
 
-function precomputeSparkleOffsets(rows: number, cols: number): number[][] {
-  const random = lcg(rows * cols * 3137);
-  return Array.from({ length: rows }, () => Array.from({ length: cols }, () => random()));
+function setDot(brailleChar: number, row: number, col: number): number {
+  return brailleChar | DOT_BITS[row][col];
 }
 
-function precomputeSnakePath(rows: number, cols: number): [number, number][] {
-  const path: [number, number][] = [];
-  for (let row = 0; row < rows; row++) {
-    const isEven = row % 2 === 0;
-    for (let i = 0; i < cols; i++) {
-      const col = isEven ? i : cols - 1 - i;
-      path.push([row, col]);
-    }
-  }
-  return path;
+function createFieldBuffer(width: number): number[] {
+  return Array.from({ length: width }, () => BRAILLE_BASE);
 }
 
-function precomputeOrbitPath(rows: number, cols: number): [number, number][] {
-  const path: [number, number][] = [];
-  for (let col = 0; col < cols; col++) path.push([0, col]);
-  for (let row = 1; row < rows - 1; row++) path.push([row, cols - 1]);
-  if (rows > 1) for (let col = cols - 1; col >= 0; col--) path.push([rows - 1, col]);
-  if (cols > 1) for (let row = rows - 2; row >= 1; row--) path.push([row, 0]);
-  return path;
+function fieldToString(field: number[]): string {
+  return field.map((c) => String.fromCharCode(c)).join("");
 }
 
-function getSnakeIndex(row: number, col: number, path: [number, number][]): number {
-  return path.findIndex(([r, c]) => r === row && c === col);
-}
-
-function getBrailleClusterIndex(row: number, col: number, totalClusterCols: number): number {
-  const clusterRow = Math.floor(row / 3);
-  const clusterCol = Math.floor(col / 2);
-  return clusterRow * totalClusterCols + clusterCol;
-}
-
-/* ---------------- VARIANTS ---------------- */
-
-function breathe(row: number, col: number, time: number): DotState {
-  const phase = (Math.sin(time * 2 * Math.PI) + 1) / 2;
-  return smoothState(phase, row, col, time, 0.15);
-}
-
-function pulse(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const cx = (cols - 1) / 2;
-  const cy = (rows - 1) / 2;
-  const dx = col - cx;
-  const dy = row - cy;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const maxDist = Math.sqrt(cx * cx + cy * cy);
-  const normalized = maxDist > 0 ? dist / maxDist : 0;
-  const energy = smoothFalloff(Math.abs(normalized - time), 0.2);
-  return smoothState(energy, row, col, time);
-}
-
-function orbit(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const cx = (cols - 1) / 2;
-  const cy = (rows - 1) / 2;
-  const angle = Math.atan2(row - cy, col - cx);
-  const norm = (angle + Math.PI) / (2 * Math.PI);
-  const energy = smoothFalloff(circularDelta(norm, time), 0.14);
-  return smoothState(energy, row, col, time, 0.18);
-}
-
-function snake(row: number, col: number, time: number, path: [number, number][]): DotState {
-  const total = path.length;
-  const head = time * total;
-  const index = getSnakeIndex(row, col, path);
-  if (index === -1) return smoothState(0, row, col, time);
-  let distance = head - index;
-  if (distance < 0) distance += total;
-  const energy = Math.exp(-distance * 0.45);
-  return smoothState(energy, row, col, time, 0.2);
-}
-
-function fillSweep(row: number, col: number, time: number, rows: number): DotState {
-  const activeRow = Math.floor(time * rows);
-  if (row <= activeRow) return smoothState(1, row, col, time, 0.2);
-  return smoothState(0.15, row, col, time);
-}
-
-function scan(row: number, col: number, time: number, rows: number): DotState {
-  const scanRow = Math.floor(time * rows);
-  const distance = Math.abs(row - scanRow);
-  if (distance === 0) return smoothState(1, row, col, time, 0.2);
-  if (distance === 1) return smoothState(0.5, row, col, time);
-  return smoothState(0.1, row, col, time);
-}
-
-function rain(row: number, col: number, time: number, rows: number, offsets: number[]): DotState {
-  const local = (time + offsets[col]) % 1;
-  const activeRow = Math.floor(local * rows);
-  if (row === activeRow) return smoothState(1, row, col, time);
-  return smoothState(0.1, row, col, time);
-}
-
-function cascade(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const delay = (row + col) / (rows + cols);
-  const delta = Math.abs(delay - time);
-  if (delta < 0.1) return smoothState(1, row, col, time);
-  return smoothState(0.1, row, col, time);
-}
-
-function checkerboard(row: number, col: number, time: number): DotState {
-  const phase = Math.floor(time * 2) % 2;
-  if ((row + col) % 2 === phase) return smoothState(1, row, col, time, 0.12);
-  return smoothState(0.1, row, col, time);
-}
-
-function columns(col: number, time: number, cols: number): DotState {
-  const delay = col / cols;
-  const delta = Math.abs(delay - time);
-  if (delta < 0.1) return { opacity: 1, scale: 1, translateX: 0, translateY: 0 };
-  return { opacity: 0.2, scale: 1, translateX: 0, translateY: 0 };
-}
-
-function waveRows(row: number, col: number, time: number): DotState {
-  const phase = Math.sin(time * 2 * Math.PI + row * 0.5);
-  return {
-    opacity: 0.45 + 0.45 * ((phase + 1) / 2),
-    scale: 1 + 0.1 * phase,
-    translateX: Math.sin(time * 2 * Math.PI + row * 0.2 + col * 0.15) * 0.8 * ((phase + 1) / 2),
-    translateY: Math.cos(time * 2 * Math.PI + row * 0.18 - col * 0.12) * 0.8 * ((phase + 1) / 2),
-  };
-}
-
-function diagonalSwipe(row: number, col: number, time: number, rows: number): DotState {
-  const threshold = 0.1;
-  const position = (row - col) / rows;
-  const delta = Math.abs(position - (time * 2 - 1));
-  if (delta < threshold) return smoothState(1, row, col, time);
-  return smoothState(0.1, row, col, time);
-}
-
-function sparkle(row: number, col: number, time: number, offsets: number[][]): DotState {
-  const dotOffset = offsets[row]?.[col] ?? 0;
-  const local = (time + dotOffset) % 1;
-  const pulse = Math.sin(local * 2 * Math.PI);
-  if (pulse > 0.8) return smoothState(1, row, col, time, 0.22);
-  return smoothState(0.2, row, col, time);
-}
-
-function helix(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const cx = (cols - 1) / 2;
-  const cy = (rows - 1) / 2;
-  const maxDist = Math.sqrt(cx * cx + cy * cy);
-  const angle = Math.atan2(row - cy, col - cx);
-  const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
-  const normRadius = maxDist > 0 ? radius / maxDist : 0;
-  const normAngle = (angle + Math.PI) / (2 * Math.PI);
-  const k = 0.5;
-  const spiralIndex = (normAngle + normRadius * k) % 1;
-  const delta1 = Math.abs(spiralIndex - time);
-  const delta2 = Math.abs((spiralIndex + 0.5) % 1 - time);
-  const minDelta = Math.min(delta1, delta2);
-  if (minDelta < 0.08) return smoothState(1, row, col, time, 0.2);
-  return smoothState(0.1, row, col, time);
-}
-
-function braille(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const clusterRows = Math.ceil(rows / 3);
-  const clusterCols = Math.ceil(cols / 2);
-  const totalClusters = clusterRows * clusterCols;
-  const clusterIndex = getBrailleClusterIndex(row, col, clusterCols);
-  const activeCluster = Math.floor(time * totalClusters);
-  if (clusterIndex === activeCluster) return smoothState(1, row, col, time);
-  return smoothState(0.1, row, col, time);
-}
-
-function interference(row: number, col: number, time: number): DotState {
-  const waveA = Math.sin(time * 2 * Math.PI + row * 0.6);
-  const waveB = Math.sin(time * 2 * Math.PI + col * 0.6);
-  const combined = (waveA + waveB) / 2;
-  return {
-    opacity: 0.45 + 0.45 * ((combined + 1) / 2),
-    scale: 1 + 0.15 * combined,
-    translateX: Math.sin(time * 2 * Math.PI + row * 0.2 + col * 0.15) * 0.8 * ((combined + 1) / 2),
-    translateY: Math.cos(time * 2 * Math.PI + row * 0.18 - col * 0.12) * 0.8 * ((combined + 1) / 2),
-  };
-}
-
-function gravityWell(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const cx = cols / 2;
-  const cy = rows / 2;
-  const dx = col - cx;
-  const dy = row - cy;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const maxDist = Math.sqrt(cx * cx + cy * cy);
-  const norm = maxDist > 0 ? dist / maxDist : 0;
-  const phase = Math.sin(time * 2 * Math.PI);
-  const pullStrength = 0.4 * phase;
-  const scale = 1 - pullStrength * norm;
-  const opacity = 0.4 + 0.6 * (1 - norm);
-  const drift = ambientField(row, col, time);
-  return {
-    opacity,
-    scale,
-    translateX: drift.x * (1 - norm),
-    translateY: drift.y * (1 - norm),
-  };
-}
-
-function phaseShift(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const midRow = rows / 2;
-  const midCol = cols / 2;
-  let phaseOffset = 0;
-  if (row < midRow && col >= midCol) phaseOffset = Math.PI / 2;
-  else if (row >= midRow && col < midCol) phaseOffset = Math.PI;
-  else if (row >= midRow && col >= midCol) phaseOffset = (3 * Math.PI) / 2;
-  const phase = Math.sin(time * 2 * Math.PI + phaseOffset);
-  return {
-    opacity: 0.45 + 0.45 * ((phase + 1) / 2),
-    scale: 1 + 0.15 * phase,
-    translateX: Math.sin(time * 2 * Math.PI + row * 0.2 + col * 0.15) * 0.8 * ((phase + 1) / 2),
-    translateY: Math.cos(time * 2 * Math.PI + row * 0.18 - col * 0.12) * 0.8 * ((phase + 1) / 2),
-  };
-}
-
-function spiral(row: number, col: number, time: number, rows: number, cols: number): DotState {
-  const cx = (cols - 1) / 2;
-  const cy = (rows - 1) / 2;
-  const maxDist = Math.sqrt(cx * cx + cy * cy);
-  const angle = Math.atan2(row - cy, col - cx);
-  const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
-  const normRadius = maxDist > 0 ? radius / maxDist : 0;
-  const normAngle = (angle + Math.PI) / (2 * Math.PI);
-  const spiralIndex = (normAngle + normRadius) % 1;
-  const delta = Math.abs(spiralIndex - time);
-  if (delta < 0.07) return smoothState(1, row, col, time, 0.22);
-  return smoothState(0.1, row, col, time);
-}
-
-function reflectedRipple(col: number, time: number, cols: number): DotState {
-  const position = time < 0.5 ? time * 2 : (1 - time) * 2;
-  const normalized = col / cols;
-  const delta = Math.abs(normalized - position);
-  if (delta < 0.1) return { opacity: 1, scale: 1.2, translateX: 0, translateY: 0 };
-  return { opacity: 0.2, scale: 1, translateX: 0, translateY: 0 };
-}
-
-/* ---------------- CONTEXT ---------------- */
-
-type AnimationContext = {
-  snakePath: [number, number][];
-  orbitPath: [number, number][];
-  rainOffsets: number[];
-  sparkleOffsets: number[][];
+type VariantConfig = {
+  totalFrames: number;
+  interval: number;
+  compute: (frame: number, totalFrames: number, width: number, height: number, context: PrecomputeContext) => number[];
 };
 
-function createAnimationContext(rows: number, cols: number): AnimationContext {
-  return {
-    snakePath: precomputeSnakePath(rows, cols),
-    orbitPath: precomputeOrbitPath(rows, cols),
-    rainOffsets: precomputeRainOffsets(cols),
-    sparkleOffsets: precomputeSparkleOffsets(rows, cols),
-  };
-}
+type PrecomputeContext = {
+  importance: number[];
+  shuffled: number[];
+  target: number[];
+  snakePath: [number, number][];
+  rainOffsets: number[];
+  sparkleOffsets: number[][];
+  orbitPath: [number, number][];
+};
 
-const contextCache = new Map<string, AnimationContext>();
+const contextCache = new Map<string, PrecomputeContext>();
 
-function getAnimationContext(rows: number, cols: number): AnimationContext {
-  const key = `${rows}x${cols}`;
+function getPrecomputeContext(width: number, height: number): PrecomputeContext {
+  const key = `${width}x${height}`;
   let ctx = contextCache.get(key);
   if (!ctx) {
-    ctx = createAnimationContext(rows, cols);
+    const pixelCols = width * 2;
+    const pixelRows = height * 4;
+    const totalDots = pixelCols * pixelRows;
+
+    const rand42 = seededRandom(42);
+    const importance = Array.from({ length: totalDots }, () => rand42());
+
+    const rand19 = seededRandom(19);
+    const shuffled: number[] = [];
+    const target: number[] = [];
+    for (let i = 0; i < pixelCols; i++) {
+      shuffled.push(rand19() * (pixelRows - 1));
+      target.push((i / (pixelCols - 1)) * (pixelRows - 1));
+    }
+
+    const snakePath: [number, number][] = [];
+    for (let row = 0; row < height; row++) {
+      const isEven = row % 2 === 0;
+      for (let i = 0; i < width; i++) {
+        const col = isEven ? i : width - 1 - i;
+        snakePath.push([row, col]);
+      }
+    }
+
+    const orbitPath: [number, number][] = [];
+    for (let col = 0; col < width; col++) orbitPath.push([0, col]);
+    for (let row = 1; row < height - 1; row++) orbitPath.push([row, width - 1]);
+    if (height > 1) for (let col = width - 1; col >= 0; col--) orbitPath.push([height - 1, col]);
+    if (width > 1) for (let row = height - 2; row >= 1; row--) orbitPath.push([row, 0]);
+
+    const rainOffsets = Array.from({ length: width }, () => {
+      const r = seededRandom(width * 7919);
+      return r();
+    });
+
+    const sparkleOffsets: number[][] = [];
+    for (let row = 0; row < height; row++) {
+      sparkleOffsets.push(
+        Array.from({ length: width }, () => {
+          const r = seededRandom(width * height * 3137 + row);
+          return r();
+        })
+      );
+    }
+
+    ctx = {
+      importance,
+      shuffled,
+      target,
+      snakePath,
+      rainOffsets,
+      sparkleOffsets,
+      orbitPath,
+    };
     contextCache.set(key, ctx);
   }
   return ctx;
 }
 
-/* ---------------- MAIN ---------------- */
+const VARIANT_CONFIGS: Record<string, VariantConfig> = {
+  pendulum: {
+    totalFrames: 120,
+    interval: 12,
+    compute: (frame, totalFrames, width, _height, _ctx) => {
+      const progress = frame / totalFrames;
+      const spread = Math.sin(Math.PI * progress) * 1.0;
+      const basePhase = progress * Math.PI * 8;
+      const field = createFieldBuffer(width);
 
-export function getDotState(
-  variant: BrailleLoaderVariant,
-  row: number,
-  col: number,
-  normalizedTime: number,
-  rows: number,
-  cols: number,
-  context: AnimationContext,
-): DotState {
-  switch (variant) {
-    case "breathe":
-      return breathe(row, col, normalizedTime);
-    case "pulse":
-      return pulse(row, col, normalizedTime, rows, cols);
-    case "orbit":
-      return orbit(row, col, normalizedTime, rows, cols);
-    case "snake":
-      return snake(row, col, normalizedTime, context.snakePath);
-    case "fill-sweep":
-      return fillSweep(row, col, normalizedTime, rows);
-    case "scan":
-      return scan(row, col, normalizedTime, rows);
-    case "rain":
-      return rain(row, col, normalizedTime, rows, context.rainOffsets);
-    case "cascade":
-      return cascade(row, col, normalizedTime, rows, cols);
-    case "checkerboard":
-      return checkerboard(row, col, normalizedTime);
-    case "columns":
-      return columns(col, normalizedTime, cols);
-    case "wave-rows":
-      return waveRows(row, col, normalizedTime);
-    case "diagonal-swipe":
-      return diagonalSwipe(row, col, normalizedTime, rows);
-    case "sparkle":
-      return sparkle(row, col, normalizedTime, context.sparkleOffsets);
-    case "helix":
-      return helix(row, col, normalizedTime, rows, cols);
-    case "braille":
-      return braille(row, col, normalizedTime, rows, cols);
-    case "interference":
-      return interference(row, col, normalizedTime);
-    case "gravity-well":
-      return gravityWell(row, col, normalizedTime, rows, cols);
-    case "phase-shift":
-      return phaseShift(row, col, normalizedTime, rows, cols);
-    case "spiral":
-      return spiral(row, col, normalizedTime, rows, cols);
-    case "reflected-ripple":
-      return reflectedRipple(col, normalizedTime, cols);
-    default:
-      return { opacity: 0.5, scale: 1, translateX: 0, translateY: 0 };
+      for (let pc = 0; pc < width * 2; pc++) {
+        const swing = Math.sin(basePhase + pc * spread);
+        const center = (1 - swing) * 1.5;
+        for (let row = 0; row < 4; row++) {
+          if (Math.abs(row - center) < 0.7) {
+            field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  compress: {
+    totalFrames: 100,
+    interval: 40,
+    compute: (frame, totalFrames, width, _height, ctx) => {
+      const progress = frame / totalFrames;
+      const sieveThreshold = Math.max(0.1, 1 - progress * 1.2);
+      const squeeze = Math.min(1, progress / 0.85);
+      const activeWidth = Math.max(1, width * 2 * (1 - squeeze * 0.95));
+      const field = createFieldBuffer(width);
+
+      for (let pc = 0; pc < width * 2; pc++) {
+        const mappedPc = (pc / (width * 2)) * activeWidth;
+        if (mappedPc >= activeWidth) continue;
+        const targetPc = Math.round(mappedPc);
+        if (targetPc >= width * 2) continue;
+        const charIdx = Math.floor(targetPc / 2);
+        const dc = targetPc % 2;
+        for (let row = 0; row < 4; row++) {
+          const importanceIdx = pc * 4 + row;
+          if (ctx.importance[importanceIdx] < sieveThreshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  sort: {
+    totalFrames: 100,
+    interval: 40,
+    compute: (frame, totalFrames, width, _height, ctx) => {
+      const progress = frame / totalFrames;
+      const cursor = progress * width * 2 * 1.2;
+      const field = createFieldBuffer(width);
+
+      for (let pc = 0; pc < width * 2; pc++) {
+        const d = pc - cursor;
+        let center: number;
+        if (d < -3) {
+          center = ctx.target[pc];
+        } else if (d < 2) {
+          const blend = 1 - (d + 3) / 5;
+          const ease = blend * blend * (3 - 2 * blend);
+          center = ctx.shuffled[pc] + (ctx.target[pc] - ctx.shuffled[pc]) * ease;
+          if (Math.abs(d) < 0.8) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
+            for (let r = 0; r < 4; r++) {
+              field[charIdx] = setDot(field[charIdx], r, dc);
+            }
+            continue;
+          }
+        } else {
+          center =
+            ctx.shuffled[pc] +
+            Math.sin(progress * Math.PI * 16 + pc * 2.7) * 0.6 +
+            Math.sin(progress * Math.PI * 9 + pc * 1.3) * 0.4;
+        }
+        center = Math.max(0, Math.min(3, center));
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let r = 0; r < 4; r++) {
+          if (Math.abs(r - center) < 0.7) {
+            field[charIdx] = setDot(field[charIdx], r, dc);
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  breathe: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const phase = (Math.sin(progress * Math.PI * 2) + 1) / 2;
+      const field = createFieldBuffer(width);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const dx = col - cx;
+          const dy = row - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = Math.sqrt(cx * cx + cy * cy);
+          const normalized = maxDist > 0 ? dist / maxDist : 0;
+          const energy = smoothstep(clamp(1 - normalized * 2, 0, 1)) * phase;
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  pulse: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const cx = width / 2;
+      const cy = height / 2;
+      const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const dx = col - cx;
+          const dy = row - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const normalized = maxDist > 0 ? dist / maxDist : 0;
+          const delta = Math.abs(normalized - progress);
+          const energy = smoothstep(clamp(1 - delta * 5, 0, 1));
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  waveRows: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let row = 0; row < height; row++) {
+        const phase = Math.sin(progress * Math.PI * 2 + row * 0.5);
+        const energy = (phase + 1) / 2;
+        for (let col = 0; col < width; col++) {
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy * 0.8) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  snake: {
+    totalFrames: 80,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, ctx) => {
+      const progress = frame / totalFrames;
+      const total = ctx.snakePath.length;
+      const head = progress * total;
+      const field = createFieldBuffer(width);
+
+      for (let i = 0; i < total; i++) {
+        let distance = head - i;
+        if (distance < 0) distance += total;
+        const energy = Math.exp(-distance * 0.3);
+
+        if (energy > 0.2) {
+          const [row, col] = ctx.snakePath[i];
+          for (let r = 0; r < 4; r++) {
+            if (Math.random() < energy) {
+              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  orbit: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const angle = Math.atan2(row - cy, col - cx);
+          const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress) % 1;
+          const energy = smoothstep(clamp(1 - Math.abs(normAngle - 0.5) * 4, 0, 1));
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  spiral: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const cx = width / 2;
+      const cy = height / 2;
+      const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const angle = Math.atan2(row - cy, col - cx);
+          const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
+          const normRadius = maxDist > 0 ? radius / maxDist : 0;
+          const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress) % 1;
+          const spiralIndex = (normAngle + normRadius * 0.5) % 1;
+          const delta = Math.abs(spiralIndex - progress);
+          const energy = smoothstep(clamp(1 - delta * 10, 0, 1));
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  rain: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let col = 0; col < width; col++) {
+        const local = (progress + ctx.rainOffsets[col]) % 1;
+        const activeRow = Math.floor(local * height);
+        const row = height - 1 - activeRow;
+        if (row >= 0 && row < height) {
+          for (let r = 0; r < 4; r++) {
+            field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  sparkle: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const offset = ctx.sparkleOffsets[row][col];
+          const local = (progress + offset) % 1;
+          const pulse = Math.sin(local * Math.PI * 2);
+          if (pulse > 0.6) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < (pulse + 1) / 2) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  checkerboard: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const phase = Math.floor(progress * 2) % 2;
+      const field = createFieldBuffer(width);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          if ((row + col) % 2 === phase) {
+            for (let r = 0; r < 4; r++) {
+              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  columns: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, _height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let col = 0; col < width; col++) {
+        const delay = col / width;
+        const delta = Math.abs(delay - progress);
+        if (delta < 0.15) {
+          for (let r = 0; r < 4; r++) {
+            field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  cascade: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const delay = (row + col) / (width + height);
+          const delta = Math.abs(delay - progress);
+          if (delta < 0.1) {
+            for (let r = 0; r < 4; r++) {
+              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  diagonalSwipe: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const position = (row - col) / height;
+          const delta = Math.abs(position - (progress * 2 - 1));
+          if (delta < 0.15) {
+            for (let r = 0; r < 4; r++) {
+              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  scan: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const scanRow = Math.floor(progress * height);
+
+      for (let col = 0; col < width; col++) {
+        const row = height - 1 - scanRow;
+        if (row >= 0 && row < height) {
+          for (let r = 0; r < 4; r++) {
+            field[col] = setDot(field[col], r, Math.random() > 0.3 ? 0 : 1);
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  fillSweep: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const activeRow = Math.floor(progress * height);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          if (row <= activeRow) {
+            for (let r = 0; r < 4; r++) {
+              field[col] = setDot(field[col], r, Math.random() > 0.2 ? 0 : 1);
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  helix: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const cx = width / 2;
+      const cy = height / 2;
+      const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const angle = Math.atan2(row - cy, col - cx);
+          const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
+          const normRadius = maxDist > 0 ? radius / maxDist : 0;
+          const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress * 2) % 1;
+          const k = 0.5;
+          const spiralIndex = (normAngle + normRadius * k) % 1;
+          const delta = Math.abs(spiralIndex - progress);
+          const energy = smoothstep(clamp(1 - delta * 8, 0, 1));
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  braille: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const clusterRows = Math.ceil(height / 3);
+      const clusterCols = Math.ceil(width / 2);
+      const totalClusters = clusterRows * clusterCols;
+      const activeCluster = Math.floor(progress * totalClusters);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const clusterRow = Math.floor(row / 3);
+          const clusterCol = Math.floor(col / 2);
+          const clusterIndex = clusterRow * clusterCols + clusterCol;
+          if (clusterIndex === activeCluster) {
+            for (let r = 0; r < 4; r++) {
+              field[col] = setDot(field[col], r, Math.random() > 0.3 ? 0 : 1);
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  interference: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const waveA = Math.sin(progress * Math.PI * 2 + row * 0.6);
+          const waveB = Math.sin(progress * Math.PI * 2 + col * 0.6);
+          const combined = (waveA + waveB) / 2;
+          const energy = (combined + 1) / 2;
+
+          if (energy > 0.4) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  gravityWell: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const cx = width / 2;
+      const cy = height / 2;
+      const phase = Math.sin(progress * Math.PI * 2);
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const dx = col - cx;
+          const dy = row - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = Math.sqrt(cx * cx + cy * cy);
+          const norm = maxDist > 0 ? dist / maxDist : 0;
+          const energy = (1 - norm) * (phase + 1) / 2;
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  phaseShift: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const midRow = height / 2;
+      const midCol = width / 2;
+
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          let phaseOffset = 0;
+          if (row < midRow && col >= midCol) phaseOffset = Math.PI / 2;
+          else if (row >= midRow && col < midCol) phaseOffset = Math.PI;
+          else if (row >= midRow && col >= midCol) phaseOffset = (3 * Math.PI) / 2;
+          const phase = Math.sin(progress * Math.PI * 2 + phaseOffset);
+          const energy = (phase + 1) / 2;
+
+          if (energy > 0.3) {
+            for (let r = 0; r < 4; r++) {
+              if (Math.random() < energy) {
+                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+              }
+            }
+          }
+        }
+      }
+      return field;
+    },
+  },
+
+  reflectedRipple: {
+    totalFrames: 60,
+    interval: 40,
+    compute: (frame, totalFrames, width, _height, _ctx) => {
+      const progress = frame / totalFrames;
+      const field = createFieldBuffer(width);
+      const position = progress < 0.5 ? progress * 4 : (1 - progress) * 4;
+
+      for (let col = 0; col < width; col++) {
+        const normalized = col / width;
+        const delta = Math.abs(normalized - position);
+        if (delta < 0.15) {
+          for (let r = 0; r < 4; r++) {
+            field[col] = setDot(field[col], r, Math.random() > 0.2 ? 0 : 1);
+          }
+        }
+      }
+      return field;
+    },
+  },
+};
+
+const frameCache = new Map<string, string[]>();
+
+export function generateFrames(variant: string, width: number, height: number): { frames: string[]; interval: number } {
+  const key = `${variant}-${width}x${height}`;
+  const cached = frameCache.get(key);
+  if (cached) {
+    return { frames: cached, interval: VARIANT_CONFIGS[variant]?.interval || 40 };
   }
+
+  const config = VARIANT_CONFIGS[variant];
+  if (!config) {
+    return { frames: [fieldToString(createFieldBuffer(width))], interval: 40 };
+  }
+
+  const context = getPrecomputeContext(width, height);
+  const frames: string[] = [];
+
+  for (let frame = 0; frame < config.totalFrames; frame++) {
+    const field = config.compute(frame, config.totalFrames, width, height, context);
+    frames.push(fieldToString(field));
+  }
+
+  frameCache.set(key, frames);
+  return { frames, interval: config.interval };
 }
 
-export function normalizeVariant(variant?: string): BrailleLoaderVariant {
-  if (!variant) return "breathe";
-  return brailleLoaderVariants.includes(variant as BrailleLoaderVariant) ? (variant as BrailleLoaderVariant) : "breathe";
-}
-
-export function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): BrailleGrid {
+export function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): [number, number] {
   if (grid) {
     const rows = clamp(Math.round(grid[0]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
     const cols = clamp(Math.round(grid[1]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
-    return [rows, cols];
+    return [cols, rows];
   }
-  if (gridSize) return GRID_PRESETS[gridSize];
+  if (gridSize) return [GRID_PRESETS[gridSize][1], GRID_PRESETS[gridSize][0]];
   return [4, 4];
 }
 
@@ -450,11 +825,7 @@ export function getDuration(speed: BrailleLoaderSpeed): number {
   return speedToDuration[speed];
 }
 
-export function getStaticFrame(variant: BrailleLoaderVariant, rows: number, cols: number): DotState[] {
-  const totalCells = rows * cols;
-  const fixedState: DotState = { opacity: 0.5, scale: 1, translateX: 0, translateY: 0 };
-  return Array.from({ length: totalCells }, () => ({ ...fixedState }));
+export function normalizeVariant(variant?: string): BrailleLoaderVariant {
+  if (!variant) return "breathe";
+  return brailleLoaderVariants.includes(variant as BrailleLoaderVariant) ? (variant as BrailleLoaderVariant) : "breathe";
 }
-
-export { getAnimationContext };
-export type { AnimationContext };

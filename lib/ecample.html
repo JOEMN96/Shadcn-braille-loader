@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: #eee;
+            font-family: monospace;
+            font-size: 28px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .spinner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #888;
+            min-width: 100px;
+        }
+
+        .pendulum {
+            color: #facc15;
+        }
+
+        .compress {
+            color: #f87171;
+        }
+
+        .sort {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="spinner"><span class="label">Pendulum</span><span class="pendulum" id="pendulum"></span></div>
+    <div class="spinner"><span class="label">Compress</span><span class="compress" id="compress"></span></div>
+    <div class="spinner"><span class="label">Sort</span><span class="sort" id="sort"></span></div>
+    <script>
+        const dotBits = [[0x01, 0x08], [0x02, 0x10], [0x04, 0x20], [0x40, 0x80]];
+
+        function seededRandom(seed) {
+            let s = seed;
+            return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+        }
+
+        // --- Pendulum ---
+        function genPendulum(width, maxSpread) {
+            const totalFrames = 120, pixelCols = width * 2, frames = [];
+            for (let t = 0; t < totalFrames; t++) {
+                const codes = Array.from({ length: width }, () => 0x2800);
+                const progress = t / totalFrames;
+                const spread = Math.sin(Math.PI * progress) * maxSpread;
+                const basePhase = progress * Math.PI * 8;
+                for (let pc = 0; pc < pixelCols; pc++) {
+                    const swing = Math.sin(basePhase + pc * spread);
+                    const center = (1 - swing) * 1.5;
+                    for (let row = 0; row < 4; row++) {
+                        if (Math.abs(row - center) < 0.7) {
+                            codes[Math.floor(pc / 2)] |= dotBits[row][pc % 2];
+                        }
+                    }
+                }
+                frames.push(codes.map(c => String.fromCharCode(c)).join(''));
+            }
+            return frames;
+        }
+
+        // --- Compress ---
+        function genCompress(width) {
+            const totalFrames = 100, pixelCols = width * 2, totalDots = pixelCols * 4, frames = [];
+            const rand = seededRandom(42), importance = [];
+            for (let i = 0; i < totalDots; i++) importance.push(rand());
+            for (let t = 0; t < totalFrames; t++) {
+                const codes = Array.from({ length: width }, () => 0x2800);
+                const progress = t / totalFrames;
+                const sieveThreshold = Math.max(0.1, 1 - progress * 1.2);
+                const squeeze = Math.min(1, progress / 0.85);
+                const activeWidth = Math.max(1, pixelCols * (1 - squeeze * 0.95));
+                for (let pc = 0; pc < pixelCols; pc++) {
+                    const mappedPc = (pc / pixelCols) * activeWidth;
+                    if (mappedPc >= activeWidth) continue;
+                    const targetPc = Math.round(mappedPc);
+                    if (targetPc >= pixelCols) continue;
+                    const charIdx = Math.floor(targetPc / 2), dc = targetPc % 2;
+                    for (let row = 0; row < 4; row++) {
+                        if (importance[pc * 4 + row] < sieveThreshold) {
+                            codes[charIdx] |= dotBits[row][dc];
+                        }
+                    }
+                }
+                frames.push(codes.map(c => String.fromCharCode(c)).join(''));
+            }
+            return frames;
+        }
+
+        // --- Sort ---
+        function genSort(width) {
+            const pixelCols = width * 2, totalFrames = 100, frames = [];
+            const rand = seededRandom(19), shuffled = [], target = [];
+            for (let i = 0; i < pixelCols; i++) { shuffled.push(rand() * 3); target.push((i / (pixelCols - 1)) * 3); }
+            for (let t = 0; t < totalFrames; t++) {
+                const codes = Array.from({ length: width }, () => 0x2800);
+                const progress = t / totalFrames, cursor = progress * pixelCols * 1.2;
+                for (let pc = 0; pc < pixelCols; pc++) {
+                    const charIdx = Math.floor(pc / 2), dc = pc % 2;
+                    const d = pc - cursor;
+                    let center;
+                    if (d < -3) { center = target[pc]; }
+                    else if (d < 2) {
+                        const blend = 1 - (d + 3) / 5, ease = blend * blend * (3 - 2 * blend);
+                        center = shuffled[pc] + (target[pc] - shuffled[pc]) * ease;
+                        if (Math.abs(d) < 0.8) { for (let r = 0; r < 4; r++) codes[charIdx] |= dotBits[r][dc]; continue; }
+                    } else {
+                        center = shuffled[pc] + Math.sin(progress * Math.PI * 16 + pc * 2.7) * 0.6 + Math.sin(progress * Math.PI * 9 + pc * 1.3) * 0.4;
+                    }
+                    center = Math.max(0, Math.min(3, center));
+                    for (let r = 0; r < 4; r++) { if (Math.abs(r - center) < 0.7) codes[charIdx] |= dotBits[r][dc]; }
+                }
+                frames.push(codes.map(c => String.fromCharCode(c)).join(''));
+            }
+            return frames;
+        }
+
+        // --- Animate ---
+        function animate(el, frames, interval) {
+            let i = 0;
+            el.textContent = frames[0];
+            setInterval(() => { i = (i + 1) % frames.length; el.textContent = frames[i]; }, interval);
+        }
+
+        animate(document.getElementById('pendulum'), genPendulum(10, 1), 12);
+        animate(document.getElementById('compress'), genCompress(10), 40);
+        animate(document.getElementById('sort'), genSort(10), 40);
+
+    </script>
+</body>
+
+</html>

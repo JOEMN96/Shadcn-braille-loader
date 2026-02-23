@@ -23,16 +23,18 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   "phase-shift": "Phase Shift",
   spiral: "Spiral",
   "reflected-ripple": "Reflected Ripple",
+  pendulum: "Pendulum",
+  compress: "Compress",
+  sort: "Sort",
 };
 
 type PanelProps = {
   panelClassName: string;
   textClassName: string;
-  dotClassName: string;
-  agentClassName: string;
+  colorClass: string;
 };
 
-function Panel({ panelClassName, textClassName, dotClassName, agentClassName }: PanelProps) {
+function Panel({ panelClassName, textClassName, colorClass }: PanelProps) {
   return (
     <div
       className={cn(
@@ -46,11 +48,9 @@ function Panel({ panelClassName, textClassName, dotClassName, agentClassName }: 
             <span className="inline-flex mb-3 shrink-0 items-center justify-center overflow-hidden">
               <BrailleLoader
                 variant={variant}
-                dotSize="sm"
-                gap="sm"
                 gridSize="md"
                 speed="normal"
-                dotClassName={dotClassName}
+                className={colorClass}
                 label={`Animation ${variantLabel[variant]} loading`}
               />
             </span>
@@ -71,14 +71,12 @@ export function BrailleLoaderShowcase() {
         <Panel
           panelClassName="border-white/5 bg-[#171a27] text-[#d8dbe2]"
           textClassName="text-[#d8dbe2]"
-          dotClassName="bg-[#d8dbe2]"
-          agentClassName="text-[#9ba1ad]"
+          colorClass="text-[#d8dbe2]"
         />
         <Panel
           panelClassName="border-black/10 bg-[#e8eaee] text-[#2b2f3a]"
           textClassName="text-[#2b2f3a]"
-          dotClassName="bg-[#343946]"
-          agentClassName="text-[#8d93a0]"
+          colorClass="text-[#343946]"
         />
       </div>
     </div>
