@@ -82,6 +82,13 @@ const themingCode = `<BrailleLoader
   dotClassName="opacity-100" 
 />`;
 
+const dotShapeCode = `<BrailleLoader variant="pulse" dotShape="circle" />
+<BrailleLoader variant="pulse" dotShape="square" />`;
+
+const hideInactiveCode = `<BrailleLoader variant="orbit" hideInactiveDots />
+<BrailleLoader variant="snake" hideInactiveDots />
+<BrailleLoader variant="spiral" hideInactiveDots />`;
+
 const formExampleCode = `import { BrailleLoader } from "@/components/ui/braille-loader"
 import { Button } from "@/components/ui/button"
 
@@ -116,6 +123,8 @@ const propsData = [
   { prop: "className", type: "string", default: "-", description: "Additional classes for the wrapper." },
   { prop: "dotClassName", type: "string", default: "-", description: "Additional classes for each dot." },
   { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
+  { prop: "dotShape", type: '"circle" | "square"', default: '"circle"', description: "Shape of the dots." },
+  { prop: "hideInactiveDots", type: "boolean", default: "false", description: "Hide dots with low opacity, showing only active ones." },
 ];
 
 export default function Home() {
@@ -301,6 +310,37 @@ export default function Home() {
                     <BrailleLoader variant="breathe" gridSize="md" className="text-purple-500" />
                   </div>
                   <CodeBlock code={themingCode} language="tsx" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Dot Shape</h3>
+                <p className="text-sm text-muted-foreground">Choose between circular or square dots.</p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
+                    <div className="text-center">
+                      <BrailleLoader variant="pulse" gridSize="md" dotShape="circle" />
+                      <span className="block mt-3 text-xs text-muted-foreground">circle</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="pulse" gridSize="md" dotShape="square" />
+                      <span className="block mt-3 text-xs text-muted-foreground">square</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={dotShapeCode} language="tsx" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Hide Inactive Dots</h3>
+                <p className="text-sm text-muted-foreground">Show only the active dots for a more dramatic effect.</p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
+                    <BrailleLoader variant="orbit" gridSize="md" hideInactiveDots />
+                    <BrailleLoader variant="snake" gridSize="md" hideInactiveDots />
+                    <BrailleLoader variant="spiral" gridSize="md" hideInactiveDots />
+                  </div>
+                  <CodeBlock code={hideInactiveCode} language="tsx" />
                 </div>
               </div>
             </div>

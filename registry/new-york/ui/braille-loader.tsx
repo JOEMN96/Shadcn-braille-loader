@@ -17,6 +17,8 @@ import {
 } from "@/lib/braille-loader";
 import { cn } from "@/lib/utils";
 
+type DotShape = "circle" | "square";
+
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant;
   dotSize?: number | "sm" | "md" | "lg";
@@ -27,6 +29,8 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
   speed?: BrailleLoaderSpeed;
   dotClassName?: string;
   label?: string;
+  dotShape?: DotShape;
+  hideInactiveDots?: boolean;
 };
 
 const DOT_SIZE_PRESETS = {
@@ -63,6 +67,8 @@ function BrailleLoader({
   className,
   label = "Loading",
   style,
+  dotShape = "circle",
+  hideInactiveDots = false,
   ...props
 }: BrailleLoaderProps) {
   const resolvedVariant = normalizeVariant(variant);
@@ -118,8 +124,10 @@ function BrailleLoader({
     const col = index % cols;
     const state = getDotState(resolvedVariant, row, col, normalizedTime, rows, cols, context);
 
+    const opacity = hideInactiveDots && state.opacity < 0.5 ? 0 : state.opacity;
+
     return {
-      opacity: state.opacity,
+      opacity,
       transform: `translate3d(${state.translateX}px, ${state.translateY}px, 0) scale(${state.scale})`,
       transition: "opacity 0.1s linear, transform 0.1s linear",
     };
@@ -160,7 +168,7 @@ function BrailleLoader({
         {Array.from({ length: totalCells }, (_, dotIndex) => (
           <span
             key={dotIndex}
-            className={cn("bg-current rounded-full", dotClassName)}
+            className={cn("bg-current", dotShape === "circle" && "rounded-full", dotClassName)}
             style={{
               width: `${resolvedDotSize}px`,
               height: `${resolvedDotSize}px`,
