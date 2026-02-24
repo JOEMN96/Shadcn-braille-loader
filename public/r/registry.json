@@ -80,7 +80,7 @@
       "name": "braille-loader",
       "type": "registry:component",
       "title": "Braille Loader",
-      "description": "Accessible braille-inspired loading indicator with 15 animation variants.",
+      "description": "Accessible braille-inspired loading indicator with 23 animation variants.",
       "files": [
         {
           "path": "registry/new-york/ui/braille-loader.tsx",

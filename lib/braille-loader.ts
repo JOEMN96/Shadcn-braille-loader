@@ -45,12 +45,6 @@ export const speedToDuration: Record<BrailleLoaderSpeed, number> = {
   fast: 1200,
 };
 
-export const speedToInterval: Record<BrailleLoaderSpeed, number> = {
-  slow: 50,
-  normal: 40,
-  fast: 20,
-};
-
 const DOT_BITS = [
   [0x01, 0x08],
   [0x02, 0x10],
@@ -101,7 +95,6 @@ type PrecomputeContext = {
   snakePath: [number, number][];
   rainOffsets: number[];
   sparkleOffsets: number[][];
-  orbitPath: [number, number][];
 };
 
 const contextCache = new Map<string, PrecomputeContext>();
@@ -134,12 +127,6 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
       }
     }
 
-    const orbitPath: [number, number][] = [];
-    for (let col = 0; col < width; col++) orbitPath.push([0, col]);
-    for (let row = 1; row < height - 1; row++) orbitPath.push([row, width - 1]);
-    if (height > 1) for (let col = width - 1; col >= 0; col--) orbitPath.push([height - 1, col]);
-    if (width > 1) for (let row = height - 2; row >= 1; row--) orbitPath.push([row, 0]);
-
     const rainOffsets = Array.from({ length: width }, () => {
       const r = seededRandom(width * 7919);
       return r();
@@ -151,7 +138,7 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
         Array.from({ length: width }, () => {
           const r = seededRandom(width * height * 3137 + row);
           return r();
-        })
+        }),
       );
     }
 
@@ -162,7 +149,6 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
       snakePath,
       rainOffsets,
       sparkleOffsets,
-      orbitPath,
     };
     contextCache.set(key, ctx);
   }
@@ -717,7 +703,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
           const dist = Math.sqrt(dx * dx + dy * dy);
           const maxDist = Math.sqrt(cx * cx + cy * cy);
           const norm = maxDist > 0 ? dist / maxDist : 0;
-          const energy = (1 - norm) * (phase + 1) / 2;
+          const energy = ((1 - norm) * (phase + 1)) / 2;
 
           if (energy > 0.3) {
             for (let r = 0; r < 4; r++) {
@@ -785,16 +771,20 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 };
 
+function toCamelCase(str: string): string {
+  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
 const frameCache = new Map<string, string[]>();
 
 export function generateFrames(variant: string, width: number, height: number): { frames: string[]; interval: number } {
   const key = `${variant}-${width}x${height}`;
   const cached = frameCache.get(key);
   if (cached) {
-    return { frames: cached, interval: VARIANT_CONFIGS[variant]?.interval || 40 };
+    return { frames: cached, interval: VARIANT_CONFIGS[toCamelCase(variant)]?.interval || 40 };
   }
 
-  const config = VARIANT_CONFIGS[variant];
+  const config = VARIANT_CONFIGS[toCamelCase(variant)];
   if (!config) {
     return { frames: [fieldToString(createFieldBuffer(width))], interval: 40 };
   }
@@ -819,10 +809,6 @@ export function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): [nu
   }
   if (gridSize) return [GRID_PRESETS[gridSize][1], GRID_PRESETS[gridSize][0]];
   return [4, 4];
-}
-
-export function getDuration(speed: BrailleLoaderSpeed): number {
-  return speedToDuration[speed];
 }
 
 export function normalizeVariant(variant?: string): BrailleLoaderVariant {

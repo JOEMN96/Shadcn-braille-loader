@@ -10,6 +10,7 @@ import {
   generateFrames,
   normalizeVariant,
   resolveGrid,
+  speedToDuration,
 } from "@/lib/braille-loader";
 import { cn } from "@/lib/utils";
 
@@ -46,12 +47,19 @@ function BrailleLoader({
     setMounted(true);
   }, []);
 
+  const speedMultiplier: Record<BrailleLoaderSpeed, number> = {
+    slow: 1.5,
+    normal: 1,
+    fast: 0.6,
+  };
+
   React.useEffect(() => {
     if (!mounted || !spanRef.current) return;
 
     const frames = framesData.frames;
     let frameIndex = 0;
-    const interval = framesData.interval;
+    const baseInterval = framesData.interval;
+    const interval = baseInterval * speedMultiplier[speed];
 
     const updateFrame = () => {
       if (spanRef.current) {
@@ -66,7 +74,7 @@ function BrailleLoader({
     return () => {
       clearInterval(intervalId);
     };
-  }, [framesData, mounted]);
+  }, [framesData, mounted, speed]);
 
   if (!mounted) {
     return (
