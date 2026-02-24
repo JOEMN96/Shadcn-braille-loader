@@ -70,8 +70,21 @@ function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
+function getCenterX(width: number): number {
+  return (width * 2 - 1) / 2;
+}
+
+function scaleToHeight(value: number, height: number): number {
+  return value * (height - 1);
+}
+
+function getThreshold(height: number): number {
+  return 0.7 * (height / 4);
+}
+
 function setDot(brailleChar: number, row: number, col: number): number {
-  return brailleChar | DOT_BITS[row][col];
+  const safeRow = Math.min(row, 3);
+  return brailleChar | DOT_BITS[safeRow][col];
 }
 
 function createFieldBuffer(width: number): number[] {
@@ -92,9 +105,7 @@ type PrecomputeContext = {
   importance: number[];
   shuffled: number[];
   target: number[];
-  snakePath: [number, number][];
-  rainOffsets: number[];
-  sparkleOffsets: number[][];
+  colRandom: number[];
 };
 
 const contextCache = new Map<string, PrecomputeContext>();
@@ -104,8 +115,7 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
   let ctx = contextCache.get(key);
   if (!ctx) {
     const pixelCols = width * 2;
-    const pixelRows = height * 4;
-    const totalDots = pixelCols * pixelRows;
+    const totalDots = pixelCols * height;
 
     const rand42 = seededRandom(42);
     const importance = Array.from({ length: totalDots }, () => rand42());
@@ -114,41 +124,21 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
     const shuffled: number[] = [];
     const target: number[] = [];
     for (let i = 0; i < pixelCols; i++) {
-      shuffled.push(rand19() * (pixelRows - 1));
-      target.push((i / (pixelCols - 1)) * (pixelRows - 1));
+      shuffled.push(rand19() * (height - 1));
+      target.push((i / (pixelCols - 1)) * (height - 1));
     }
 
-    const snakePath: [number, number][] = [];
-    for (let row = 0; row < height; row++) {
-      const isEven = row % 2 === 0;
-      for (let i = 0; i < width; i++) {
-        const col = isEven ? i : width - 1 - i;
-        snakePath.push([row, col]);
-      }
-    }
-
-    const rainOffsets = Array.from({ length: width }, () => {
-      const r = seededRandom(width * 7919);
-      return r();
-    });
-
-    const sparkleOffsets: number[][] = [];
-    for (let row = 0; row < height; row++) {
-      sparkleOffsets.push(
-        Array.from({ length: width }, () => {
-          const r = seededRandom(width * height * 3137 + row);
-          return r();
-        }),
-      );
+    const rand123 = seededRandom(123);
+    const colRandom: number[] = [];
+    for (let pc = 0; pc < pixelCols; pc++) {
+      colRandom.push(rand123());
     }
 
     ctx = {
       importance,
       shuffled,
       target,
-      snakePath,
-      rainOffsets,
-      sparkleOffsets,
+      colRandom,
     };
     contextCache.set(key, ctx);
   }
@@ -159,17 +149,18 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   pendulum: {
     totalFrames: 120,
     interval: 12,
-    compute: (frame, totalFrames, width, _height, _ctx) => {
+    compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const spread = Math.sin(Math.PI * progress) * 1.0;
       const basePhase = progress * Math.PI * 8;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
         const swing = Math.sin(basePhase + pc * spread);
-        const center = (1 - swing) * 1.5;
-        for (let row = 0; row < 4; row++) {
-          if (Math.abs(row - center) < 0.7) {
+        const center = scaleToHeight((1 - swing) * 0.5, height);
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
             field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
           }
         }
@@ -181,7 +172,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   compress: {
     totalFrames: 100,
     interval: 40,
-    compute: (frame, totalFrames, width, _height, ctx) => {
+    compute: (frame, totalFrames, width, height, ctx) => {
       const progress = frame / totalFrames;
       const sieveThreshold = Math.max(0.1, 1 - progress * 1.2);
       const squeeze = Math.min(1, progress / 0.85);
@@ -195,8 +186,8 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
         if (targetPc >= width * 2) continue;
         const charIdx = Math.floor(targetPc / 2);
         const dc = targetPc % 2;
-        for (let row = 0; row < 4; row++) {
-          const importanceIdx = pc * 4 + row;
+        for (let row = 0; row < height; row++) {
+          const importanceIdx = pc * height + row;
           if (ctx.importance[importanceIdx] < sieveThreshold) {
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
@@ -209,10 +200,12 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   sort: {
     totalFrames: 100,
     interval: 40,
-    compute: (frame, totalFrames, width, _height, ctx) => {
+    compute: (frame, totalFrames, width, height, ctx) => {
       const progress = frame / totalFrames;
       const cursor = progress * width * 2 * 1.2;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
+      const maxRow = height - 1;
 
       for (let pc = 0; pc < width * 2; pc++) {
         const d = pc - cursor;
@@ -226,7 +219,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
           if (Math.abs(d) < 0.8) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
-            for (let r = 0; r < 4; r++) {
+            for (let r = 0; r < height; r++) {
               field[charIdx] = setDot(field[charIdx], r, dc);
             }
             continue;
@@ -237,11 +230,11 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
             Math.sin(progress * Math.PI * 16 + pc * 2.7) * 0.6 +
             Math.sin(progress * Math.PI * 9 + pc * 1.3) * 0.4;
         }
-        center = Math.max(0, Math.min(3, center));
+        center = Math.max(0, Math.min(maxRow, center));
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
-        for (let r = 0; r < 4; r++) {
-          if (Math.abs(r - center) < 0.7) {
+        for (let r = 0; r < height; r++) {
+          if (Math.abs(r - center) < threshold) {
             field[charIdx] = setDot(field[charIdx], r, dc);
           }
         }
@@ -257,24 +250,19 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const progress = frame / totalFrames;
       const phase = (Math.sin(progress * Math.PI * 2) + 1) / 2;
       const field = createFieldBuffer(width);
-      const cx = width / 2;
-      const cy = height / 2;
+      const centerPos = getCenterX(width);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const dx = col - cx;
-          const dy = row - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const maxDist = Math.sqrt(cx * cx + cy * cy);
-          const normalized = maxDist > 0 ? dist / maxDist : 0;
-          const energy = smoothstep(clamp(1 - normalized * 2, 0, 1)) * phase;
+      for (let pc = 0; pc < width * 2; pc++) {
+        const dist = Math.abs(pc - centerPos);
+        const normalized = dist / centerPos;
+        const center = scaleToHeight(smoothstep(clamp(1 - normalized * 2, 0, 1)) * phase, height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -288,25 +276,18 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const cx = width / 2;
-      const cy = height / 2;
-      const maxDist = Math.sqrt(cx * cx + cy * cy);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const dx = col - cx;
-          const dy = row - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const normalized = maxDist > 0 ? dist / maxDist : 0;
-          const delta = Math.abs(normalized - progress);
-          const energy = smoothstep(clamp(1 - delta * 5, 0, 1));
+      for (let pc = 0; pc < width * 2; pc++) {
+        const normalized = pc / (width * 2);
+        const delta = Math.abs(normalized - progress);
+        const center = scaleToHeight(smoothstep(clamp(1 - delta * 5, 0, 1)), height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -320,17 +301,17 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        const phase = Math.sin(progress * Math.PI * 2 + row * 0.5);
-        const energy = (phase + 1) / 2;
-        for (let col = 0; col < width; col++) {
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy * 0.8) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+      for (let pc = 0; pc < width * 2; pc++) {
+        const phase = Math.sin(progress * Math.PI * 2 + pc * 0.3);
+        const center = scaleToHeight((phase + 1) / 2, height);
+
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -341,23 +322,23 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   snake: {
     totalFrames: 80,
     interval: 40,
-    compute: (frame, totalFrames, width, height, ctx) => {
+    compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
-      const total = ctx.snakePath.length;
+      const total = width * 2;
       const head = progress * total;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
-      for (let i = 0; i < total; i++) {
-        let distance = head - i;
+      for (let pc = 0; pc < total; pc++) {
+        let distance = head - pc;
         if (distance < 0) distance += total;
-        const energy = Math.exp(-distance * 0.3);
+        const center = scaleToHeight(Math.exp(-distance * 0.3), height);
 
-        if (energy > 0.2) {
-          const [row, col] = ctx.snakePath[i];
-          for (let r = 0; r < 4; r++) {
-            if (Math.random() < energy) {
-              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -371,21 +352,18 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const cx = width / 2;
-      const cy = height / 2;
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const angle = Math.atan2(row - cy, col - cx);
-          const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress) % 1;
-          const energy = smoothstep(clamp(1 - Math.abs(normAngle - 0.5) * 4, 0, 1));
+      for (let pc = 0; pc < width * 2; pc++) {
+        const angle = (pc / (width * 2)) * Math.PI * 2;
+        const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress) % 1;
+        const center = scaleToHeight(smoothstep(clamp(1 - Math.abs(normAngle - 0.5) * 4, 0, 1)), height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -399,26 +377,18 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const cx = width / 2;
-      const cy = height / 2;
-      const maxDist = Math.sqrt(cx * cx + cy * cy);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const angle = Math.atan2(row - cy, col - cx);
-          const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
-          const normRadius = maxDist > 0 ? radius / maxDist : 0;
-          const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress) % 1;
-          const spiralIndex = (normAngle + normRadius * 0.5) % 1;
-          const delta = Math.abs(spiralIndex - progress);
-          const energy = smoothstep(clamp(1 - delta * 10, 0, 1));
+      for (let pc = 0; pc < width * 2; pc++) {
+        const normalized = pc / (width * 2);
+        const spiralAngle = normalized * Math.PI * 4 + progress * Math.PI * 2;
+        const center = scaleToHeight((Math.sin(spiralAngle) + 1) / 2, height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -429,17 +399,22 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   rain: {
     totalFrames: 60,
     interval: 40,
-    compute: (frame, totalFrames, width, height, ctx) => {
+    compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
-      for (let col = 0; col < width; col++) {
-        const local = (progress + ctx.rainOffsets[col]) % 1;
-        const activeRow = Math.floor(local * height);
-        const row = height - 1 - activeRow;
-        if (row >= 0 && row < height) {
-          for (let r = 0; r < 4; r++) {
-            field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+      for (let pc = 0; pc < width * 2; pc++) {
+        const offset = pc * 0.05;
+        const local = (progress + offset) % 1;
+        const phase = Math.sin(local * Math.PI * 2);
+        const center = scaleToHeight((phase + 1) / 2, height);
+
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -450,20 +425,23 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   sparkle: {
     totalFrames: 60,
     interval: 40,
-    compute: (frame, totalFrames, width, height, ctx) => {
+    compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const offset = ctx.sparkleOffsets[row][col];
-          const local = (progress + offset) % 1;
-          const pulse = Math.sin(local * Math.PI * 2);
-          if (pulse > 0.6) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < (pulse + 1) / 2) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
+      for (let pc = 0; pc < width * 2; pc++) {
+        const offset = pc * 0.08;
+        const local = (progress + offset) % 1;
+        const pulse = Math.sin(local * Math.PI * 2);
+        const center = scaleToHeight((pulse + 1) / 2, height);
+
+        if (pulse > 0.3) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            if (Math.abs(row - center) < threshold) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
             }
           }
         }
@@ -480,12 +458,12 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const phase = Math.floor(progress * 2) % 2;
       const field = createFieldBuffer(width);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          if ((row + col) % 2 === phase) {
-            for (let r = 0; r < 4; r++) {
-              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-            }
+      for (let pc = 0; pc < width * 2; pc++) {
+        if (pc % 2 === phase) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -496,16 +474,18 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   columns: {
     totalFrames: 60,
     interval: 40,
-    compute: (frame, totalFrames, width, _height, _ctx) => {
+    compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
 
-      for (let col = 0; col < width; col++) {
-        const delay = col / width;
+      for (let pc = 0; pc < width * 2; pc++) {
+        const delay = pc / (width * 2);
         const delta = Math.abs(delay - progress);
         if (delta < 0.15) {
-          for (let r = 0; r < 4; r++) {
-            field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -520,14 +500,14 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const delay = (row + col) / (width + height);
-          const delta = Math.abs(delay - progress);
-          if (delta < 0.1) {
-            for (let r = 0; r < 4; r++) {
-              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-            }
+      for (let pc = 0; pc < width * 2; pc++) {
+        const normalized = pc / (width * 2);
+        const delta = Math.abs(normalized - progress);
+        if (delta < 0.1) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -541,15 +521,16 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const position = progress * 2;
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const position = (row - col) / height;
-          const delta = Math.abs(position - (progress * 2 - 1));
-          if (delta < 0.15) {
-            for (let r = 0; r < 4; r++) {
-              field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-            }
+      for (let pc = 0; pc < width * 2; pc++) {
+        const normalized = pc / (width * 2);
+        const delta = Math.abs(normalized - position + 0.5);
+        if (delta < 0.15) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -563,13 +544,15 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const scanRow = Math.floor(progress * height);
+      const scanPos = progress * width * 2;
 
-      for (let col = 0; col < width; col++) {
-        const row = height - 1 - scanRow;
-        if (row >= 0 && row < height) {
-          for (let r = 0; r < 4; r++) {
-            field[col] = setDot(field[col], r, Math.random() > 0.3 ? 0 : 1);
+      for (let pc = 0; pc < width * 2; pc++) {
+        const delta = Math.abs(pc - scanPos);
+        if (delta < 2) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -583,14 +566,14 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const activeRow = Math.floor(progress * height);
+      const activePc = Math.floor(progress * width * 2);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          if (row <= activeRow) {
-            for (let r = 0; r < 4; r++) {
-              field[col] = setDot(field[col], r, Math.random() > 0.2 ? 0 : 1);
-            }
+      for (let pc = 0; pc < width * 2; pc++) {
+        if (pc <= activePc) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -604,27 +587,19 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const cx = width / 2;
-      const cy = height / 2;
-      const maxDist = Math.sqrt(cx * cx + cy * cy);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const angle = Math.atan2(row - cy, col - cx);
-          const radius = Math.sqrt(Math.pow(row - cy, 2) + Math.pow(col - cx, 2));
-          const normRadius = maxDist > 0 ? radius / maxDist : 0;
-          const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress * 2) % 1;
-          const k = 0.5;
-          const spiralIndex = (normAngle + normRadius * k) % 1;
-          const delta = Math.abs(spiralIndex - progress);
-          const energy = smoothstep(clamp(1 - delta * 8, 0, 1));
+      for (let pc = 0; pc < width * 2; pc++) {
+        const normalized = pc / (width * 2);
+        const wave1 = Math.sin(progress * Math.PI * 4 + normalized * Math.PI * 2);
+        const wave2 = Math.cos(progress * Math.PI * 4 + normalized * Math.PI * 2);
+        const center = scaleToHeight((wave1 + wave2 + 2) / 4, height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -638,20 +613,16 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const clusterRows = Math.ceil(height / 3);
-      const clusterCols = Math.ceil(width / 2);
-      const totalClusters = clusterRows * clusterCols;
+      const totalClusters = Math.ceil(width / 2);
       const activeCluster = Math.floor(progress * totalClusters);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const clusterRow = Math.floor(row / 3);
-          const clusterCol = Math.floor(col / 2);
-          const clusterIndex = clusterRow * clusterCols + clusterCol;
-          if (clusterIndex === activeCluster) {
-            for (let r = 0; r < 4; r++) {
-              field[col] = setDot(field[col], r, Math.random() > 0.3 ? 0 : 1);
-            }
+      for (let pc = 0; pc < width * 2; pc++) {
+        const clusterIdx = Math.floor(pc / 2);
+        if (clusterIdx === activeCluster) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -665,19 +636,21 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const waveA = Math.sin(progress * Math.PI * 2 + row * 0.6);
-          const waveB = Math.sin(progress * Math.PI * 2 + col * 0.6);
-          const combined = (waveA + waveB) / 2;
-          const energy = (combined + 1) / 2;
+      for (let pc = 0; pc < width * 2; pc++) {
+        const normalized = pc / (width * 2);
+        const waveA = Math.sin(progress * Math.PI * 2 + normalized * Math.PI * 2);
+        const waveB = Math.sin(progress * Math.PI * 2 + normalized * Math.PI * 4);
+        const combined = (waveA + waveB) / 2;
+        const center = scaleToHeight((combined + 1) / 2, height);
 
-          if (energy > 0.4) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
+        if (combined > 0) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            if (Math.abs(row - center) < threshold) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
             }
           }
         }
@@ -692,25 +665,20 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const cx = width / 2;
-      const cy = height / 2;
+      const centerPos = getCenterX(width);
+      const threshold = getThreshold(height);
       const phase = Math.sin(progress * Math.PI * 2);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          const dx = col - cx;
-          const dy = row - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const maxDist = Math.sqrt(cx * cx + cy * cy);
-          const norm = maxDist > 0 ? dist / maxDist : 0;
-          const energy = ((1 - norm) * (phase + 1)) / 2;
+      for (let pc = 0; pc < width * 2; pc++) {
+        const dist = Math.abs(pc - centerPos);
+        const normalized = dist / centerPos;
+        const center = scaleToHeight((1 - normalized) * (phase + 1) / 2, height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
-            }
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -724,23 +692,24 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const midRow = height / 2;
-      const midCol = width / 2;
+      const mid = getCenterX(width);
+      const threshold = getThreshold(height);
 
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          let phaseOffset = 0;
-          if (row < midRow && col >= midCol) phaseOffset = Math.PI / 2;
-          else if (row >= midRow && col < midCol) phaseOffset = Math.PI;
-          else if (row >= midRow && col >= midCol) phaseOffset = (3 * Math.PI) / 2;
-          const phase = Math.sin(progress * Math.PI * 2 + phaseOffset);
-          const energy = (phase + 1) / 2;
+      for (let pc = 0; pc < width * 2; pc++) {
+        let phaseOffset = 0;
+        if (pc < mid) phaseOffset = 0;
+        else if (pc < mid * 1.5) phaseOffset = Math.PI / 2;
+        else if (pc < mid * 2) phaseOffset = Math.PI;
+        
+        const phase = Math.sin(progress * Math.PI * 2 + phaseOffset);
+        const center = scaleToHeight((phase + 1) / 2, height);
 
-          if (energy > 0.3) {
-            for (let r = 0; r < 4; r++) {
-              if (Math.random() < energy) {
-                field[col] = setDot(field[col], r, Math.random() > 0.5 ? 0 : 1);
-              }
+        if (phase > 0) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            if (Math.abs(row - center) < threshold) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
             }
           }
         }
@@ -752,17 +721,19 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   reflectedRipple: {
     totalFrames: 60,
     interval: 40,
-    compute: (frame, totalFrames, width, _height, _ctx) => {
+    compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
       const position = progress < 0.5 ? progress * 4 : (1 - progress) * 4;
+      const centerPos = getCenterX(width);
 
-      for (let col = 0; col < width; col++) {
-        const normalized = col / width;
-        const delta = Math.abs(normalized - position);
-        if (delta < 0.15) {
-          for (let r = 0; r < 4; r++) {
-            field[col] = setDot(field[col], r, Math.random() > 0.2 ? 0 : 1);
+      for (let pc = 0; pc < width * 2; pc++) {
+        const delta = Math.abs(pc - position * (width * 2) / 2);
+        if (delta < width * 0.2) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
