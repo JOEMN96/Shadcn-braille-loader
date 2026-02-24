@@ -79,7 +79,7 @@ function scaleToHeight(value: number, height: number): number {
 }
 
 function getThreshold(height: number): number {
-  return 0.7 * (height / 4);
+  return 0.7 + (height * 0.15);
 }
 
 function setDot(brailleChar: number, row: number, col: number): number {
@@ -146,28 +146,29 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
 }
 
 const VARIANT_CONFIGS: Record<string, VariantConfig> = {
-  pendulum: {
-    totalFrames: 120,
-    interval: 12,
-    compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      const spread = Math.sin(Math.PI * progress) * 1.0;
-      const basePhase = progress * Math.PI * 8;
-      const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
+pendulum: {
+  totalFrames: 120,
+  interval: 12,
+  compute: (frame, totalFrames, width, height, _ctx) => {
+    const progress = frame / totalFrames;
+    // One full swing across the animation duration
+    const basePhase = progress * Math.PI * 4; // 2 full oscillations (back & forth)
+    const field = createFieldBuffer(width);
+    const threshold = getThreshold(height);
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        const swing = Math.sin(basePhase + pc * spread);
-        const center = scaleToHeight((1 - swing) * 0.5, height);
-        for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
-          }
+    for (let pc = 0; pc < width * 2; pc++) {
+      // angle varies across columns to form a curved arc
+      const angle = basePhase + (pc / (width * 2)) * Math.PI;
+      const center = scaleToHeight((Math.sin(angle) + 1) / 2, height);
+      for (let row = 0; row < height; row++) {
+        if (Math.abs(row - center) < threshold) {
+          field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
         }
       }
-      return field;
-    },
+    }
+    return field;
   },
+},
 
   compress: {
     totalFrames: 100,
@@ -613,7 +614,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const totalClusters = Math.ceil(width / 2);
+      const totalClusters = width;
       const activeCluster = Math.floor(progress * totalClusters);
 
       for (let pc = 0; pc < width * 2; pc++) {
@@ -645,11 +646,12 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
         const combined = (waveA + waveB) / 2;
         const center = scaleToHeight((combined + 1) / 2, height);
 
-        if (combined > 0) {
+        const intensity = Math.abs(combined);
+        if (intensity > 0.3) {
           const charIdx = Math.floor(pc / 2);
           const dc = pc % 2;
           for (let row = 0; row < height; row++) {
-            if (Math.abs(row - center) < threshold) {
+            if (Math.abs(row - center) < threshold * intensity) {
               field[charIdx] = setDot(field[charIdx], row, dc);
             }
           }
@@ -667,12 +669,12 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const field = createFieldBuffer(width);
       const centerPos = getCenterX(width);
       const threshold = getThreshold(height);
-      const phase = Math.sin(progress * Math.PI * 2);
+      const phase = Math.sin(progress * Math.PI * 4);
 
       for (let pc = 0; pc < width * 2; pc++) {
         const dist = Math.abs(pc - centerPos);
         const normalized = dist / centerPos;
-        const center = scaleToHeight((1 - normalized) * (phase + 1) / 2, height);
+        const center = scaleToHeight(((phase + 1) / 2) * (1 - normalized * 0.7), height);
 
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
@@ -704,11 +706,12 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
         const phase = Math.sin(progress * Math.PI * 2 + phaseOffset);
         const center = scaleToHeight((phase + 1) / 2, height);
 
-        if (phase > 0) {
+        const intensity = (phase + 1) / 2;
+        if (intensity > 0.3) {
           const charIdx = Math.floor(pc / 2);
           const dc = pc % 2;
           for (let row = 0; row < height; row++) {
-            if (Math.abs(row - center) < threshold) {
+            if (Math.abs(row - center) < threshold * intensity) {
               field[charIdx] = setDot(field[charIdx], row, dc);
             }
           }
@@ -724,12 +727,12 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const position = progress < 0.5 ? progress * 4 : (1 - progress) * 4;
+      const position = progress < 0.5 ? progress * 2 : (1 - progress) * 2;
       const centerPos = getCenterX(width);
 
       for (let pc = 0; pc < width * 2; pc++) {
         const delta = Math.abs(pc - position * (width * 2) / 2);
-        if (delta < width * 0.2) {
+        if (delta < width * 0.5) {
           const charIdx = Math.floor(pc / 2);
           const dc = pc % 2;
           for (let row = 0; row < height; row++) {
