@@ -79,7 +79,7 @@ function scaleToHeight(value: number, height: number): number {
 }
 
 function getThreshold(height: number): number {
-  return 0.7 + (height * 0.15);
+  return 0.7 + height * 0.15;
 }
 
 function setDot(brailleChar: number, row: number, col: number): number {
@@ -146,29 +146,29 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
 }
 
 const VARIANT_CONFIGS: Record<string, VariantConfig> = {
-pendulum: {
-  totalFrames: 120,
-  interval: 12,
-  compute: (frame, totalFrames, width, height, _ctx) => {
-    const progress = frame / totalFrames;
-    // One full swing across the animation duration
-    const basePhase = progress * Math.PI * 4; // 2 full oscillations (back & forth)
-    const field = createFieldBuffer(width);
-    const threshold = getThreshold(height);
+  pendulum: {
+    totalFrames: 120,
+    interval: 12,
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const progress = frame / totalFrames;
+      // One full swing across the animation duration
+      const basePhase = progress * Math.PI * 4; // 2 full oscillations (back & forth)
+      const field = createFieldBuffer(width);
+      const threshold = getThreshold(height);
 
-    for (let pc = 0; pc < width * 2; pc++) {
-      // angle varies across columns to form a curved arc
-      const angle = basePhase + (pc / (width * 2)) * Math.PI;
-      const center = scaleToHeight((Math.sin(angle) + 1) / 2, height);
-      for (let row = 0; row < height; row++) {
-        if (Math.abs(row - center) < threshold) {
-          field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
+      for (let pc = 0; pc < width * 2; pc++) {
+        // angle varies across columns to form a curved arc
+        const angle = basePhase + (pc / (width * 2)) * Math.PI;
+        const center = scaleToHeight((Math.sin(angle) + 1) / 2, height);
+        for (let row = 0; row < height; row++) {
+          if (Math.abs(row - center) < threshold) {
+            field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
+          }
         }
       }
-    }
-    return field;
+      return field;
+    },
   },
-},
 
   compress: {
     totalFrames: 100,
@@ -249,21 +249,26 @@ pendulum: {
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
-      const phase = (Math.sin(progress * Math.PI * 2) + 1) / 2;
+      const phase = (Math.sin(progress * Math.PI * 2 - Math.PI / 2) + 1) / 2;
       const field = createFieldBuffer(width);
-      const centerPos = getCenterX(width);
-      const threshold = getThreshold(height);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
+      const maxRadius = Math.max(centerX, centerY) * 1.1;
+      const currentRadius = phase * maxRadius;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const dist = Math.abs(pc - centerPos);
-        const normalized = dist / centerPos;
-        const center = scaleToHeight(smoothstep(clamp(1 - normalized * 2, 0, 1)) * phase, height);
-
         const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+          for (let dc = 0; dc < 2; dc++) {
+            const actualPc = charIdx * 2 + dc;
+            const dx = actualPc - centerX;
+            const dy = row - centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            const distDiff = Math.abs(dist - currentRadius);
+            if (distDiff < 0.8) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
@@ -277,17 +282,21 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
+      const maxRadius = Math.max(centerX, centerY);
+      const radius = progress * maxRadius;
       const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const delta = Math.abs(normalized - progress);
-        const center = scaleToHeight(smoothstep(clamp(1 - delta * 5, 0, 1)), height);
-
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
+          const dx = Math.abs(pc - centerX);
+          const dy = Math.abs(row - centerY);
+          const manhattanDist = dx + dy;
+
+          if (Math.abs(manhattanDist - radius * 1.5) < threshold * 1.2) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -302,16 +311,20 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const phase = Math.sin(progress * Math.PI * 2 + pc * 0.3);
-        const center = scaleToHeight((phase + 1) / 2, height);
+        const normalized = pc / (width * 2);
+        const phase = Math.sin(progress * Math.PI * 4 + normalized * Math.PI * 3);
+        const normPhase = (phase + 1) / 2;
 
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
+          const normalizedRow = row / height;
+          const wavePos = (normalizedRow + progress) % 1;
+          const waveHeight = Math.cos(wavePos * Math.PI * 2);
+
+          if (waveHeight > 0.4) {
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -328,18 +341,24 @@ pendulum: {
       const total = width * 2;
       const head = progress * total;
       const field = createFieldBuffer(width);
+      const tailLength = Math.min(total / 3, 5);
       const threshold = getThreshold(height);
 
       for (let pc = 0; pc < total; pc++) {
         let distance = head - pc;
         if (distance < 0) distance += total;
-        const center = scaleToHeight(Math.exp(-distance * 0.3), height);
 
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
-        for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+        const intensity = Math.max(0, 1 - distance / tailLength);
+        if (intensity > 0.1) {
+          const center = scaleToHeight(intensity * 0.8, height);
+          const currentThreshold = threshold * (0.5 + intensity * 0.5);
+
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+          for (let row = 0; row < height; row++) {
+            if (Math.abs(row - center) < currentThreshold) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
@@ -353,18 +372,29 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
+      const maxRadius = Math.max(centerX, centerY) * 0.85;
+      const angleOffset = progress * Math.PI * 2;
       const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const angle = (pc / (width * 2)) * Math.PI * 2;
-        const normAngle = ((angle + Math.PI) / (Math.PI * 2) + progress) % 1;
-        const center = scaleToHeight(smoothstep(clamp(1 - Math.abs(normAngle - 0.5) * 4, 0, 1)), height);
-
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+          const dx = pc - centerX;
+          const dy = row - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          if (Math.abs(dist - maxRadius) < threshold * 0.7) {
+            const normAngle = (angle + Math.PI) / (Math.PI * 2);
+            const angleDelta = Math.abs(((normAngle - progress + 1.5) % 1) - 0.5);
+            const intensity = smoothstep(clamp(1 - angleDelta * 4, 0, 1));
+
+            if (intensity > 0.3) {
+              const charIdx = Math.floor(pc / 2);
+              const dc = pc % 2;
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
@@ -378,18 +408,31 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
+      const maxRadius = Math.max(centerX, centerY);
+      const spiralAngle = progress * Math.PI * 6;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const spiralAngle = normalized * Math.PI * 4 + progress * Math.PI * 2;
-        const center = scaleToHeight((Math.sin(spiralAngle) + 1) / 2, height);
-
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+          const actualPc = charIdx * 2 + dc;
+          const dx = actualPc - centerX;
+          const dy = row - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          if (dist < maxRadius) {
+            const normDist = dist / maxRadius;
+            const targetAngle = (spiralAngle + normDist * Math.PI * 3) % (Math.PI * 2);
+            const angleDiff = Math.abs(angle + Math.PI - targetAngle);
+            const normAngleDiff = angleDiff % (Math.PI * 2);
+            const minDiff = Math.min(normAngleDiff, Math.PI * 2 - normAngleDiff);
+
+            if (minDiff < 0.6 && dist > 0.3) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
@@ -403,19 +446,25 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const offset = pc * 0.05;
-        const local = (progress + offset) % 1;
-        const phase = Math.sin(local * Math.PI * 2);
-        const center = scaleToHeight((phase + 1) / 2, height);
-
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
-        for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+
+        // Each column has a unique phase and speed
+        const columnSpeed = 1 + (pc % 3) * 0.3;
+        const columnPhase = (pc * 0.17) % 1;
+        const dropProgress = (progress * columnSpeed + columnPhase) % 1;
+
+        // Drop position (0 = top, 1 = bottom)
+        const dropPos = dropProgress * (height + 1) - 1;
+        const dropY = Math.floor(dropPos);
+
+        // Draw the drop (1-2 dots tall)
+        for (let dropOffset = 0; dropOffset < 2; dropOffset++) {
+          const actualY = dropY - dropOffset;
+          if (actualY >= 0 && actualY < height) {
+            field[charIdx] = setDot(field[charIdx], actualY, dc);
           }
         }
       }
@@ -429,19 +478,20 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const offset = pc * 0.08;
-        const local = (progress + offset) % 1;
-        const pulse = Math.sin(local * Math.PI * 2);
-        const center = scaleToHeight((pulse + 1) / 2, height);
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          const dotIndex = pc * height + row;
+          const sparkleOffset = dotIndex * 0.17 + frame * 0.3;
+          const sparklePhase = (sparkleOffset % 1) * Math.PI * 2;
+          const sparkle = Math.sin(sparklePhase);
+          const localRandom = seededRandom(Math.floor(dotIndex * 47));
 
-        if (pulse > 0.3) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
-            if (Math.abs(row - center) < threshold) {
+          if (sparkle > 0.5 || localRandom() > 0.8) {
+            const intensity = Math.max(0.6, sparkle) * (0.5 + localRandom() * 0.5);
+            if (intensity > 0.7) {
               field[charIdx] = setDot(field[charIdx], row, dc);
             }
           }
@@ -500,14 +550,18 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const leadingEdge = progress * 2;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const delta = Math.abs(normalized - progress);
-        if (delta < 0.1) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
+        const normalizedX = pc / (width * 2);
+        for (let row = 0; row < height; row++) {
+          const normalizedY = row / height;
+          const diagonalSum = normalizedX + normalizedY;
+          const delta = Math.abs(diagonalSum - leadingEdge);
+
+          if (delta < 0.2) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -522,15 +576,18 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const position = progress * 2;
+      const leadingEdge = progress * 2;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const delta = Math.abs(normalized - position + 0.5);
-        if (delta < 0.15) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
+        const normalizedX = pc / (width * 2);
+        for (let row = 0; row < height; row++) {
+          const normalizedY = 1 - row / height;
+          const diagonalSum = normalizedX + normalizedY;
+          const delta = Math.abs(diagonalSum - leadingEdge);
+
+          if (delta < 0.18) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -588,18 +645,21 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
         const normalized = pc / (width * 2);
-        const wave1 = Math.sin(progress * Math.PI * 4 + normalized * Math.PI * 2);
-        const wave2 = Math.cos(progress * Math.PI * 4 + normalized * Math.PI * 2);
-        const center = scaleToHeight((wave1 + wave2 + 2) / 4, height);
+        const wave1 = Math.sin(progress * Math.PI * 6 + normalized * Math.PI * 4);
+        const wave2 = Math.cos(progress * Math.PI * 6 + normalized * Math.PI * 4 + Math.PI);
+        const combined = (wave1 + wave2 + 2) / 4;
 
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
+          const rowPhase = row / height;
+          const rowMod = Math.cos(progress * Math.PI * 3 + rowPhase * Math.PI * 2) * 0.3;
+          const finalIntensity = combined + rowMod;
+
+          if (finalIntensity > 0.55) {
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -637,23 +697,21 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const waveA = Math.sin(progress * Math.PI * 2 + normalized * Math.PI * 2);
-        const waveB = Math.sin(progress * Math.PI * 2 + normalized * Math.PI * 4);
-        const combined = (waveA + waveB) / 2;
-        const center = scaleToHeight((combined + 1) / 2, height);
+        const normalizedX = pc / (width * 2);
+        for (let row = 0; row < height; row++) {
+          const normalizedY = row / height;
+          const wave1 = Math.sin(progress * Math.PI * 4 + normalizedX * Math.PI * 3);
+          const wave2 = Math.cos(progress * Math.PI * 3 + normalizedY * Math.PI * 2.5);
+          const wave3 = Math.sin(progress * Math.PI * 2 + (normalizedX + normalizedY) * Math.PI * 2);
+          const combined = (wave1 + wave2 + wave3) / 3;
+          const intensity = (combined + 1) / 2;
 
-        const intensity = Math.abs(combined);
-        if (intensity > 0.3) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
-            if (Math.abs(row - center) < threshold * intensity) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
+          if (intensity > 0.35) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -667,20 +725,28 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const centerPos = getCenterX(width);
-      const threshold = getThreshold(height);
-      const phase = Math.sin(progress * Math.PI * 4);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
+      const maxRadius = Math.max(centerX, centerY);
+      const phase = (Math.sin(progress * Math.PI * 4) + 1) / 2;
+      const pullRadius = phase * maxRadius;
+      const rand = seededRandom(frame);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const dist = Math.abs(pc - centerPos);
-        const normalized = dist / centerPos;
-        const center = scaleToHeight(((phase + 1) / 2) * (1 - normalized * 0.7), height);
-
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          if (Math.abs(row - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+          const dx = pc - centerX;
+          const dy = row - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < pullRadius) {
+            const intensity = 1 - (dist / pullRadius) * 0.7;
+            const dotIndex = pc * height + row;
+            const noise = rand();
+            if (noise < intensity * 0.5 + 0.1) {
+              const charIdx = Math.floor(pc / 2);
+              const dc = pc % 2;
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
@@ -694,26 +760,27 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const mid = getCenterX(width);
-      const threshold = getThreshold(height);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        let phaseOffset = 0;
-        if (pc < mid) phaseOffset = 0;
-        else if (pc < mid * 1.5) phaseOffset = Math.PI / 2;
-        else if (pc < mid * 2) phaseOffset = Math.PI;
-        
-        const phase = Math.sin(progress * Math.PI * 2 + phaseOffset);
-        const center = scaleToHeight((phase + 1) / 2, height);
+        for (let row = 0; row < height; row++) {
+          const dx = pc - centerX;
+          const dy = row - centerY;
 
-        const intensity = (phase + 1) / 2;
-        if (intensity > 0.3) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
-            if (Math.abs(row - center) < threshold * intensity) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
+          let phaseOffset = 0;
+          if (dx >= 0 && dy >= 0) phaseOffset = 0;
+          else if (dx < 0 && dy >= 0) phaseOffset = Math.PI / 2;
+          else if (dx < 0 && dy < 0) phaseOffset = Math.PI;
+          else phaseOffset = Math.PI * 1.5;
+
+          const phase = Math.sin(progress * Math.PI * 3 + phaseOffset);
+          const intensity = (phase + 1) / 2;
+
+          if (intensity > 0.35) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -727,16 +794,24 @@ pendulum: {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const position = progress < 0.5 ? progress * 2 : (1 - progress) * 2;
-      const centerPos = getCenterX(width);
+      const phase = progress < 0.5 ? progress * 2 : (1 - progress) * 2;
+      const centerX = (width * 2 - 1) / 2;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const delta = Math.abs(pc - position * (width * 2) / 2);
-        if (delta < width * 0.5) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
+        const distFromCenter = Math.abs(pc - centerX);
+        const normalizedDist = distFromCenter / centerX;
+        const edgePos = phase * centerX;
+        const delta = Math.abs(distFromCenter - edgePos);
+
+        if (delta < 1.5) {
+          const intensity = 1 - delta / 1.5;
           for (let row = 0; row < height; row++) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+            const rowIntensity = intensity * (1 - Math.abs(row - (height - 1) / 2) / (height / 2));
+            if (rowIntensity > 0.3) {
+              const charIdx = Math.floor(pc / 2);
+              const dc = pc % 2;
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
