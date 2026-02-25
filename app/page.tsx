@@ -23,9 +23,7 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   helix: "Helix",
   "diagonal-swipe": "Diagonal Swipe",
   interference: "Interference",
-  "gravity-well": "Gravity Well",
   "phase-shift": "Phase Shift",
-  spiral: "Spiral",
   "reflected-ripple": "Reflected Ripple",
   pendulum: "Pendulum",
   compress: "Compress",
@@ -281,8 +279,8 @@ export default function Home() {
               <div className="space-y-6">
                 <h3 className="text-xl font-medium">Braille Variants</h3>
                 <p className="text-sm text-muted-foreground">
-                  Three unique braille-inspired animations: pendulum swings across columns, compress shrinks while dots pop,
-                  and sort reorganizes from random to ordered.
+                  Three unique braille-inspired animations: pendulum swings across columns, compress shrinks while dots pop, and
+                  sort reorganizes from random to ordered.
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">

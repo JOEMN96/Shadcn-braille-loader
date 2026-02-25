@@ -1,0 +1,546 @@
+
+============================================================
+VARIANT: breathe
+============================================================
+
+Total frames: 60
+Interval: 40ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 4 changed dots
+Frame 0:
+○●●○
+○○○○
+○○○○
+○●●○
+
+Frame 1:
+○●●○
+○○○○
+○○○○
+○●●○
+
+Frame 1 → Frame 2: 0 changed dots
+
+Frame 2 → Frame 3: 0 changed dots
+
+Frame 3 → Frame 4: 0 changed dots
+
+Frame 4 → Frame 5: 12 changed dots
+Frame 4:
+○●●○
+○○○○
+○○○○
+○●●○
+
+Frame 5:
+○○○○
+●○○●
+●○○●
+○○○○
+
+--- Statistics ---
+Total changes across all frames: 84
+Average changes per frame: 1.40
+Max single frame change: 12
+Longest static streak: 14 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ○●●○
+  ○○○○
+  ○○○○
+  ○●●○
+
+Frame 15:
+  ●○○●
+  ●○○●
+  ●○○●
+  ●○○●
+
+Frame 30:
+  ○●●○
+  ○○○○
+  ○○○○
+  ○●●○
+
+Frame 45:
+  ○○○○
+  ○●●○
+  ○●●○
+  ○○○○
+
+Frame 59:
+  ○●●○
+  ○●●○
+  ○●●○
+  ○●●○
+
+============================================================
+VARIANT: pulse
+============================================================
+
+Total frames: 60
+Interval: 40ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 0 changed dots
+
+Frame 1 → Frame 2: 0 changed dots
+
+Frame 2 → Frame 3: 0 changed dots
+
+Frame 3 → Frame 4: 0 changed dots
+
+Frame 4 → Frame 5: 0 changed dots
+
+--- Statistics ---
+Total changes across all frames: 48
+Average changes per frame: 0.80
+Max single frame change: 8
+Longest static streak: 11 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ○○○○
+  ○●●○
+  ○●●○
+  ○○○○
+
+Frame 15:
+  ○●●○
+  ○●●○
+  ○●●○
+  ○●●○
+
+Frame 30:
+  ○●●○
+  ●○○●
+  ●○○●
+  ○●●○
+
+Frame 45:
+  ●○○●
+  ●○○●
+  ●○○●
+  ●○○●
+
+Frame 59:
+  ●○○●
+  ●○○●
+  ●○○●
+  ●○○●
+
+============================================================
+VARIANT: snake
+============================================================
+
+Total frames: 80
+Interval: 40ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 0 changed dots
+
+Frame 1 → Frame 2: 1 changed dots
+Frame 1:
+○○○○
+○○○●
+●○○●
+●○○○
+
+Frame 2:
+○○○○
+●○○●
+●○○●
+●○○○
+
+Frame 2 → Frame 3: 0 changed dots
+
+Frame 3 → Frame 4: 2 changed dots
+Frame 3:
+○○○○
+●○○●
+●○○●
+●○○○
+
+Frame 4:
+○○○○
+●○○●
+●○○●
+●○○○
+
+Frame 4 → Frame 5: 1 changed dots
+Frame 4:
+○○○○
+●○○●
+●○○●
+●○○○
+
+Frame 5:
+○○○○
+●○○●
+●○○○
+●○○○
+
+--- Statistics ---
+Total changes across all frames: 62
+Average changes per frame: 0.78
+Max single frame change: 2
+Longest static streak: 2 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ○○○○
+  ○○○●
+  ●○○●
+  ●○○○
+
+Frame 20:
+  ●○○○
+  ●○○○
+  ○○○○
+  ○○○○
+
+Frame 40:
+  ○○○○
+  ○●○○
+  ○●●○
+  ○○●○
+
+Frame 60:
+  ○○●○
+  ○○●○
+  ○○○○
+  ○○○○
+
+Frame 79:
+  ○○○○
+  ○○○●
+  ○○○●
+  ○○○○
+
+============================================================
+VARIANT: orbit
+============================================================
+
+Total frames: 60
+Interval: 40ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 0 changed dots
+
+Frame 1 → Frame 2: 0 changed dots
+
+Frame 2 → Frame 3: 1 changed dots
+Frame 2:
+●○○○
+●○○○
+●○○○
+●○○○
+
+Frame 3:
+●○○○
+●○○○
+●○○○
+●○○○
+
+Frame 3 → Frame 4: 0 changed dots
+
+Frame 4 → Frame 5: 1 changed dots
+Frame 4:
+●○○○
+●○○○
+●○○○
+●○○○
+
+Frame 5:
+●○○○
+●○○○
+●○○○
+●○○○
+
+--- Statistics ---
+Total changes across all frames: 40
+Average changes per frame: 0.67
+Max single frame change: 1
+Longest static streak: 4 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ●○○○
+  ●○○○
+  ●○○○
+  ●○○○
+
+Frame 15:
+  ○○○○
+  ○○○○
+  ○○○○
+  ○○○○
+
+Frame 30:
+  ○○○●
+  ○○○●
+  ○○○●
+  ○○○●
+
+Frame 45:
+  ○○○○
+  ○○○○
+  ○○○○
+  ○○○○
+
+Frame 59:
+  ●○○○
+  ●○○○
+  ●○○○
+  ●○○○
+
+============================================================
+VARIANT: pendulum
+============================================================
+
+Total frames: 120
+Interval: 12ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 0 changed dots
+
+Frame 1 → Frame 2: 2 changed dots
+Frame 1:
+○○○○
+●○○●
+●●●●
+○●●●
+
+Frame 2:
+○○○○
+●○○●
+●●●●
+●●●●
+
+Frame 2 → Frame 3: 2 changed dots
+Frame 2:
+○○○○
+●○○●
+●●●●
+●●●●
+
+Frame 3:
+○○○○
+●○○●
+●●●●
+●●●○
+
+Frame 3 → Frame 4: 0 changed dots
+
+Frame 4 → Frame 5: 0 changed dots
+
+--- Statistics ---
+Total changes across all frames: 128
+Average changes per frame: 1.07
+Max single frame change: 3
+Longest static streak: 2 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ○○○○
+  ●○○●
+  ●●●●
+  ○●●●
+
+Frame 30:
+  ○●●●
+  ●●●●
+  ●○○●
+  ○○○○
+
+Frame 60:
+  ○○○○
+  ●○○●
+  ●●●●
+  ○●●●
+
+Frame 90:
+  ○●●●
+  ●●●●
+  ●○○●
+  ○○○○
+
+Frame 119:
+  ○○○○
+  ●○○●
+  ●●●●
+  ○●●●
+
+============================================================
+VARIANT: compress
+============================================================
+
+Total frames: 100
+Interval: 40ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 1 changed dots
+Frame 0:
+●●●●
+●●●●
+●●●●
+●●●●
+
+Frame 1:
+●●●●
+●●●●
+●●●●
+●●●●
+
+Frame 1 → Frame 2: 0 changed dots
+
+Frame 2 → Frame 3: 0 changed dots
+
+Frame 3 → Frame 4: 0 changed dots
+
+Frame 4 → Frame 5: 2 changed dots
+Frame 4:
+●●●●
+●●●●
+●●●●
+●●●●
+
+Frame 5:
+●●●●
+●●○●
+●●●●
+●●●●
+
+--- Statistics ---
+Total changes across all frames: 74
+Average changes per frame: 0.74
+Max single frame change: 9
+Longest static streak: 24 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ●●●●
+  ●●●●
+  ●●●●
+  ●●●●
+
+Frame 25:
+  ●●●○
+  ●○●○
+  ●○●○
+  ●○●○
+
+Frame 50:
+  ●○○○
+  ●●○○
+  ○●○○
+  ●○○○
+
+Frame 75:
+  ○○○○
+  ●○○○
+  ○○○○
+  ●○○○
+
+Frame 99:
+  ○○○○
+  ●○○○
+  ○○○○
+  ●○○○
+
+============================================================
+VARIANT: sort
+============================================================
+
+Total frames: 100
+Interval: 40ms
+
+--- Frame-by-frame comparison ---
+
+Frame 0 → Frame 1: 3 changed dots
+Frame 0:
+●○●●
+●●●●
+●●○○
+●○○○
+
+Frame 1:
+●●●●
+●●●●
+●●○○
+●○○○
+
+Frame 1 → Frame 2: 0 changed dots
+
+Frame 2 → Frame 3: 3 changed dots
+Frame 2:
+●●●●
+●●●●
+●●○○
+●○○○
+
+Frame 3:
+●●●●
+●●●●
+●○○○
+●○○○
+
+Frame 3 → Frame 4: 0 changed dots
+
+Frame 4 → Frame 5: 0 changed dots
+
+--- Statistics ---
+Total changes across all frames: 62
+Average changes per frame: 0.62
+Max single frame change: 4
+Longest static streak: 11 frames
+
+--- Key Frames ---
+
+Frame 0:
+  ●○●●
+  ●●●●
+  ●●○○
+  ●○○○
+
+Frame 25:
+  ●●●●
+  ●●●●
+  ○●○○
+  ○●○○
+
+Frame 50:
+  ●●●●
+  ●●●●
+  ○●●○
+  ○○●○
+
+Frame 75:
+  ●●○●
+  ●●●●
+  ○●●●
+  ○○●●
+
+Frame 99:
+  ●●○○
+  ●●●○
+  ○●●●
+  ○○●●
+
+============================================================
+COMPLETE
+============================================================

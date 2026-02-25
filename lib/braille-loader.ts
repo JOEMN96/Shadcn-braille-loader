@@ -15,9 +15,7 @@ export const brailleLoaderVariants = [
   "helix",
   "braille",
   "interference",
-  "gravity-well",
   "phase-shift",
-  "spiral",
   "reflected-ripple",
   "pendulum",
   "compress",
@@ -245,31 +243,20 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   breathe: {
-    totalFrames: 60,
+    totalFrames: 55,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      const phase = (Math.sin(progress * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+      const period = 2200;
+      const t = frame * 40;
+      const alpha = 0.4 + (0.55 * (1 - Math.cos((2 * Math.PI * t) / period))) / 2;
       const field = createFieldBuffer(width);
-      const centerX = (width * 2 - 1) / 2;
-      const centerY = (height - 1) / 2;
-      const maxRadius = Math.max(centerX, centerY) * 1.1;
-      const currentRadius = phase * maxRadius;
 
+      const dotCount = Math.floor(height * alpha);
       for (let pc = 0; pc < width * 2; pc++) {
         const charIdx = Math.floor(pc / 2);
-        for (let row = 0; row < height; row++) {
-          for (let dc = 0; dc < 2; dc++) {
-            const actualPc = charIdx * 2 + dc;
-            const dx = actualPc - centerX;
-            const dy = row - centerY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            const distDiff = Math.abs(dist - currentRadius);
-            if (distDiff < 0.8) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
-          }
+        const dc = pc % 2;
+        for (let row = 0; row < dotCount; row++) {
+          field[charIdx] = setDot(field[charIdx], row, dc);
         }
       }
       return field;
@@ -277,24 +264,27 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   pulse: {
-    totalFrames: 60,
+    totalFrames: 23,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
+      const period = 900;
+      const t = frame * 40;
+      const scale = 1 + 0.06 * Math.sin((2 * Math.PI * t) / period);
+      const alpha = 0.85 + 0.15 * Math.sin((2 * Math.PI * t) / period);
       const field = createFieldBuffer(width);
       const centerX = (width * 2 - 1) / 2;
       const centerY = (height - 1) / 2;
-      const maxRadius = Math.max(centerX, centerY);
-      const radius = progress * maxRadius;
-      const threshold = getThreshold(height);
 
       for (let pc = 0; pc < width * 2; pc++) {
         for (let row = 0; row < height; row++) {
-          const dx = Math.abs(pc - centerX);
-          const dy = Math.abs(row - centerY);
-          const manhattanDist = dx + dy;
+          const dx = (pc - centerX) / scale;
+          const dy = (row - centerY) / scale;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+          const ringWidth = 0.8;
+          const ringPos = ((Math.sin(((2 * Math.PI * t) / period) * 2) + 1) / 2) * maxDist;
 
-          if (Math.abs(manhattanDist - radius * 1.5) < threshold * 1.2) {
+          if (Math.abs(dist - ringPos) < ringWidth) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
@@ -312,19 +302,16 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const phase = Math.sin(progress * Math.PI * 4 + normalized * Math.PI * 3);
-        const normPhase = (phase + 1) / 2;
+      for (let row = 0; row < height; row++) {
+        const rowPhase = (row / height) * Math.PI * 2;
+        const waveCenter = (Math.sin(progress * Math.PI * 4 + rowPhase) + 1) / 2;
+        const centerPc = waveCenter * (width * 2 - 1);
 
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
-        for (let row = 0; row < height; row++) {
-          const normalizedRow = row / height;
-          const wavePos = (normalizedRow + progress) % 1;
-          const waveHeight = Math.cos(wavePos * Math.PI * 2);
-
-          if (waveHeight > 0.4) {
+        for (let pc = 0; pc < width * 2; pc++) {
+          const dist = Math.abs(pc - centerPc);
+          if (dist < 1.2) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -334,24 +321,24 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   snake: {
-    totalFrames: 80,
+    totalFrames: 35,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      const total = width * 2;
-      const head = progress * total;
+      const period = 1400;
+      const t = frame * 40;
       const field = createFieldBuffer(width);
-      const tailLength = Math.min(total / 3, 5);
-      const threshold = getThreshold(height);
+      const total = width * 2;
+      const phaseOffset = 0.13;
+      const speed = period / total;
 
       for (let pc = 0; pc < total; pc++) {
-        let distance = head - pc;
-        if (distance < 0) distance += total;
+        const phase = (t / (speed * 40) + pc * phaseOffset) % 1;
+        const easedPhase = phase * phase * (3 - 2 * phase);
+        const alpha = Math.max(0, 1 - easedPhase * 1.5);
 
-        const intensity = Math.max(0, 1 - distance / tailLength);
-        if (intensity > 0.1) {
-          const center = scaleToHeight(intensity * 0.8, height);
-          const currentThreshold = threshold * (0.5 + intensity * 0.5);
+        if (alpha > 0.1) {
+          const center = scaleToHeight(0.5, height);
+          const currentThreshold = getThreshold(height) * (0.3 + alpha * 0.7);
 
           const charIdx = Math.floor(pc / 2);
           const dc = pc % 2;
@@ -368,74 +355,39 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
 
   orbit: {
     totalFrames: 60,
-    interval: 40,
-    compute: (frame, totalFrames, width, height, _ctx) => {
+    interval: 50,
+    compute: (frame: number, totalFrames: number, width: number, height: number, _ctx: PrecomputeContext) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const centerX = (width * 2 - 1) / 2;
-      const centerY = (height - 1) / 2;
-      const maxRadius = Math.max(centerX, centerY) * 0.85;
-      const angleOffset = progress * Math.PI * 2;
-      const threshold = getThreshold(height);
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        for (let row = 0; row < height; row++) {
-          const dx = pc - centerX;
-          const dy = row - centerY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx);
+      // Edge positions in clockwise order around one braille character
+      const edgePositions: Array<{ row: number; dc: number }> = [
+        { row: 0, dc: 0 }, // top-left
+        { row: 0, dc: 1 }, // top-right
+        { row: 1, dc: 1 }, // right-1
+        { row: 2, dc: 1 }, // right-2
+        { row: 3, dc: 1 }, // bottom-right
+        { row: 3, dc: 0 }, // bottom-left
+        { row: 2, dc: 0 }, // left-2
+        { row: 1, dc: 0 }, // left-1
+      ];
 
-          if (Math.abs(dist - maxRadius) < threshold * 0.7) {
-            const normAngle = (angle + Math.PI) / (Math.PI * 2);
-            const angleDelta = Math.abs(((normAngle - progress + 1.5) % 1) - 0.5);
-            const intensity = smoothstep(clamp(1 - angleDelta * 4, 0, 1));
+      // 3-dot trail moving clockwise
+      const leadPos = Math.floor(progress * edgePositions.length) % edgePositions.length;
+      const trailLength = 3;
 
-            if (intensity > 0.3) {
-              const charIdx = Math.floor(pc / 2);
-              const dc = pc % 2;
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
-          }
+      // Only use first character
+      const charIdx = 0;
+
+      for (let i = 0; i < trailLength; i++) {
+        const idx = (leadPos - i + edgePositions.length) % edgePositions.length;
+        const pos = edgePositions[idx];
+
+        if (pos.row < height) {
+          field[charIdx] = setDot(field[charIdx], pos.row, pos.dc);
         }
       }
-      return field;
-    },
-  },
 
-  spiral: {
-    totalFrames: 60,
-    interval: 40,
-    compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      const field = createFieldBuffer(width);
-      const centerX = (width * 2 - 1) / 2;
-      const centerY = (height - 1) / 2;
-      const maxRadius = Math.max(centerX, centerY);
-      const spiralAngle = progress * Math.PI * 6;
-
-      for (let pc = 0; pc < width * 2; pc++) {
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
-        for (let row = 0; row < height; row++) {
-          const actualPc = charIdx * 2 + dc;
-          const dx = actualPc - centerX;
-          const dy = row - centerY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx);
-
-          if (dist < maxRadius) {
-            const normDist = dist / maxRadius;
-            const targetAngle = (spiralAngle + normDist * Math.PI * 3) % (Math.PI * 2);
-            const angleDiff = Math.abs(angle + Math.PI - targetAngle);
-            const normAngleDiff = angleDiff % (Math.PI * 2);
-            const minDiff = Math.min(normAngleDiff, Math.PI * 2 - normAngleDiff);
-
-            if (minDiff < 0.6 && dist > 0.3) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
-          }
-        }
-      }
       return field;
     },
   },
@@ -444,23 +396,21 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     totalFrames: 60,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const period = 1000;
+      const t = frame * 40;
+      const offset = 0.18;
+      const dropAmplitude = 2;
 
       for (let pc = 0; pc < width * 2; pc++) {
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
-
-        // Each column has a unique phase and speed
-        const columnSpeed = 1 + (pc % 3) * 0.3;
-        const columnPhase = (pc * 0.17) % 1;
-        const dropProgress = (progress * columnSpeed + columnPhase) % 1;
-
-        // Drop position (0 = top, 1 = bottom)
-        const dropPos = dropProgress * (height + 1) - 1;
+        const columnPhase = (t / period + pc * offset) % 1;
+        const easeOut = 1 - (1 - columnPhase) * (1 - columnPhase);
+        const yOffset = easeOut * dropAmplitude;
+        const dropPos = columnPhase * (height + 1) - 1 + yOffset;
         const dropY = Math.floor(dropPos);
 
-        // Draw the drop (1-2 dots tall)
         for (let dropOffset = 0; dropOffset < 2; dropOffset++) {
           const actualY = dropY - dropOffset;
           if (actualY >= 0 && actualY < height) {
@@ -476,7 +426,6 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     totalFrames: 60,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
 
       for (let pc = 0; pc < width * 2; pc++) {
@@ -484,16 +433,19 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
         const dc = pc % 2;
         for (let row = 0; row < height; row++) {
           const dotIndex = pc * height + row;
-          const sparkleOffset = dotIndex * 0.17 + frame * 0.3;
-          const sparklePhase = (sparkleOffset % 1) * Math.PI * 2;
-          const sparkle = Math.sin(sparklePhase);
-          const localRandom = seededRandom(Math.floor(dotIndex * 47));
+          const localRand = seededRandom(dotIndex * 47);
+          const phaseOffset = localRand();
+          const periodMin = 600;
+          const periodMax = 1400;
+          const period = periodMin + (periodMax - periodMin) * localRand();
+          const t = frame * 40;
 
-          if (sparkle > 0.5 || localRandom() > 0.8) {
-            const intensity = Math.max(0.6, sparkle) * (0.5 + localRandom() * 0.5);
-            if (intensity > 0.7) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
+          const alpha = 0.5 + 0.5 * Math.sin(2 * Math.PI * (t / period + phaseOffset));
+          const jitterAmp = 0.15;
+          const microJitter = jitterAmp * Math.sin(2 * Math.PI * (t / 200 + phaseOffset * 10));
+
+          if (alpha > 0.5 + microJitter) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
@@ -506,14 +458,15 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
-      const phase = Math.floor(progress * 2) % 2;
+      const phase = Math.floor(progress * 8) % 2;
       const field = createFieldBuffer(width);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        if (pc % 2 === phase) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
+        for (let row = 0; row < height; row++) {
+          // True checkerboard: alternate both X (pc) and Y (row) positions
+          if ((pc + row) % 2 === phase) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -523,19 +476,22 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   columns: {
-    totalFrames: 60,
+    totalFrames: 30,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
+      const period = 1200;
+      const t = frame * 40;
       const field = createFieldBuffer(width);
+      const phaseX = 0.16;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const delay = pc / (width * 2);
-        const delta = Math.abs(delay - progress);
-        if (delta < 0.15) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        for (let row = 0; row < height; row++) {
+          const alpha = (Math.sin(2 * Math.PI * (t / period + pc * phaseX)) + 1) / 2;
+          const rowOffset = row / height;
+          const intensity = Math.max(0, Math.min(1, alpha - rowOffset));
+          if (intensity > 0.3) {
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -571,21 +527,24 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   diagonalSwipe: {
-    totalFrames: 60,
+    totalFrames: 35,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
+      const period = 1400;
+      const t = frame * 40;
+      const progress = (t / period) % 1;
       const field = createFieldBuffer(width);
-      const leadingEdge = progress * 2;
+      const trailFactor = 3.5;
+      const N = width * 2 + height;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalizedX = pc / (width * 2);
+        const normalizedX = pc / (width * 2 - 1);
         for (let row = 0; row < height; row++) {
-          const normalizedY = 1 - row / height;
-          const diagonalSum = normalizedX + normalizedY;
-          const delta = Math.abs(diagonalSum - leadingEdge);
+          const normalizedY = row / (height - 1);
+          const phase = (normalizedX + normalizedY) / 2 - progress;
+          const alpha = Math.exp(-phase * trailFactor);
 
-          if (delta < 0.18) {
+          if (alpha > 0.1) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
@@ -597,16 +556,20 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   scan: {
-    totalFrames: 60,
+    totalFrames: 40,
     interval: 40,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
+      const period = 1600;
+      const t = frame * 40;
+      const progress = (t / period) % 1;
       const field = createFieldBuffer(width);
-      const scanPos = progress * width * 2;
+      const scanX = progress * (width * 2 - 1);
+      const sigma = 0.45;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const delta = Math.abs(pc - scanPos);
-        if (delta < 2) {
+        const dist = Math.abs(pc - scanX);
+        const alpha = Math.exp(-(dist * dist) / (2 * sigma * sigma));
+        if (alpha > 0.1) {
           const charIdx = Math.floor(pc / 2);
           const dc = pc % 2;
           for (let row = 0; row < height; row++) {
@@ -619,47 +582,62 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   fillSweep: {
-    totalFrames: 60,
-    interval: 40,
+    totalFrames: 50,
+    interval: 60,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const activePc = Math.floor(progress * width * 2);
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        if (pc <= activePc) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
-          }
+      const maxRow = height - 1;
+      const cycleLength = maxRow * 2;
+
+      const framesPerStep = 3;
+      const stepFrame = Math.floor(frame / framesPerStep);
+      const f = stepFrame % cycleLength;
+
+      let sweepRow;
+
+      if (f < maxRow) {
+        // Filling up (exclude top edge duplicate)
+        sweepRow = maxRow - f;
+      } else {
+        // Unfilling down (exclude bottom duplicate)
+        sweepRow = f - maxRow + 1;
+      }
+
+      for (let row = sweepRow; row <= maxRow; row++) {
+        for (let charIdx = 0; charIdx < width; charIdx++) {
+          field[charIdx] = setDot(field[charIdx], row, 0);
+          field[charIdx] = setDot(field[charIdx], row, 1);
         }
       }
+
       return field;
     },
   },
 
   helix: {
-    totalFrames: 60,
-    interval: 40,
+    totalFrames: 50,
+    interval: 44,
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
+      const period = 1800;
+      const t = frame * 44;
       const field = createFieldBuffer(width);
+      const centerX = (width * 2 - 1) / 2;
+      const centerY = (height - 1) / 2;
+      const helixRadius = 3.0;
+      const colOffset = 0.15;
+      const rowSpacing = 0.1;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        const normalized = pc / (width * 2);
-        const wave1 = Math.sin(progress * Math.PI * 6 + normalized * Math.PI * 4);
-        const wave2 = Math.cos(progress * Math.PI * 6 + normalized * Math.PI * 4 + Math.PI);
-        const combined = (wave1 + wave2 + 2) / 4;
-
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          const rowPhase = row / height;
-          const rowMod = Math.cos(progress * Math.PI * 3 + rowPhase * Math.PI * 2) * 0.3;
-          const finalIntensity = combined + rowMod;
+          const angle = 2 * Math.PI * (t / period + pc * colOffset);
+          const cx = centerX + helixRadius * Math.cos(angle + row * rowSpacing);
+          const cy = centerY + helixRadius * Math.sin(angle + row * rowSpacing) * 0.5;
 
-          if (finalIntensity > 0.55) {
+          const dist = Math.sqrt((pc - cx) ** 2 + (row - cy) ** 2);
+          if (dist < 1.2) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
@@ -671,22 +649,47 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   braille: {
     totalFrames: 60,
     interval: 40,
-    compute: (frame, totalFrames, width, height, _ctx) => {
+    compute: (frame: number, totalFrames: number, width: number, height: number, _ctx: PrecomputeContext) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const totalClusters = width;
-      const activeCluster = Math.floor(progress * totalClusters);
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        const clusterIdx = Math.floor(pc / 2);
-        if (clusterIdx === activeCluster) {
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
-          }
+      // Braille pattern positions within one character
+      const braillePath: Array<{ row: number; dc: number }> = [
+        { row: 0, dc: 0 }, // top-left
+        { row: 0, dc: 1 }, // top-right
+        { row: 1, dc: 1 }, // right-top
+        { row: 2, dc: 1 }, // right-bottom
+        { row: 3, dc: 1 }, // bottom-right
+        { row: 3, dc: 0 }, // bottom-left
+        { row: 2, dc: 0 }, // left-bottom
+        { row: 1, dc: 0 }, // left-top
+      ];
+
+      // 2 moving dots (opposite positions) with 2-dot trails each
+      const lead1Index = Math.floor(progress * braillePath.length) % braillePath.length;
+      const lead2Index = Math.floor((progress + 0.5) * braillePath.length) % braillePath.length;
+
+      // Only use first character
+      const charIdx = 0;
+
+      // First moving dot with 2-dot trail
+      for (let i = 0; i < 2; i++) {
+        const idx = (lead1Index - i + braillePath.length) % braillePath.length;
+        const pos = braillePath[idx];
+        if (pos.row < height) {
+          field[charIdx] = setDot(field[charIdx], pos.row, pos.dc);
         }
       }
+
+      // Second moving dot with 2-dot trail (opposite)
+      for (let i = 0; i < 2; i++) {
+        const idx = (lead2Index - i + braillePath.length) % braillePath.length;
+        const pos = braillePath[idx];
+        if (pos.row < height) {
+          field[charIdx] = setDot(field[charIdx], pos.row, pos.dc);
+        }
+      }
+
       return field;
     },
   },
@@ -712,41 +715,6 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
-          }
-        }
-      }
-      return field;
-    },
-  },
-
-  gravityWell: {
-    totalFrames: 60,
-    interval: 40,
-    compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      const field = createFieldBuffer(width);
-      const centerX = (width * 2 - 1) / 2;
-      const centerY = (height - 1) / 2;
-      const maxRadius = Math.max(centerX, centerY);
-      const phase = (Math.sin(progress * Math.PI * 4) + 1) / 2;
-      const pullRadius = phase * maxRadius;
-      const rand = seededRandom(frame);
-
-      for (let pc = 0; pc < width * 2; pc++) {
-        for (let row = 0; row < height; row++) {
-          const dx = pc - centerX;
-          const dy = row - centerY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < pullRadius) {
-            const intensity = 1 - (dist / pullRadius) * 0.7;
-            const dotIndex = pc * height + row;
-            const noise = rand();
-            if (noise < intensity * 0.5 + 0.1) {
-              const charIdx = Math.floor(pc / 2);
-              const dc = pc % 2;
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
           }
         }
       }

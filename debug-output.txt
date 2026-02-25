@@ -115,81 +115,7 @@ Frame 15: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬜⬤⬜⬤ | ⬜⬜⬜⬜
 VARIANT: breathe
 ========================================
 
-Total frames: 60
-Interval: 40ms
-
---- Frame 0 ---
-Braille: "⠀⠰⠆⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⡇⠀⠀⢸"
-Visual (grid):
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-
---- Frame 59 ---
-Braille: "⠀⠰⠆⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬜⬜⬜
-
---- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬜⬜⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬜⬜⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬜⬜⬜
-Frame 10: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜
-Frame 15: ⬜⬤⬤⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬤⬤⬜
-
-========================================
-VARIANT: pulse
-========================================
-
-Total frames: 60
-Interval: 40ms
-
---- Frame 0 ---
-Braille: "⠀⠰⠆⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⢾⣏⣹⡷"
-Visual (grid):
-⬜⬤⬤⬜
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-⬜⬤⬤⬜
-
---- Frame 59 ---
-Braille: "⣏⠀⠀⣹"
-Visual (grid):
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-⬤⬜⬜⬤
-
---- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬜⬜⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬜⬜⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬜⬜⬜
-Frame 10: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜
-Frame 15: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜
-
-========================================
-VARIANT: waveRows
-========================================
-
-Total frames: 60
+Total frames: 55
 Interval: 40ms
 
 --- Frame 0 ---
@@ -200,15 +126,15 @@ Visual (grid):
 ⬜⬜⬜⬜
 ⬜⬜⬜⬜
 
---- Frame 30 ---
-Braille: "⠤⠤⠤⠤"
+--- Frame 27 ---
+Braille: "⠿⠿⠿⠿"
 Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬜
+⬤⬤⬤⬤
+⬤⬤⬤⬤
 ⬤⬤⬤⬤
 ⬜⬜⬜⬜
 
---- Frame 59 ---
+--- Frame 54 ---
 Braille: "⠉⠉⠉⠉"
 Visual (grid):
 ⬤⬤⬤⬤
@@ -218,120 +144,191 @@ Visual (grid):
 
 --- Animation Sequence (every 5th frame) ---
 Frame 0: ⬤⬤⬤⬤ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 5: ⬤⬤⬤⬤ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬤⬤⬤
-Frame 10: ⬤⬤⬤⬤ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬤⬤⬤
-Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬤⬤⬤
+Frame 5: ⬤⬤⬤⬤ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 10: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 15: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+
+========================================
+VARIANT: pulse
+========================================
+
+Total frames: 23
+Interval: 40ms
+
+--- Frame 0 ---
+Braille: "⠰⣏⣹⠆"
+Visual (grid):
+⬜⬤⬤⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬤⬤⬜
+
+--- Frame 11 ---
+Braille: "⠀⣏⣹⠀"
+Visual (grid):
+⬜⬤⬤⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬤⬤⬜
+
+--- Frame 22 ---
+Braille: "⠀⣿⣿⠀"
+Visual (grid):
+⬜⬤⬤⬜
+⬜⬤⬤⬜
+⬜⬤⬤⬜
+⬜⬤⬤⬜
+
+--- Animation Sequence (every 5th frame) ---
+Frame 0: ⬜⬤⬤⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬤⬤⬜
+Frame 5: ⬜⬜⬜⬜ | ⬤⬜⬜⬤ | ⬤⬜⬜⬤ | ⬜⬜⬜⬜
+Frame 10: ⬜⬜⬜⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬜⬜⬜
+Frame 15: ⬤⬜⬜⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬤
+
+========================================
+VARIANT: waveRows
+========================================
+
+Total frames: 60
+Interval: 40ms
+
+--- Frame 0 ---
+Braille: "⣀⠨⠅⠒"
+Visual (grid):
+⬜⬤⬤⬜
+⬜⬜⬜⬤
+⬜⬤⬤⬜
+⬤⬜⬜⬜
+
+--- Frame 30 ---
+Braille: "⣀⠨⠅⠒"
+Visual (grid):
+⬜⬤⬤⬜
+⬜⬜⬜⬤
+⬜⬤⬤⬜
+⬤⬜⬜⬜
+
+--- Frame 59 ---
+Braille: "⣀⠉⠤⠒"
+Visual (grid):
+⬜⬤⬜⬜
+⬜⬜⬜⬤
+⬜⬜⬤⬜
+⬤⬜⬜⬜
+
+--- Animation Sequence (every 5th frame) ---
+Frame 0: ⬜⬤⬤⬜ | ⬜⬜⬜⬤ | ⬜⬤⬤⬜ | ⬤⬜⬜⬜
+Frame 5: ⬜⬜⬜⬤ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 10: ⬜⬜⬜⬤ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 15: ⬜⬤⬤⬜ | ⬤⬜⬜⬜ | ⬜⬤⬤⬜ | ⬜⬜⬜⬤
 
 ========================================
 VARIANT: snake
 ========================================
 
-Total frames: 80
+Total frames: 35
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⡄⠀⠀⠳"
+Braille: "⠶⠶⠆⠀"
 Visual (grid):
 ⬜⬜⬜⬜
-⬜⬜⬜⬤
+⬤⬤⬤⬜
+⬤⬤⬤⬜
+⬜⬜⬜⬜
+
+--- Frame 17 ---
+Braille: "⠶⠶⠀⠰"
+Visual (grid):
+⬜⬜⬜⬜
+⬤⬤⬜⬤
+⬤⬤⬜⬤
+⬜⬜⬜⬜
+
+--- Frame 34 ---
+Braille: "⠶⠆⠀⠰"
+Visual (grid):
+⬜⬜⬜⬜
 ⬤⬜⬜⬤
-⬤⬜⬜⬜
-
---- Frame 40 ---
-Braille: "⠀⠳⡄⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬤⬜⬜
-⬜⬤⬤⬜
-⬜⬜⬤⬜
-
---- Frame 79 ---
-Braille: "⠀⠀⠀⠳"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬤
-⬜⬜⬜⬤
+⬤⬜⬜⬤
 ⬜⬜⬜⬜
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬜⬜⬜ | ⬜⬜⬜⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬜
-Frame 5: ⬜⬜⬜⬜ | ⬤⬜⬜⬤ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 10: ⬜⬜⬜⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 15: ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 0: ⬜⬜⬜⬜ | ⬤⬤⬤⬜ | ⬤⬤⬤⬜ | ⬜⬜⬜⬜
+Frame 5: ⬜⬜⬜⬜ | ⬤⬤⬤⬜ | ⬤⬤⬤⬜ | ⬜⬜⬜⬜
+Frame 10: ⬜⬜⬜⬜ | ⬤⬤⬜⬜ | ⬤⬤⬜⬜ | ⬜⬜⬜⬜
+Frame 15: ⬜⬜⬜⬜ | ⬤⬤⬜⬜ | ⬤⬤⬜⬜ | ⬜⬜⬜⬜
 
 ========================================
 VARIANT: orbit
 ========================================
 
 Total frames: 60
-Interval: 40ms
+Interval: 50ms
 
 --- Frame 0 ---
-Braille: "⣿⡁⠀⠀"
+Braille: "⠇⠀⠀⠀"
 Visual (grid):
 ⬤⬜⬜⬜
 ⬤⬜⬜⬜
 ⬤⬜⬜⬜
-⬤⬜⬜⬜
+⬜⬜⬜⬜
 
 --- Frame 30 ---
-Braille: "⠀⠀⢈⣿"
+Braille: "⢰⠀⠀⠀"
 Visual (grid):
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-⬜⬜⬜⬤
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
 
 --- Frame 59 ---
-Braille: "⣿⡁⠀⠀"
+Braille: "⡆⠀⠀⠀"
 Visual (grid):
-⬤⬜⬜⬜
+⬜⬜⬜⬜
 ⬤⬜⬜⬜
 ⬤⬜⬜⬜
 ⬤⬜⬜⬜
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
+Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
 Frame 10: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 15: ⬤⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
 
 ========================================
 VARIANT: spiral
 ========================================
 
-Total frames: 60
+Total frames: 1
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⢀⠐⢰⠀"
+Braille: "⠀⠀⠀⠀"
 Visual (grid):
 ⬜⬜⬜⬜
-⬜⬤⬜⬜
+⬜⬜⬜⬜
 ⬜⬜⬜⬜
 ⬜⬜⬜⬜
 
---- Frame 30 ---
-Braille: "⢀⠐⢰⠀"
+--- Frame 0 ---
+Braille: "⠀⠀⠀⠀"
 Visual (grid):
 ⬜⬜⬜⬜
-⬜⬤⬜⬜
+⬜⬜⬜⬜
 ⬜⬜⬜⬜
 ⬜⬜⬜⬜
 
---- Frame 59 ---
-Braille: "⢀⠐⢱⠀"
+--- Frame 0 ---
+Braille: "⠀⠀⠀⠀"
 Visual (grid):
-⬜⬜⬤⬜
-⬜⬤⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
 ⬜⬜⬜⬜
 ⬜⬜⬜⬜
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬜⬜⬜ | ⬜⬤⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬜⬜⬜ | ⬜⬜⬤⬜ | ⬜⬜⬜⬜ | ⬜⬜⬤⬜
-Frame 10: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬤⬜ | ⬜⬤⬤⬜
-Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬤⬜ | ⬜⬜⬜⬜
+Frame 0: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
 
 ========================================
 VARIANT: rain
@@ -341,34 +338,34 @@ Total frames: 60
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⠉⠔⠖⠙"
+Braille: "⠈⢣⡀⠘"
 Visual (grid):
-⬤⬜⬜⬤
-⬜⬤⬤⬤
-⬜⬜⬤⬜
-⬜⬜⬜⬜
+⬜⬜⬜⬤
+⬜⬜⬜⬤
+⬜⬤⬜⬜
+⬜⬤⬤⬜
 
 --- Frame 30 ---
-Braille: "⢇⢡⢱⢖"
+Braille: "⠱⣄⠀⠳"
 Visual (grid):
-⬤⬜⬤⬜
-⬤⬜⬜⬤
-⬤⬤⬜⬜
-⬜⬤⬜⬤
+⬤⬜⬜⬜
+⬜⬜⬜⬤
+⬜⬜⬜⬤
+⬜⬤⬜⬜
 
 --- Frame 59 ---
-Braille: "⡊⠋⠎⠙"
+Braille: "⢣⡀⠘⢦"
 Visual (grid):
-⬜⬤⬜⬤
-⬤⬜⬤⬤
-⬜⬜⬤⬜
 ⬤⬜⬜⬜
+⬤⬜⬜⬜
+⬜⬜⬜⬤
+⬜⬜⬜⬤
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬤⬜⬜⬤ | ⬜⬤⬤⬤ | ⬜⬜⬤⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬤⬤⬤ | ⬜⬤⬤⬤ | ⬜⬜⬤⬜ | ⬜⬜⬜⬜
-Frame 10: ⬤⬤⬤⬤ | ⬜⬤⬜⬤ | ⬜⬜⬜⬤ | ⬜⬜⬜⬜
-Frame 15: ⬤⬜⬜⬤ | ⬤⬤⬜⬤ | ⬜⬜⬤⬤ | ⬜⬜⬤⬜
+Frame 0: ⬜⬜⬜⬤ | ⬜⬜⬜⬤ | ⬜⬤⬜⬜ | ⬜⬤⬤⬜
+Frame 5: ⬤⬜⬜⬜ | ⬜⬜⬜⬤ | ⬜⬜⬜⬤ | ⬜⬤⬜⬜
+Frame 10: ⬜⬜⬤⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬤
+Frame 15: ⬜⬤⬤⬜ | ⬜⬜⬤⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
 
 ========================================
 VARIANT: sparkle
@@ -378,34 +375,34 @@ Total frames: 60
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⢀⣿⠇⠀"
+Braille: "⣿⡿⠀⠀"
 Visual (grid):
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬜⬜
+⬤⬤⬜⬜
+⬤⬤⬜⬜
+⬤⬤⬜⬜
+⬤⬜⬜⬜
 
 --- Frame 30 ---
-Braille: "⢀⣿⠇⠀"
+Braille: "⣶⣶⣄⣤"
 Visual (grid):
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬜⬜
+⬜⬜⬜⬜
+⬤⬤⬜⬜
+⬤⬤⬤⬤
+⬤⬤⬤⬤
 
 --- Frame 59 ---
-Braille: "⠀⢸⣿⠀"
+Braille: "⠭⠧⣤⣦"
 Visual (grid):
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
+⬤⬜⬜⬜
+⬜⬜⬜⬜
+⬤⬤⬤⬤
+⬜⬜⬤⬤
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬜⬜
-Frame 5: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬜⬜
-Frame 10: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬜⬜
-Frame 15: ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬤⬜ | ⬜⬤⬜⬜
+Frame 0: ⬤⬤⬜⬜ | ⬤⬤⬜⬜ | ⬤⬤⬜⬜ | ⬤⬜⬜⬜
+Frame 5: ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬤ | ⬜⬜⬜⬤
+Frame 10: ⬜⬜⬜⬤ | ⬜⬜⬜⬤ | ⬜⬜⬤⬤ | ⬜⬜⬤⬤
+Frame 15: ⬜⬤⬤⬤ | ⬜⬤⬤⬤ | ⬜⬜⬜⬜ | ⬤⬤⬤⬤
 
 ========================================
 VARIANT: checkerboard
@@ -415,71 +412,71 @@ Total frames: 60
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⡇⡇⡇⡇"
+Braille: "⢕⢕⢕⢕"
 Visual (grid):
 ⬤⬜⬤⬜
+⬜⬤⬜⬤
 ⬤⬜⬤⬜
-⬤⬜⬤⬜
-⬤⬜⬤⬜
+⬜⬤⬜⬤
 
 --- Frame 30 ---
-Braille: "⢸⢸⢸⢸"
+Braille: "⢕⢕⢕⢕"
 Visual (grid):
+⬤⬜⬤⬜
 ⬜⬤⬜⬤
-⬜⬤⬜⬤
-⬜⬤⬜⬤
+⬤⬜⬤⬜
 ⬜⬤⬜⬤
 
 --- Frame 59 ---
-Braille: "⢸⢸⢸⢸"
+Braille: "⡪⡪⡪⡪"
 Visual (grid):
 ⬜⬤⬜⬤
+⬤⬜⬤⬜
 ⬜⬤⬜⬤
-⬜⬤⬜⬤
-⬜⬤⬜⬤
+⬤⬜⬤⬜
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜
-Frame 5: ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜
-Frame 10: ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜
-Frame 15: ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜ | ⬤⬜⬤⬜
+Frame 0: ⬤⬜⬤⬜ | ⬜⬤⬜⬤ | ⬤⬜⬤⬜ | ⬜⬤⬜⬤
+Frame 5: ⬤⬜⬤⬜ | ⬜⬤⬜⬤ | ⬤⬜⬤⬜ | ⬜⬤⬜⬤
+Frame 10: ⬜⬤⬜⬤ | ⬤⬜⬤⬜ | ⬜⬤⬜⬤ | ⬤⬜⬤⬜
+Frame 15: ⬤⬜⬤⬜ | ⬜⬤⬜⬤ | ⬤⬜⬤⬜ | ⬜⬤⬜⬤
 
 ========================================
 VARIANT: columns
 ========================================
 
-Total frames: 60
+Total frames: 30
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⣿⠀⠀⠀"
+Braille: "⠹⠟⠀⠹"
 Visual (grid):
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-⬤⬜⬜⬜
+⬤⬤⬜⬤
+⬜⬤⬜⬤
+⬜⬜⬜⬤
+⬜⬜⬜⬜
 
---- Frame 30 ---
-Braille: "⠀⢸⣿⠀"
+--- Frame 15 ---
+Braille: "⠁⠈⠿⠃"
 Visual (grid):
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
+⬤⬤⬤⬜
+⬜⬜⬤⬜
+⬜⬜⬤⬜
+⬜⬜⬜⬜
 
---- Frame 59 ---
-Braille: "⠀⠀⠀⢸"
+--- Frame 29 ---
+Braille: "⠹⠟⠀⠘"
 Visual (grid):
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-⬜⬜⬜⬤
+⬤⬤⬜⬤
+⬜⬤⬜⬤
+⬜⬜⬜⬜
+⬜⬜⬜⬜
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 10: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 15: ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬤⬜⬜
+Frame 0: ⬤⬤⬜⬤ | ⬜⬤⬜⬤ | ⬜⬜⬜⬤ | ⬜⬜⬜⬜
+Frame 5: ⬤⬜⬜⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬤ | ⬜⬜⬜⬜
+Frame 10: ⬤⬜⬤⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 15: ⬤⬤⬤⬜ | ⬜⬜⬤⬜ | ⬜⬜⬤⬜ | ⬜⬜⬜⬜
 
 ========================================
 VARIANT: cascade
@@ -522,81 +519,44 @@ Frame 15: ⬜⬤⬤⬜ | ⬜⬤⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜
 VARIANT: diagonalSwipe
 ========================================
 
-Total frames: 60
+Total frames: 35
 Interval: 40ms
 
 --- Frame 0 ---
-Braille: "⠀⠀⠀⠀"
+Braille: "⣿⡿⠟⠋"
 Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⠙⠲⢤⣀"
-Visual (grid):
+⬤⬤⬤⬤
+⬤⬤⬤⬜
+⬤⬤⬤⬜
 ⬤⬜⬜⬜
-⬜⬤⬜⬜
-⬜⬤⬤⬜
-⬜⬜⬜⬤
 
---- Frame 59 ---
-Braille: "⠀⠀⠀⠈"
+--- Frame 17 ---
+Braille: "⣿⣿⣿⣿"
 Visual (grid):
-⬜⬜⬜⬤
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+
+--- Frame 34 ---
+Braille: "⣿⣿⣿⣿"
+Visual (grid):
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
 
 --- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 10: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬤⬜⬜
+Frame 0: ⬤⬤⬤⬤ | ⬤⬤⬤⬜ | ⬤⬤⬤⬜ | ⬤⬜⬜⬜
+Frame 5: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬜ | ⬤⬤⬤⬜
+Frame 10: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬜
+Frame 15: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤
 
 ========================================
 VARIANT: scan
 ========================================
 
-Total frames: 60
-Interval: 40ms
-
---- Frame 0 ---
-Braille: "⣿⠀⠀⠀"
-Visual (grid):
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⠀⢸⣿⠀"
-Visual (grid):
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-⬜⬤⬤⬜
-
---- Frame 59 ---
-Braille: "⠀⠀⠀⣿"
-Visual (grid):
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-⬜⬜⬜⬤
-
---- Animation Sequence (every 5th frame) ---
-Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 10: ⬤⬤⬜⬜ | ⬤⬤⬜⬜ | ⬤⬤⬜⬜ | ⬤⬤⬜⬜
-Frame 15: ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬤⬜⬜
-
-========================================
-VARIANT: fillSweep
-========================================
-
-Total frames: 60
+Total frames: 40
 Interval: 40ms
 
 --- Frame 0 ---
@@ -607,89 +567,15 @@ Visual (grid):
 ⬤⬜⬜⬜
 ⬤⬜⬜⬜
 
---- Frame 30 ---
-Braille: "⣿⣿⡇⠀"
+--- Frame 20 ---
+Braille: "⠀⢸⡇⠀"
 Visual (grid):
-⬤⬤⬤⬜
-⬤⬤⬤⬜
-⬤⬤⬤⬜
-⬤⬤⬤⬜
+⬜⬤⬤⬜
+⬜⬤⬤⬜
+⬜⬤⬤⬜
+⬜⬤⬤⬜
 
---- Frame 59 ---
-Braille: "⣿⣿⣿⣿"
-Visual (grid):
-⬤⬤⬤⬤
-⬤⬤⬤⬤
-⬤⬤⬤⬤
-⬤⬤⬤⬤
-
---- Animation Sequence (every 5th frame) ---
-Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 10: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 15: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-
-========================================
-VARIANT: helix
-========================================
-
-Total frames: 60
-Interval: 40ms
-
---- Frame 0 ---
-Braille: "⠀⠀⠀⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⠀⠀⠀⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-
---- Frame 59 ---
-Braille: "⠀⠀⠀⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-
---- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 10: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
-
-========================================
-VARIANT: braille
-========================================
-
-Total frames: 60
-Interval: 40ms
-
---- Frame 0 ---
-Braille: "⣿⠀⠀⠀"
-Visual (grid):
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-⬤⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⠀⠀⣿⠀"
-Visual (grid):
-⬜⬜⬤⬜
-⬜⬜⬤⬜
-⬜⬜⬤⬜
-⬜⬜⬤⬜
-
---- Frame 59 ---
+--- Frame 39 ---
 Braille: "⠀⠀⠀⣿"
 Visual (grid):
 ⬜⬜⬜⬤
@@ -700,8 +586,119 @@ Visual (grid):
 --- Animation Sequence (every 5th frame) ---
 Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
 Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
-Frame 10: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
+Frame 10: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
 Frame 15: ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬤⬜⬜
+
+========================================
+VARIANT: fillSweep
+========================================
+
+Total frames: 50
+Interval: 40ms
+
+--- Frame 0 ---
+Braille: "⣶⣶⣶⣶"
+Visual (grid):
+⬜⬜⬜⬜
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+
+--- Frame 25 ---
+Braille: "⠿⠿⠿⠿"
+Visual (grid):
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬜⬜⬜⬜
+
+--- Frame 49 ---
+Braille: "⣶⣶⣶⣶"
+Visual (grid):
+⬜⬜⬜⬜
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+⬤⬤⬤⬤
+
+--- Animation Sequence (every 5th frame) ---
+Frame 0: ⬜⬜⬜⬜ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤
+Frame 5: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤
+Frame 10: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤
+Frame 15: ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤
+
+========================================
+VARIANT: helix
+========================================
+
+Total frames: 50
+Interval: 44ms
+
+--- Frame 0 ---
+Braille: "⠀⡄⠀⠧"
+Visual (grid):
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬤
+⬜⬜⬜⬜
+
+--- Frame 25 ---
+Braille: "⠀⠀⡄⠀"
+Visual (grid):
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬤⬜
+⬜⬜⬤⬜
+
+--- Frame 49 ---
+Braille: "⢠⠀⠃⡄"
+Visual (grid):
+⬜⬜⬤⬜
+⬜⬜⬤⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+
+--- Animation Sequence (every 5th frame) ---
+Frame 0: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬤ | ⬜⬜⬜⬜
+Frame 5: ⬜⬜⬤⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 10: ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
+
+========================================
+VARIANT: braille
+========================================
+
+Total frames: 60
+Interval: 40ms
+
+--- Frame 0 ---
+Braille: "⢣⠀⠀⠀"
+Visual (grid):
+⬤⬜⬜⬜
+⬤⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+
+--- Frame 30 ---
+Braille: "⢣⠀⠀⠀"
+Visual (grid):
+⬤⬜⬜⬜
+⬤⬜⬜⬜
+⬜⬜⬜⬜
+⬜⬜⬜⬜
+
+--- Frame 59 ---
+Braille: "⠶⠀⠀⠀"
+Visual (grid):
+⬜⬜⬜⬜
+⬤⬜⬜⬜
+⬤⬜⬜⬜
+⬜⬜⬜⬜
+
+--- Animation Sequence (every 5th frame) ---
+Frame 0: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 5: ⬤⬜⬜⬜ | ⬤⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜
+Frame 10: ⬤⬜⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜
+Frame 15: ⬜⬜⬜⬜ | ⬜⬜⬜⬜ | ⬤⬜⬜⬜ | ⬤⬜⬜⬜
 
 ========================================
 VARIANT: interference
@@ -739,43 +736,6 @@ Frame 0: ⬤⬤⬤⬤ | ⬤⬜⬜⬤ | ⬤⬜⬜⬤ | ⬤⬤⬤⬤
 Frame 5: ⬤⬤⬤⬤ | ⬤⬜⬜⬤ | ⬤⬜⬤⬤ | ⬤⬤⬤⬤
 Frame 10: ⬤⬤⬤⬤ | ⬤⬜⬜⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬜
 Frame 15: ⬤⬜⬤⬜ | ⬤⬤⬤⬤ | ⬤⬤⬤⬤ | ⬤⬤⬤⬜
-
-========================================
-VARIANT: gravityWell
-========================================
-
-Total frames: 60
-Interval: 40ms
-
---- Frame 0 ---
-Braille: "⠀⠈⠗⠀"
-Visual (grid):
-⬜⬤⬤⬜
-⬜⬜⬤⬜
-⬜⬜⬤⬜
-⬜⬜⬜⬜
-
---- Frame 30 ---
-Braille: "⠀⢐⡀⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬤⬜⬜
-⬜⬜⬜⬜
-⬜⬤⬤⬜
-
---- Frame 59 ---
-Braille: "⠀⠀⠀⠀"
-Visual (grid):
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-⬜⬜⬜⬜
-
---- Animation Sequence (every 5th frame) ---
-Frame 0: ⬜⬤⬤⬜ | ⬜⬜⬤⬜ | ⬜⬜⬤⬜ | ⬜⬜⬜⬜
-Frame 5: ⬜⬤⬜⬜ | ⬜⬜⬜⬜ | ⬜⬤⬜⬜ | ⬜⬜⬤⬜
-Frame 10: ⬜⬜⬤⬜ | ⬜⬤⬜⬜ | ⬜⬜⬤⬜ | ⬜⬤⬜⬜
-Frame 15: ⬜⬤⬜⬜ | ⬜⬤⬜⬜ | ⬜⬜⬜⬜ | ⬜⬜⬤⬜
 
 ========================================
 VARIANT: phaseShift

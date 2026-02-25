@@ -1,10 +1,10 @@
 # Shadcn Braille Loader Registry
 
-A registry-first, accessible braille loader library for shadcn CLI featuring 20 unique animation variants. Built with React, TypeScript, and Tailwind CSS.
+A registry-first, accessible braille loader library for shadcn CLI featuring **22 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
-- **20 Animation Variants** - From subtle pulses to complex spiral patterns
+- **22 Animation Variants** - From subtle pulses to complex spiral patterns
 - **Fully Accessible** - Screen reader support, respects `prefers-reduced-motion`
 - **Highly Customizable** - Dot size, gap, grid dimensions, animation speed
 - **Theme-Aware** - Inherits color from current text color
@@ -12,6 +12,13 @@ A registry-first, accessible braille loader library for shadcn CLI featuring 20 
 - **Zero Dependencies** - Pure React + CSS animations
 
 ---
+
+## Documentation
+
+- **[Quick Reference](./docs/QUICK_REFERENCE.md)** - Fast lookup for common usage patterns and props
+- **[Implementation Guide](./docs/IMPLEMENTATION.md)** - Deep dive into architecture, algorithms, and internals
+
+
 
 ## Architecture Overview
 
@@ -96,8 +103,14 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 import { BrailleLoader } from "@/components/ui/braille-loader";
 
 export function Example() {
-  return <BrailleLoader variant="helix" dotSize="md" gap="md" gridSize="lg" speed="normal" />;
+  return <BrailleLoader variant="helix" gridSize="md" speed="normal" className="text-primary" />;
 }
+```
+
+Optional showcase block:
+
+```bash
+npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 ```
 
 ---
@@ -106,16 +119,15 @@ export function Example() {
 
 | Prop           | Type                             | Default     | Description                                                               |
 | -------------- | -------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| `variant`      | `BrailleLoaderVariant`           | `"breathe"` | Animation variant (20 available). Invalid values fallback to `"breathe"`. |
-| `dotSize`      | `number \| "sm" \| "md" \| "lg"` | `6`         | Dot diameter in pixels. Presets: `sm=4`, `md=6`, `lg=10`.                 |
-| `gap`          | `number \| "sm" \| "md" \| "lg"` | `10`        | Gap between dots in pixels. Presets: `sm=6`, `md=10`, `lg=14`.            |
-| `gridSize`     | `"sm" \| "md" \| "lg" \| "xl"`   | `"md"`      | Grid preset: `sm=3x3`, `md=4x4`, `lg=5x5`, `xl=6x6`.                      |
-| `grid`         | `[rows: number, cols: number]`   | `undefined` | Custom grid dimensions (2-12). Overrides `gridSize`.                      |
-| `speed`        | `"slow" \| "normal" \| "fast"`   | `"normal"`  | Animation duration: `slow=3000ms`, `normal=2000ms`, `fast=1200ms`.        |
-| `duration`     | `number`                         | `undefined` | Custom animation duration in ms. Overrides `speed`.                       |
-| `dotClassName` | `string`                         | `undefined` | Additional CSS classes applied to each dot.                               |
-| `className`    | `string`                         | `undefined` | CSS classes for the wrapper element.                                      |
-| `label`        | `string`                         | `"Loading"` | Screen reader announcement text.                                          |
+| `variant`      | `BrailleLoaderVariant`           | `"breathe"` | Animation pattern (23 available). Invalid values fallback to `"breathe"`. |
+| `gridSize`     | `"sm" \| "md" \| "lg" \| "xl"`   | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
+| `grid`         | `[rows: number, cols: number]`   | `undefined` | Custom grid dimensions (2-12). Height capped at 4 in v1. |
+| `speed`        | `"slow" \| "normal" \| "fast"`   | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`. |
+| `className`    | `string`                         | `undefined` | CSS classes for the wrapper element. |
+| `label`        | `string`                         | `"Loading"` | Screen reader accessible label. |
+| `fontSize`     | `number`                         | `28`        | Font size in pixels for braille characters. |
+
+**Note on height limitation (v1):** Maximum height is 4 rows due to braille character limitation. Full multi-row braille support planned for v2.
 
 ---
 
@@ -139,10 +151,12 @@ export function Example() {
 | `helix`            | Spiral      | High       | md, lg         | Scientific     |
 | `braille`          | Pattern     | Medium     | Any            | Accessibility  |
 | `interference`     | Wave        | High       | lg, xl         | Scientific     |
-| `gravity-well`     | Radial      | Medium     | Any            | Focused        |
 | `phase-shift`      | Quadrant    | Medium     | md, lg         | Parallel       |
 | `spiral`           | Spiral      | High       | md, lg         | Creative       |
 | `reflected-ripple` | Bounce      | Low        | Any            | Network        |
+| `pendulum`        | Curved wave  | Medium     | Any            | Calm/continuous |
+| `compress`        | Inward     | Medium     | Any            | Compacting      |
+| `sort`            | Gradient   | Medium     | Any            | Sorting        |
 
 ---
 
@@ -187,32 +201,24 @@ When reduced motion is preferred:
 
 ## Customization Examples
 
-### Basic Sizing
+### Grid Sizing
 
 ```tsx
 // Small, compact loader
-<BrailleLoader variant="breathe" dotSize="sm" gap="sm" />
+<BrailleLoader variant="breathe" gridSize="sm" />
 
 // Large, prominent loader
-<BrailleLoader variant="helix" dotSize="lg" gap="lg" gridSize="xl" />
+<BrailleLoader variant="helix" gridSize="xl" />
 ```
 
 ### Custom Dimensions
 
 ```tsx
-// Custom dot size (8px) and gap (12px)
-<BrailleLoader variant="rain" dotSize={8} gap={12} />
+// Custom grid (3 rows x 5 columns)
+<BrailleLoader variant="scan" grid={[3, 5]} />
 
-// Custom grid (5 rows x 8 columns)
-<BrailleLoader variant="scan" grid={[5, 8]} />
-
-// Combine custom dimensions
-<BrailleLoader
-  variant="cascade"
-  dotSize={5}
-  gap={8}
-  grid={[6, 10]}
-/>
+// Wide grid (4 rows x 8 columns)
+<BrailleLoader variant="cascade" grid={[4, 8]} />
 ```
 
 ### Speed Control
@@ -223,9 +229,6 @@ When reduced motion is preferred:
 
 // Fast, urgent animation
 <BrailleLoader variant="pulse" speed="fast" />
-
-// Precise duration (1500ms)
-<BrailleLoader variant="orbit" duration={1500} />
 ```
 
 ### Theming with Tailwind
@@ -235,16 +238,10 @@ When reduced motion is preferred:
 <BrailleLoader variant="helix" className="text-primary" />
 
 // Muted appearance
-<BrailleLoader
-  variant="sparkle"
-  className="text-muted-foreground"
-/>
+<BrailleLoader variant="sparkle" className="text-muted-foreground" />
 
-// Custom dot styling
-<BrailleLoader
-  variant="rain"
-  dotClassName="opacity-80 rounded-sm"
-/>
+// Custom font size for larger braille dots
+<BrailleLoader variant="rain" className="text-secondary" fontSize={32} />
 ```
 
 ### Form Loading State
@@ -255,7 +252,7 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
     <button disabled={isSubmitting}>
       {isSubmitting ? (
         <span className="flex items-center gap-2">
-          <BrailleLoader variant="snake" dotSize="sm" gap="sm" className="text-background" />
+          <BrailleLoader variant="snake" className="text-background" />
           Processing...
         </span>
       ) : (
@@ -274,7 +271,7 @@ function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-      <BrailleLoader variant="gravity-well" dotSize="lg" gridSize="lg" className="text-primary" />
+      <BrailleLoader variant="gravity-well" gridSize="lg" className="text-primary" />
     </div>
   );
 }
@@ -302,21 +299,18 @@ type BrailleLoaderVariant =
   | "helix"
   | "braille"
   | "interference"
-  | "gravity-well"
   | "phase-shift"
   | "spiral"
-  | "reflected-ripple";
+  | "reflected-ripple"
+  | "pendulum"
+  | "compress"
+  | "sort";
 
 type BrailleLoaderSpeed = "slow" | "normal" | "fast";
 
 type BrailleGridSize = "sm" | "md" | "lg" | "xl";
 
 type BrailleGrid = [rows: number, cols: number];
-
-type DotState = {
-  opacity: number; // 0.0 to 1.0
-  scale: number; // Scale factor (1.0 = normal)
-};
 ```
 
 ---
@@ -547,24 +541,7 @@ Dual wave interference pattern creating moire-like visual effects.
 
 ---
 
-### 17. `gravity-well`
-
-Dots are pulled toward the center and released, simulating gravity.
-
-**Best for:** Center-focused operations, collapsing/expanding states
-
-**Visual:**
-
-```
-○ ○ ○ ○      ○ ○ ○ ○      ● ● ● ●
-○ ○ ○ ○  →   ○ ● ● ○  →   ● ● ● ●
-○ ○ ○ ○      ○ ● ● ○      ● ● ● ●
-○ ○ ○ ○      ○ ○ ○ ○      ● ● ● ●
-```
-
----
-
-### 18. `phase-shift`
+### 17. `phase-shift`
 
 Alternating quadrant phases create a shifting pattern across the grid.
 
@@ -574,7 +551,7 @@ Alternating quadrant phases create a shifting pattern across the grid.
 
 ---
 
-### 19. `spiral`
+### 18. `spiral`
 
 A logarithmic spiral emanates from the center outward.
 
@@ -591,7 +568,7 @@ A logarithmic spiral emanates from the center outward.
 
 ---
 
-### 20. `reflected-ripple`
+### 19. `reflected-ripple`
 
 A wave bounces back and forth across columns, creating a reflected ripple effect.
 
@@ -604,6 +581,65 @@ A wave bounces back and forth across columns, creating a reflected ripple effect
 ● ○ ○ ○  →   ○ ○ ● ○  →   ○ ○ ○ ●
 ● ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ●
 ● ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ●
+```
+
+---
+
+### 20. `pendulum`
+
+A smooth curved wave oscillating left-to-right with periodic motion.
+
+**Best for:** Calm, continuous loading states, time-based operations
+
+**Grid recommendation:** Any size, especially effective with wider widths
+
+**Visual:**
+```
+○○○○○
+●○●●○
+●●●●●
+○●●●○
+```
+
+---
+
+### 21. `compress`
+
+The grid compresses from full width inward while selectively popping dots.
+
+**Best for:** Compacting operations, reducing data visualization
+
+**Grid recommendation:** Any size
+
+**Visual:**
+```
+●●●●●
+●●●○○
+●○●○○
+●○○○○
+```
+
+---
+
+### 22. `sort`
+
+Animated gradient transforms from scrambled initial positions to ordered target state.
+
+**Best for:** Sorting operations, filtering, data organization
+
+**Grid recommendation:** Any size, especially effective on wider grids
+
+**Visual:**
+```
+●○●●→
+●●●●
+●●○○
+●○○○
+→
+●●○●
+●●●○
+○●●○
+○●○●
 ```
 
 ---
