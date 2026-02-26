@@ -140,28 +140,39 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   pendulum: {
     totalFrames: 120,
     interval: 12,
-    gridSize: [5, 5],
-    compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      // One full swing across the animation duration
-      const basePhase = progress * Math.PI * 4; // 2 full oscillations (back & forth)
-      const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
+    gridSize: [5, 4],
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        // angle varies across columns to form a curved arc
-        const angle = basePhase + (pc / (width * 2)) * Math.PI;
-        const center = scaleToHeight((Math.sin(angle) + 1) / 2, height);
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+
+      const progress = frame / totalFrames;
+      const pixelCols = width * 2;
+
+      // ✅ fast natural swing
+      const basePhase = progress * Math.PI * 8;
+
+      // ✅ dynamic spatial sine (CRITICAL)
+      const spread = Math.sin(progress * Math.PI) * 1.1;
+
+      const threshold = 0.7;
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        // ⭐ sine exists INSIDE braille cell
+        const swing = Math.sin(basePhase + pc * spread);
+
+        const center = ((1 - swing) * (height - 1)) / 2;
+
         for (let row = 0; row < height; row++) {
           if (Math.abs(row - center) < threshold) {
-            field[Math.floor(pc / 2)] = setDot(field[Math.floor(pc / 2)], row, pc % 2);
+            const charIdx = Math.floor(pc / 2);
+            field[charIdx] = setDot(field[charIdx], row, pc % 2);
           }
         }
       }
+
       return field;
     },
   },
-
   compress: {
     totalFrames: 100,
     interval: 40,
@@ -195,67 +206,128 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     totalFrames: 100,
     interval: 40,
     gridSize: [6, 6],
+
     compute: (frame, totalFrames, width, height, ctx) => {
       const progress = frame / totalFrames;
-      const cursor = progress * width * 2 * 1.2;
-      const field = createFieldBuffer(width);
-      const threshold = getThreshold(height);
-      const maxRow = height - 1;
+      const pixelCols = width * 2;
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        const d = pc - cursor;
-        let center: number;
-        if (d < -3) {
-          center = ctx.target[pc];
-        } else if (d < 2) {
-          const blend = 1 - (d + 3) / 5;
+      const field = createFieldBuffer(width);
+
+      // sorting front
+      const cursor = progress * pixelCols;
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+
+        let fillHeight;
+
+        // =========================
+        // ✅ SORTED REGION
+        // =========================
+        if (pc < cursor - 1) {
+          fillHeight = ctx.target[pc];
+        }
+
+        // =========================
+        // ✅ ACTIVE FRONT
+        // =========================
+        else if (Math.abs(pc - cursor) < 2) {
+          const blend = 1 - Math.abs(pc - cursor) / 2;
+
           const ease = blend * blend * (3 - 2 * blend);
-          center = ctx.shuffled[pc] + (ctx.target[pc] - ctx.shuffled[pc]) * ease;
-          if (Math.abs(d) < 0.8) {
-            const charIdx = Math.floor(pc / 2);
-            const dc = pc % 2;
+
+          fillHeight = ctx.shuffled[pc] + (ctx.target[pc] - ctx.shuffled[pc]) * ease;
+
+          // flash = comparison
+          if (blend > 0.7) {
             for (let r = 0; r < height; r++) {
               field[charIdx] = setDot(field[charIdx], r, dc);
             }
             continue;
           }
-        } else {
-          center =
-            ctx.shuffled[pc] +
-            Math.sin(progress * Math.PI * 16 + pc * 2.7) * 0.6 +
-            Math.sin(progress * Math.PI * 9 + pc * 1.3) * 0.4;
         }
-        center = Math.max(0, Math.min(maxRow, center));
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
-        for (let r = 0; r < height; r++) {
-          if (Math.abs(r - center) < threshold) {
-            field[charIdx] = setDot(field[charIdx], r, dc);
-          }
+
+        // =========================
+        // ✅ UNSORTED REGION
+        // =========================
+        else {
+          fillHeight = ctx.shuffled[pc] + Math.sin(progress * Math.PI * 12 + pc * 2.3) * 0.8;
+        }
+
+        fillHeight = Math.max(0, Math.min(height - 1, fillHeight));
+
+        // ✅ IMPORTANT FIX:
+        // cumulative stacking (NO ERASURE)
+        for (let r = Math.floor(fillHeight); r < height; r++) {
+          field[charIdx] = setDot(field[charIdx], r, dc);
         }
       }
+
       return field;
     },
   },
 
   breathe: {
-    totalFrames: 55,
+    totalFrames: 40,
     interval: 40,
-    gridSize: [3, 3],
+    gridSize: [1, 6],
+
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const period = 2200;
-      const t = frame * 40;
-      const alpha = 0.4 + (0.55 * (1 - Math.cos((2 * Math.PI * t) / period))) / 2;
       const field = createFieldBuffer(width);
 
-      const dotCount = Math.floor(height * alpha);
-      for (let pc = 0; pc < width * 2; pc++) {
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
-        for (let row = 0; row < dotCount; row++) {
-          field[charIdx] = setDot(field[charIdx], row, dc);
+      // -----------------------------
+      // breathing motion
+      // -----------------------------
+      const progress = frame / totalFrames;
+
+      const alpha = 0.5 + 0.5 * Math.sin(progress * Math.PI * 2);
+
+      // -----------------------------
+      // loop index (changes ONLY after animation ends)
+      // -----------------------------
+      const loopIndex = Math.floor(frame / totalFrames);
+
+      // -----------------------------
+      // checker dots
+      // -----------------------------
+      const dots: { pc: number; row: number }[] = [];
+
+      for (let pass = 0; pass < 2; pass++) {
+        for (let pc = 0; pc < width * 2; pc++) {
+          for (let row = 0; row < height; row++) {
+            if ((pc + row) % 2 === pass) {
+              dots.push({ pc, row });
+            }
+          }
         }
       }
+
+      // -----------------------------
+      // ✅ hole chosen once per loop
+      // -----------------------------
+      const rand = seededRandom(9001 + loopIndex);
+      const holeIndex = Math.floor(rand() * dots.length);
+
+      const maxDots = dots.length - 1;
+      const activeDots = Math.floor(alpha * maxDots);
+
+      let placed = 0;
+
+      for (let i = 0; i < dots.length; i++) {
+        if (i === holeIndex) continue;
+        if (placed >= activeDots) break;
+
+        const { pc, row } = dots[i];
+
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+
+        field[charIdx] = setDot(field[charIdx], row, dc);
+
+        placed++;
+      }
+
       return field;
     },
   },

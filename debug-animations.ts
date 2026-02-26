@@ -2,13 +2,12 @@ import fs from "fs";
 import { VARIANT_CONFIGS, getPrecomputeContext } from "./lib/braille-loader";
 
 // ---------- CONFIG ----------
-const VARIANT = "fillSweep";
-const WIDTH = 4;
-const HEIGHT = 4;
+const VARIANT = "sort";
+const cfg = VARIANT_CONFIGS[VARIANT];
+const WIDTH = cfg.gridSize[0];
+const HEIGHT = cfg.gridSize[1];
 const OUTPUT = "braille-debug.txt";
 // ----------------------------
-
-const cfg = VARIANT_CONFIGS[VARIANT];
 
 if (!cfg) {
   throw new Error(`Variant "${VARIANT}" not found`);
