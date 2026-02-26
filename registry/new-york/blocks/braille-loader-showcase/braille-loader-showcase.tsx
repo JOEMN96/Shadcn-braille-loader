@@ -48,7 +48,7 @@ function Panel({ panelClassName, textClassName, colorClass }: PanelProps) {
             <span className="inline-flex mb-3 shrink-0 items-center justify-center overflow-hidden">
               <BrailleLoader
                 variant={variant}
-                gridSize="md"
+               
                 speed="normal"
                 className={colorClass}
                 label={`Animation ${variantLabel[variant]} loading`}

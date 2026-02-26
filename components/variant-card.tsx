@@ -55,7 +55,7 @@ function VariantCard({ variant, label, className }: VariantCardProps) {
       <div className="flex items-center justify-center h-28 bg-gradient-to-br from-muted/30 to-muted/10">
         <BrailleLoader
           variant={variant}
-          gridSize="md"
+         
           speed="normal"
           className="text-primary"
         />

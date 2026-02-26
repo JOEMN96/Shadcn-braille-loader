@@ -103,7 +103,7 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 import { BrailleLoader } from "@/components/ui/braille-loader";
 
 export function Example() {
-  return <BrailleLoader variant="helix" gridSize="md" speed="normal" className="text-primary" />;
+  return <BrailleLoader variant="helix" speed="normal" className="text-primary" />;
 }
 ```
 
@@ -205,10 +205,10 @@ When reduced motion is preferred:
 
 ```tsx
 // Small, compact loader
-<BrailleLoader variant="breathe" gridSize="sm" />
+<BrailleLoader variant="breathe" />
 
 // Large, prominent loader
-<BrailleLoader variant="helix" gridSize="xl" />
+<BrailleLoader variant="helix" />
 ```
 
 ### Custom Dimensions
@@ -271,7 +271,7 @@ function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-      <BrailleLoader variant="gravity-well" gridSize="lg" className="text-primary" />
+      <BrailleLoader variant="gravity-well" className="text-primary" />
     </div>
   );
 }

@@ -25,7 +25,7 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 <BrailleLoader variant="helix" />
 
 // With custom size
-<BrailleLoader gridSize="lg" speed="fast" />
+<BrailleLoader speed="fast" />
 
 // With custom grid (width × height)
 <BrailleLoader grid={[4, 8]} />
@@ -104,7 +104,7 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 ```typescript
 <BrailleLoader
   variant="breathe"           // Animation variant
-  gridSize="md"              // sm | md | lg | xl
+               // sm | md | lg | xl
   grid={[4, 8]}              // Custom [rows, cols], 2-12
   speed="normal"              // slow | normal | fast
   className="text-primary"   // Add classes
@@ -142,7 +142,7 @@ function App({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-      <BrailleLoader variant="gravity-well" gridSize="lg" fontSize={32} label="Loading..." />
+      <BrailleLoader variant="gravity-well" fontSize={32} label="Loading..." />
     </div>
   )
 }
@@ -156,7 +156,7 @@ function TableLoader({ loading }: { loading: boolean }) {
     <div className="flex items-center justify-center p-12">
       {loading && (
         <>
-          <BrailleLoader variant="snake" gridSize="sm" gap="sm" />
+          <BrailleLoader variant="snake" gap="sm" />
           <span className="ml-2">Loading data...</span>
         </>
       )}
@@ -321,7 +321,7 @@ If you have an older version, update imports:
 <BrailleLoader 
   dotSize="md" 
   gap="sm" 
-  gridSize="lg" 
+  
   speed="normal" 
   dotClassName="..." 
   duration={3000}

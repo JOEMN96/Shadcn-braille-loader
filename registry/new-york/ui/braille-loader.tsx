@@ -4,7 +4,6 @@ import * as React from "react";
 
 import {
   type BrailleGrid,
-  type BrailleGridSize,
   type BrailleLoaderSpeed,
   type BrailleLoaderVariant,
   generateFrames,
@@ -16,7 +15,6 @@ import { cn } from "@/lib/utils";
 
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant;
-  gridSize?: BrailleGridSize;
   grid?: BrailleGrid;
   speed?: BrailleLoaderSpeed;
   label?: string;
@@ -25,7 +23,6 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
 
 function BrailleLoader({
   variant = "breathe",
-  gridSize,
   grid,
   speed = "normal",
   className,
@@ -35,7 +32,7 @@ function BrailleLoader({
   ...props
 }: BrailleLoaderProps) {
   const resolvedVariant = normalizeVariant(variant);
-  const [width, height] = resolveGrid(gridSize, grid);
+  const [width, height] = resolveGrid(variant, grid);
   const spanRef = React.useRef<HTMLSpanElement>(null);
   const [mounted, setMounted] = React.useState(false);
 

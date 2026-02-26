@@ -40,17 +40,16 @@ export function Example() {
   return (
     <BrailleLoader
       variant="helix"
-      gridSize="md"
       speed="normal"
       label="Loading results"
     />
   )
 }`;
 
-const gridExampleCode = `<BrailleLoader variant="rain" gridSize="sm" />
-<BrailleLoader variant="rain" gridSize="md" />
-<BrailleLoader variant="rain" gridSize="lg" />
-<BrailleLoader variant="rain" gridSize="xl" />`;
+const gridExampleCode = `<BrailleLoader variant="rain" />
+<BrailleLoader variant="rain" />
+<BrailleLoader variant="rain" />
+<BrailleLoader variant="rain" />`;
 
 const customGridCode = `<BrailleLoader variant="snake" grid={[5, 8]} />
 <BrailleLoader variant="pulse" grid={[6, 6]} />`;
@@ -73,9 +72,9 @@ const themingCode = `<BrailleLoader
   className="text-emerald-600 dark:text-emerald-400" 
 />`;
 
-const newVariantsCode = `<BrailleLoader variant="pendulum" gridSize="md" />
-<BrailleLoader variant="compress" gridSize="md" />
-<BrailleLoader variant="sort" gridSize="md" />`;
+const newVariantsCode = `<BrailleLoader variant="pendulum" />
+<BrailleLoader variant="compress" />
+<BrailleLoader variant="sort" />`;
 
 const formExampleCode = `import { BrailleLoader } from "@/components/ui/braille-loader"
 import { Button } from "@/components/ui/button"
@@ -97,8 +96,7 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 
 const propsData = [
   { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 23 variants." },
-  { prop: "gridSize", type: '"sm" | "md" | "lg" | "xl"', default: "-", description: "Preset grid dimensions (3x3 to 6x6)." },
-  { prop: "grid", type: "[rows, cols]", default: "[4, 4]", description: "Custom grid override. 2x2 to 12x12 supported." },
+  { prop: "grid", type: "[rows, cols]", default: "variant-specific", description: "Custom grid override. Uses variant default if not specified. 2x2 to 12x12 supported." },
   { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Speed preset." },
   { prop: "className", type: "string", default: "-", description: "Additional classes for the wrapper." },
   { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
@@ -111,7 +109,7 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <header className="mb-16 text-center">
           <div className="inline-flex items-center justify-center mb-6 p-4 rounded-2xl bg-primary/5 border">
-            <BrailleLoader variant="helix" gridSize="lg" speed="normal" />
+            <BrailleLoader variant="helix" speed="normal" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Braille Loader</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -161,7 +159,7 @@ export default function Home() {
               <p className="text-muted-foreground">Import and use the component with your preferred variant:</p>
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="flex items-center justify-center p-8 rounded-xl border bg-muted/30">
-                  <BrailleLoader variant="helix" gridSize="lg" />
+                  <BrailleLoader variant="helix" />
                 </div>
                 <CodeBlock code={basicUsageCode} language="tsx" filename="example.tsx" showLineNumbers />
               </div>
@@ -175,31 +173,27 @@ export default function Home() {
                 <p className="text-muted-foreground">Configure grid dimensions, speed, and size to match your design.</p>
               </div>
 
-              <div className="space-y-6">
-                <h3 className="text-xl font-medium">Grid Size</h3>
-                <p className="text-sm text-muted-foreground">Four presets from 3x3 to 6x6 grids.</p>
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <div className="flex items-center justify-center gap-6 p-8 rounded-xl border bg-muted/30 flex-wrap">
-                    <div className="text-center">
-                      <BrailleLoader variant="rain" gridSize="sm" />
-                      <span className="block mt-3 text-xs text-muted-foreground">sm (3x3)</span>
-                    </div>
-                    <div className="text-center">
-                      <BrailleLoader variant="rain" gridSize="md" />
-                      <span className="block mt-3 text-xs text-muted-foreground">md (4x4)</span>
-                    </div>
-                    <div className="text-center">
-                      <BrailleLoader variant="rain" gridSize="lg" />
-                      <span className="block mt-3 text-xs text-muted-foreground">lg (5x5)</span>
-                    </div>
-                    <div className="text-center">
-                      <BrailleLoader variant="rain" gridSize="xl" />
-                      <span className="block mt-3 text-xs text-muted-foreground">xl (6x6)</span>
-                    </div>
-                  </div>
-                  <CodeBlock code={gridExampleCode} language="tsx" />
-                </div>
-              </div>
+<div className="space-y-6">
+  <h3 className="text-xl font-medium">Grid Size</h3>
+  <p className="text-sm text-muted-foreground">Each variant has its own optimized grid size. Use the <code>grid</code> prop to override.</p>
+  <div className="grid gap-4 lg:grid-cols-2">
+    <div className="flex items-center justify-center gap-6 p-8 rounded-xl border bg-muted/30 flex-wrap">
+      <div className="text-center">
+        <BrailleLoader variant="breathe" />
+        <span className="block mt-3 text-xs text-muted-foreground">breathe (3x3)</span>
+      </div>
+      <div className="text-center">
+        <BrailleLoader variant="rain" />
+        <span className="block mt-3 text-xs text-muted-foreground">rain (5x5)</span>
+      </div>
+      <div className="text-center">
+        <BrailleLoader variant="interference" />
+        <span className="block mt-3 text-xs text-muted-foreground">interference (6x6)</span>
+      </div>
+    </div>
+    <CodeBlock code={gridExampleCode} language="tsx" />
+  </div>
+</div>
 
               <div className="space-y-6">
                 <h3 className="text-xl font-medium">Custom Grid</h3>
@@ -225,15 +219,15 @@ export default function Home() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
                     <div className="text-center">
-                      <BrailleLoader variant="orbit" gridSize="md" speed="slow" />
+                      <BrailleLoader variant="orbit" speed="slow" />
                       <span className="block mt-3 text-xs text-muted-foreground">slow</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="orbit" gridSize="md" speed="normal" />
+                      <BrailleLoader variant="orbit" speed="normal" />
                       <span className="block mt-3 text-xs text-muted-foreground">normal</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="orbit" gridSize="md" speed="fast" />
+                      <BrailleLoader variant="orbit" speed="fast" />
                       <span className="block mt-3 text-xs text-muted-foreground">fast</span>
                     </div>
                   </div>
@@ -268,9 +262,9 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">Apply custom colors using Tailwind classes.</p>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
-                    <BrailleLoader variant="sparkle" gridSize="md" className="text-blue-500" />
-                    <BrailleLoader variant="helix" gridSize="md" className="text-emerald-600" />
-                    <BrailleLoader variant="breathe" gridSize="md" className="text-purple-500" />
+                    <BrailleLoader variant="sparkle" className="text-blue-500" />
+                    <BrailleLoader variant="helix" className="text-emerald-600" />
+                    <BrailleLoader variant="breathe" className="text-purple-500" />
                   </div>
                   <CodeBlock code={themingCode} language="tsx" />
                 </div>
@@ -285,15 +279,15 @@ export default function Home() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-8 p-8 rounded-xl border bg-muted/30">
                     <div className="text-center">
-                      <BrailleLoader variant="pendulum" gridSize="md" />
+                      <BrailleLoader variant="pendulum" />
                       <span className="block mt-3 text-xs text-muted-foreground">Pendulum</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="compress" gridSize="md" />
+                      <BrailleLoader variant="compress" />
                       <span className="block mt-3 text-xs text-muted-foreground">Compress</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="sort" gridSize="md" />
+                      <BrailleLoader variant="sort" />
                       <span className="block mt-3 text-xs text-muted-foreground">Sort</span>
                     </div>
                   </div>

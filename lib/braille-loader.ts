@@ -24,15 +24,7 @@ export const brailleLoaderVariants = [
 
 export type BrailleLoaderVariant = (typeof brailleLoaderVariants)[number];
 export type BrailleLoaderSpeed = "slow" | "normal" | "fast";
-export type BrailleGridSize = "sm" | "md" | "lg" | "xl";
 export type BrailleGrid = [rows: number, cols: number];
-
-const GRID_PRESETS: Record<BrailleGridSize, BrailleGrid> = {
-  sm: [3, 3],
-  md: [4, 4],
-  lg: [5, 5],
-  xl: [6, 6],
-};
 
 const MIN_GRID_DIMENSION = 2;
 const MAX_GRID_DIMENSION = 12;
@@ -81,21 +73,22 @@ function getThreshold(height: number): number {
 }
 
 function setDot(brailleChar: number, row: number, col: number): number {
-  const safeRow = Math.min(row, 3);
-  return brailleChar | DOT_BITS[safeRow][col];
+  if (row < 0 || row > 3) return brailleChar;
+  return brailleChar | DOT_BITS[row][col];
 }
 
 function createFieldBuffer(width: number): number[] {
-  return Array.from({ length: width }, () => BRAILLE_BASE);
+  return Array.from({ length: width }, () => 0);
 }
 
 function fieldToString(field: number[]): string {
-  return field.map((c) => String.fromCharCode(c)).join("");
+  return field.map((mask) => String.fromCharCode(BRAILLE_BASE + mask)).join("");
 }
 
 type VariantConfig = {
   totalFrames: number;
   interval: number;
+  gridSize: [number, number];
   compute: (frame: number, totalFrames: number, width: number, height: number, context: PrecomputeContext) => number[];
 };
 
@@ -108,7 +101,7 @@ type PrecomputeContext = {
 
 const contextCache = new Map<string, PrecomputeContext>();
 
-function getPrecomputeContext(width: number, height: number): PrecomputeContext {
+export function getPrecomputeContext(width: number, height: number): PrecomputeContext {
   const key = `${width}x${height}`;
   let ctx = contextCache.get(key);
   if (!ctx) {
@@ -143,10 +136,11 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
   return ctx;
 }
 
-const VARIANT_CONFIGS: Record<string, VariantConfig> = {
+export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   pendulum: {
     totalFrames: 120,
     interval: 12,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       // One full swing across the animation duration
@@ -171,6 +165,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   compress: {
     totalFrames: 100,
     interval: 40,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, ctx) => {
       const progress = frame / totalFrames;
       const sieveThreshold = Math.max(0.1, 1 - progress * 1.2);
@@ -199,6 +194,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   sort: {
     totalFrames: 100,
     interval: 40,
+    gridSize: [6, 6],
     compute: (frame, totalFrames, width, height, ctx) => {
       const progress = frame / totalFrames;
       const cursor = progress * width * 2 * 1.2;
@@ -245,6 +241,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   breathe: {
     totalFrames: 55,
     interval: 40,
+    gridSize: [3, 3],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 2200;
       const t = frame * 40;
@@ -266,6 +263,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   pulse: {
     totalFrames: 23,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 900;
       const t = frame * 40;
@@ -298,6 +296,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   waveRows: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -323,6 +322,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   snake: {
     totalFrames: 35,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 1400;
       const t = frame * 40;
@@ -356,6 +356,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   orbit: {
     totalFrames: 60,
     interval: 50,
+    gridSize: [4, 4],
     compute: (frame: number, totalFrames: number, width: number, height: number, _ctx: PrecomputeContext) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -395,6 +396,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   rain: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
       const period = 1000;
@@ -425,6 +427,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   sparkle: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
 
@@ -456,6 +459,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   checkerboard: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const phase = Math.floor(progress * 8) % 2;
@@ -478,6 +482,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   columns: {
     totalFrames: 30,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 1200;
       const t = frame * 40;
@@ -503,6 +508,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   cascade: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -529,6 +535,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   diagonalSwipe: {
     totalFrames: 35,
     interval: 40,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 1400;
       const t = frame * 40;
@@ -558,6 +565,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   scan: {
     totalFrames: 40,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 1600;
       const t = frame * 40;
@@ -582,29 +590,35 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   fillSweep: {
-    totalFrames: 50,
+    totalFrames: 80,
     interval: 60,
+    gridSize: [4, 4],
+
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
 
+      const framesPerStep = 2;
+
+      const rawStep = frame / framesPerStep;
+      const baseStep = Math.floor(rawStep);
+      const phase = rawStep - baseStep;
+
+      const maxFill = height;
+      const cycle = maxFill * 2;
+
+      const triangle = (s: number) => maxFill - Math.abs((s % cycle) - maxFill);
+
+      const levelA = triangle(baseStep);
+      const levelB = triangle(baseStep + 1);
+
+      // ✅ temporal smoothing
+      const fillLevel = phase < 0.5 ? levelA : levelB;
+
       const maxRow = height - 1;
-      const cycleLength = maxRow * 2;
 
-      const framesPerStep = 3;
-      const stepFrame = Math.floor(frame / framesPerStep);
-      const f = stepFrame % cycleLength;
+      for (let i = 0; i < fillLevel; i++) {
+        const row = maxRow - i;
 
-      let sweepRow;
-
-      if (f < maxRow) {
-        // Filling up (exclude top edge duplicate)
-        sweepRow = maxRow - f;
-      } else {
-        // Unfilling down (exclude bottom duplicate)
-        sweepRow = f - maxRow + 1;
-      }
-
-      for (let row = sweepRow; row <= maxRow; row++) {
         for (let charIdx = 0; charIdx < width; charIdx++) {
           field[charIdx] = setDot(field[charIdx], row, 0);
           field[charIdx] = setDot(field[charIdx], row, 1);
@@ -614,10 +628,10 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       return field;
     },
   },
-
   helix: {
     totalFrames: 50,
     interval: 44,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 1800;
       const t = frame * 44;
@@ -649,6 +663,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   braille: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [4, 4],
     compute: (frame: number, totalFrames: number, width: number, height: number, _ctx: PrecomputeContext) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -697,6 +712,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   interference: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [6, 6],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -725,6 +741,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   phaseShift: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -759,6 +776,7 @@ const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   reflectedRipple: {
     totalFrames: 60,
     interval: 40,
+    gridSize: [6, 6],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
@@ -818,13 +836,18 @@ export function generateFrames(variant: string, width: number, height: number): 
   return { frames, interval: config.interval };
 }
 
-export function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): [number, number] {
+export function resolveGrid(variant: string, grid?: BrailleGrid): [number, number] {
   if (grid) {
     const rows = clamp(Math.round(grid[0]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
     const cols = clamp(Math.round(grid[1]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
     return [cols, rows];
   }
-  if (gridSize) return [GRID_PRESETS[gridSize][1], GRID_PRESETS[gridSize][0]];
+
+  const config = VARIANT_CONFIGS[toCamelCase(variant)];
+  if (config?.gridSize) {
+    return config.gridSize;
+  }
+
   return [4, 4];
 }
 
