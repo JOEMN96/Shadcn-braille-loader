@@ -1,10 +1,10 @@
 # Shadcn Braille Loader Registry
 
-A registry-first, accessible braille loader library for shadcn CLI featuring **22 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
+A registry-first, accessible braille loader library for shadcn CLI featuring **21 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
-- **22 Animation Variants** - From subtle pulses to complex spiral patterns
+- **21 Animation Variants** - From subtle pulses to complex spiral patterns
 - **Fully Accessible** - Screen reader support, respects `prefers-reduced-motion`
 - **Highly Customizable** - Dot size, gap, grid dimensions, animation speed
 - **Theme-Aware** - Inherits color from current text color
@@ -119,7 +119,7 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 | Prop           | Type                             | Default     | Description                                                               |
 | -------------- | -------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| `variant`      | `BrailleLoaderVariant`           | `"breathe"` | Animation pattern (23 available). Invalid values fallback to `"breathe"`. |
+| `variant`      | `BrailleLoaderVariant`           | `"breathe"` | Animation pattern (21 available). Invalid values fallback to `"breathe"`. |
 | `gridSize`     | `"sm" \| "md" \| "lg" \| "xl"`   | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
 | `grid`         | `[rows: number, cols: number]`   | `undefined` | Custom grid dimensions (2-12). Height capped at 4 in v1. |
 | `speed`        | `"slow" \| "normal" \| "fast"`   | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`. |
@@ -152,11 +152,40 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 | `braille`          | Pattern     | Medium     | Any            | Accessibility  |
 | `interference`     | Wave        | High       | lg, xl         | Scientific     |
 | `phase-shift`      | Quadrant    | Medium     | md, lg         | Parallel       |
-| `spiral`           | Spiral      | High       | md, lg         | Creative       |
 | `reflected-ripple` | Bounce      | Low        | Any            | Network        |
-| `pendulum`        | Curved wave  | Medium     | Any            | Calm/continuous |
-| `compress`        | Inward     | Medium     | Any            | Compacting      |
-| `sort`            | Gradient   | Medium     | Any            | Sorting        |
+| `pendulum`         | Curved wave | Medium     | Any            | Calm/continuous |
+| `compress`         | Inward      | Medium     | Any            | Compacting      |
+| `sort`             | Gradient    | Medium     | Any            | Sorting         |
+
+---
+
+## Animation Guide (Descriptions + Braille)
+
+Representative braille sequences for each variant. These are illustrative snapshots of motion states, not fixed outputs.
+
+| Variant | Animation Description | Example Braille Chars |
+| --- | --- | --- |
+| `breathe` | Whole grid gently expands and contracts in unison. | `⠂⠂` → `⠆⠆` → `⠂⠂` |
+| `pulse` | Radial pulse radiates from center then fades outward. | `⠐⠂` → `⠿⠿` → `⠂⠐` |
+| `orbit` | Bright cluster circles around center on a looped path. | `⢀⠂` → `⠐⢀` → `⠂⢀` |
+| `snake` | Lead dot moves cell-by-cell with trailing tail. | `⠁⠂⠄` → `⠂⠄⠂` |
+| `fill-sweep` | Grid fills linearly in one direction then resets. | `⠁⠃⠇` → `⣿⣿⣿` |
+| `scan` | Thin scan line sweeps across and repeats. | `⠤⠀⠀` → `⠀⠤⠀` → `⠀⠀⠤` |
+| `rain` | Staggered vertical drops fall through columns. | `⠂⠀⠂` → `⠄⠀⠄` |
+| `cascade` | Diagonal cascade activates cells in falling bands. | `⠁⠀⠂` → `⠀⠂⠀⠄` |
+| `checkerboard` | Alternating checker pattern flips phase each beat. | `⠕⠪` ↔ `⠪⠕` |
+| `columns` | Columns animate in sequence with vertical emphasis. | `⡇⠀⡇` → `⠀⡇⠀` |
+| `wave-rows` | Horizontal row waves roll left-to-right. | `⠒⠤⠒` → `⠤⠒⠤` |
+| `diagonal-swipe` | Fill and clear move diagonally across the grid. | `⠁⠂⠄` → `⠄⠂⠁` |
+| `sparkle` | Scattered glints twinkle with controlled randomness. | `⠁⠀⠈` → `⠀⠂⠀` |
+| `helix` | Spiral/helix-like band rotates across columns. | `⡇⠒⢸` → `⢸⠒⡇` |
+| `braille` | Cycles through classic braille-inspired glyph patterns. | `⠿` → `⣶` → `⠿` |
+| `interference` | Two wave sources create moving constructive bands. | `⠂⠆⠂` → `⠆⠂⠆` |
+| `phase-shift` | Quadrants alternate in rotating phase offsets. | `⠛⠃⠀` → `⠀⠘⠛` |
+| `reflected-ripple` | Ripple expands from center, reflects, and returns. | `⢸⡇` → `⣿⣿` → `⡇⢸` |
+| `pendulum` | Arc-like sweep oscillates back and forth smoothly. | `⠂⠄⠂` ↔ `⠄⠂⠄` |
+| `compress` | Active band compresses inward toward center mass. | `⡇⠀⡇` → `⠀⣿⠀` |
+| `sort` | Gradient-like ordering transitions from mixed to grouped. | `⠂⠆⣿` → `⠂⠂⣿` |
 
 ---
 
@@ -271,7 +300,7 @@ function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-      <BrailleLoader variant="gravity-well" className="text-primary" />
+      <BrailleLoader variant="interference" className="text-primary" />
     </div>
   );
 }
@@ -300,7 +329,6 @@ type BrailleLoaderVariant =
   | "braille"
   | "interference"
   | "phase-shift"
-  | "spiral"
   | "reflected-ripple"
   | "pendulum"
   | "compress"
@@ -333,314 +361,6 @@ Requires `requestAnimationFrame` and CSS `transform` support.
 - **Context caching** per grid dimensions
 - **No layout thrashing** - transforms only (opacity, scale)
 - **CSS transitions** for smooth interpolation
-
----
-
-## Variant Catalog
-
-### 1. `breathe`
-
-A gentle expanding and contracting animation from the center. All dots scale uniformly.
-
-**Best for:** Subtle loading states, background loading indicators
-
-**Visual:**
-
-```
-○ ○ ○ ○      ● ● ● ●      ○ ○ ○ ○
-○ ○ ○ ○  →   ● ● ● ●  →   ○ ○ ○ ○
-○ ○ ○ ○      ● ● ● ●      ○ ○ ○ ○
-○ ○ ○ ○      ● ● ● ●      ○ ○ ○ ○
-```
-
----
-
-### 2. `pulse`
-
-A diamond-shaped pulse radiating from the center outward.
-
-**Best for:** Attention-grabbing loaders, form submissions
-
-**Grid recommendation:** Works best with `md` (4x4) or larger grids
-
----
-
-### 3. `orbit`
-
-Dots illuminate sequentially around the perimeter in a circular orbit pattern.
-
-**Best for:** Processing states, cyclical operations
-
-**Visual:**
-
-```
-● ○ ○ ○      ○ ○ ○ ●      ○ ○ ○ ○
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-○ ○ ○ ○  →   ○ ○ ○ ○  →   ○ ○ ○ ○
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ●
-```
-
----
-
-### 4. `snake`
-
-A serpentine path traversal with a trailing tail effect. The illuminated dot snakes through the grid row by row.
-
-**Best for:** Progress indication, multi-step processes
-
-**Grid recommendation:** Any size, especially effective on larger grids
-
----
-
-### 5. `fill-sweep`
-
-Horizontal sweep filling the grid from top to bottom.
-
-**Best for:** Loading progress, batch operations
-
-**Visual:**
-
-```
-○ ○ ○ ○      ● ● ● ●      ● ● ● ●
-○ ○ ○ ○  →   ○ ○ ○ ○  →   ● ● ● ●
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-```
-
----
-
-### 6. `scan`
-
-A vertical scan line moving across the grid with adjacent glow.
-
-**Best for:** Search operations, data scanning states
-
----
-
-### 7. `rain`
-
-Raindrops falling down each column at different speeds and offsets.
-
-**Best for:** Data streaming, real-time updates
-
-**Visual:**
-
-```
-○ ○ ● ○      ○ ○ ○ ○      ● ○ ○ ●
-○ ○ ○ ○  →   ○ ● ○ ○  →   ○ ○ ○ ○
-● ○ ○ ○      ○ ○ ○ ○      ○ ○ ● ○
-○ ○ ○ ●      ○ ○ ○ ●      ○ ○ ○ ○
-```
-
----
-
-### 8. `cascade`
-
-A diagonal wave cascading from top-left to bottom-right.
-
-**Best for:** Sequential processing, waterfall operations
-
-**Grid recommendation:** Works well on square grids (md, lg)
-
----
-
-### 9. `checkerboard`
-
-Classic alternating checkerboard pattern that toggles between two states.
-
-**Best for:** Idle states, waiting indicators
-
-**Visual:**
-
-```
-● ○ ● ○      ○ ● ○ ●      ● ○ ● ○
-○ ● ○ ●  →   ● ○ ● ○  →   ○ ● ○ ●
-● ○ ● ○      ○ ● ○ ●      ● ○ ● ○
-○ ● ○ ●      ● ○ ● ○      ○ ● ○ ●
-```
-
----
-
-### 10. `columns`
-
-Columns illuminate sequentially from left to right.
-
-**Best for:** Column-based data loading, tabular operations
-
----
-
-### 11. `wave-rows`
-
-A sine wave undulating across all rows simultaneously.
-
-**Best for:** Calm loading states, background processes
-
-**Grid recommendation:** Works best with larger grids (lg, xl)
-
----
-
-### 12. `diagonal-swipe`
-
-A diagonal line sweeps across the grid.
-
-**Best for:** Transition states, directional operations
-
-**Visual:**
-
-```
-● ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-○ ● ○ ○  →   ○ ● ○ ○  →   ○ ○ ● ○
-○ ○ ● ○      ○ ○ ● ○      ○ ○ ○ ●
-○ ○ ○ ●      ○ ○ ○ ●      ○ ○ ○ ○
-```
-
----
-
-### 13. `sparkle`
-
-Random dots sparkle with varying intensities and timing offsets.
-
-**Best for:** Festive states, celebration moments, creative loading
-
-**Note:** Uses pseudo-random offset generation for consistent sparkle patterns
-
----
-
-### 14. `helix`
-
-A double helix pattern with two orbits spiraling around the center.
-
-**Best for:** Scientific/data processing, complex operations
-
-**Grid recommendation:** Works best with `md` or larger grids
-
----
-
-### 15. `braille`
-
-Classic braille cell fill animation. Dots activate in 3x2 braille cell patterns.
-
-**Best for:** Accessibility-themed interfaces, unique visual identity
-
-**Visual:**
-
-```
-● ● ○ ○      ● ● ● ●      ● ● ● ●
-● ● ○ ○  →   ● ● ○ ○  →   ● ● ● ●
-○ ○ ○ ○      ○ ○ ○ ○      ● ● ○ ○
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-```
-
----
-
-### 16. `interference`
-
-Dual wave interference pattern creating moire-like visual effects.
-
-**Best for:** Scientific visualizations, unique aesthetics
-
----
-
-### 17. `phase-shift`
-
-Alternating quadrant phases create a shifting pattern across the grid.
-
-**Best for:** Parallel processing, multi-threaded operations
-
-**Grid recommendation:** Works best with even-dimension grids
-
----
-
-### 18. `spiral`
-
-A logarithmic spiral emanates from the center outward.
-
-**Best for:** Exploration, search operations, creative loading
-
-**Visual:**
-
-```
-○ ○ ○ ○      ○ ○ ● ○      ● ○ ○ ○
-○ ● ○ ○  →   ○ ○ ○ ○  →   ○ ○ ○ ●
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-○ ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ○
-```
-
----
-
-### 19. `reflected-ripple`
-
-A wave bounces back and forth across columns, creating a reflected ripple effect.
-
-**Best for:** Ping operations, network status, back-and-forth processes
-
-**Visual:**
-
-```
-● ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ●
-● ○ ○ ○  →   ○ ○ ● ○  →   ○ ○ ○ ●
-● ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ●
-● ○ ○ ○      ○ ○ ○ ○      ○ ○ ○ ●
-```
-
----
-
-### 20. `pendulum`
-
-A smooth curved wave oscillating left-to-right with periodic motion.
-
-**Best for:** Calm, continuous loading states, time-based operations
-
-**Grid recommendation:** Any size, especially effective with wider widths
-
-**Visual:**
-```
-○○○○○
-●○●●○
-●●●●●
-○●●●○
-```
-
----
-
-### 21. `compress`
-
-The grid compresses from full width inward while selectively popping dots.
-
-**Best for:** Compacting operations, reducing data visualization
-
-**Grid recommendation:** Any size
-
-**Visual:**
-```
-●●●●●
-●●●○○
-●○●○○
-●○○○○
-```
-
----
-
-### 22. `sort`
-
-Animated gradient transforms from scrambled initial positions to ordered target state.
-
-**Best for:** Sorting operations, filtering, data organization
-
-**Grid recommendation:** Any size, especially effective on wider grids
-
-**Visual:**
-```
-●○●●→
-●●●●
-●●○○
-●○○○
-→
-●●○●
-●●●○
-○●●○
-○●○●
-```
 
 ---
 

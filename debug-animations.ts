@@ -2,7 +2,7 @@ import fs from "fs";
 import { VARIANT_CONFIGS, getPrecomputeContext } from "./lib/braille-loader";
 
 // ---------- CONFIG ----------
-const VARIANT = "sort";
+const VARIANT = "phaseShift";
 const cfg = VARIANT_CONFIGS[VARIANT];
 const WIDTH = cfg.gridSize[0];
 const HEIGHT = cfg.gridSize[1];

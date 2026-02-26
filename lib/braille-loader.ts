@@ -191,6 +191,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
         if (targetPc >= width * 2) continue;
         const charIdx = Math.floor(targetPc / 2);
         const dc = targetPc % 2;
+
         for (let row = 0; row < height; row++) {
           const importanceIdx = pc * height + row;
           if (ctx.importance[importanceIdx] < sieveThreshold) {
@@ -275,10 +276,6 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
 
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
-
-      // -----------------------------
-      // breathing motion
-      // -----------------------------
       const progress = frame / totalFrames;
 
       const alpha = 0.5 + 0.5 * Math.sin(progress * Math.PI * 2);
@@ -372,15 +369,19 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     compute: (frame, totalFrames, width, height, _ctx) => {
       const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const pixelCols = width * 2;
 
-      for (let row = 0; row < height; row++) {
-        const rowPhase = (row / height) * Math.PI * 2;
-        const waveCenter = (Math.sin(progress * Math.PI * 4 + rowPhase) + 1) / 2;
-        const centerPc = waveCenter * (width * 2 - 1);
+      const basePhase = progress * Math.PI * 2;
+      const colPhaseStep = (Math.PI * 2) / Math.max(2, pixelCols);
+      const bandWidth = 0.9;
 
-        for (let pc = 0; pc < width * 2; pc++) {
-          const dist = Math.abs(pc - centerPc);
-          if (dist < 1.2) {
+      for (let pc = 0; pc < pixelCols; pc++) {
+        const colWave = Math.sin(basePhase + pc * colPhaseStep);
+        const centerRow = ((colWave + 1) / 2) * (height - 1);
+
+        for (let row = 0; row < height; row++) {
+          const dist = Math.abs(row - centerRow);
+          if (dist <= bandWidth) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
@@ -392,35 +393,42 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   snake: {
-    totalFrames: 35,
-    interval: 40,
+    totalFrames: 60,
+    interval: 80,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const period = 1400;
-      const t = frame * 40;
       const field = createFieldBuffer(width);
-      const total = width * 2;
-      const phaseOffset = 0.13;
-      const speed = period / total;
+      const pixelCols = width * 2;
 
-      for (let pc = 0; pc < total; pc++) {
-        const phase = (t / (speed * 40) + pc * phaseOffset) % 1;
-        const easedPhase = phase * phase * (3 - 2 * phase);
-        const alpha = Math.max(0, 1 - easedPhase * 1.5);
-
-        if (alpha > 0.1) {
-          const center = scaleToHeight(0.5, height);
-          const currentThreshold = getThreshold(height) * (0.3 + alpha * 0.7);
-
-          const charIdx = Math.floor(pc / 2);
-          const dc = pc % 2;
-          for (let row = 0; row < height; row++) {
-            if (Math.abs(row - center) < currentThreshold) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
-          }
+      // Build serpentine path: left→right on even rows, right→left on odd rows
+      const path: Array<{ pc: number; row: number }> = [];
+      for (let row = 0; row < height; row++) {
+        if (row % 2 === 0) {
+          for (let pc = 0; pc < pixelCols; pc++) path.push({ pc, row });
+        } else {
+          for (let pc = pixelCols - 1; pc >= 0; pc--) path.push({ pc, row });
         }
       }
+
+      const progress = frame / totalFrames;
+      const trailingCells = 3;
+      const headPos = Math.floor(progress * path.length) % path.length;
+      const deadGap = 1;
+
+      const drawPathDot = (idx: number) => {
+        const { pc, row } = path[idx];
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        field[charIdx] = setDot(field[charIdx], row, dc);
+      };
+
+      drawPathDot(headPos);
+
+      for (let i = deadGap + 1; i < deadGap + 1 + trailingCells; i++) {
+        const idx = (headPos - i + path.length) % path.length;
+        drawPathDot(idx);
+      }
+
       return field;
     },
   },
@@ -466,32 +474,71 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   rain: {
-    totalFrames: 60,
+    totalFrames: 90,
     interval: 40,
     gridSize: [5, 5],
-    compute: (frame, totalFrames, width, height, _ctx) => {
+    compute: (frame, totalFrames, width, height, ctx) => {
       const field = createFieldBuffer(width);
-      const period = 1000;
+      const pixelCols = width * 2;
       const t = frame * 40;
-      const offset = 0.18;
-      const dropAmplitude = 2;
+      let activeDrops = 0;
 
-      for (let pc = 0; pc < width * 2; pc++) {
+      for (let pc = 0; pc < pixelCols; pc++) {
+        const rand = ctx.colRandom[pc] ?? 0;
+
+        const period = 1200 + rand * 1000;
+        const cyclePos = t / period + rand * 0.91 + pc * 0.07;
+        const cycleIndex = Math.floor(cyclePos);
+        const phase = cyclePos - cycleIndex;
+
+        const seedA = cycleIndex * 173 + pc * 37 + Math.floor(rand * 1009);
+        const noiseA = Math.sin(seedA * 12.9898) * 43758.5453;
+        const rollA = noiseA - Math.floor(noiseA);
+
+        const seedB = cycleIndex * 257 + pc * 61 + Math.floor(rand * 881);
+        const noiseB = Math.sin(seedB * 78.233) * 12345.6789;
+        const rollB = noiseB - Math.floor(noiseB);
+
+        const seedC = cycleIndex * 97 + pc * 149 + Math.floor(rand * 733);
+        const noiseC = Math.sin(seedC * 39.3467) * 31337.4242;
+        const rollC = noiseC - Math.floor(noiseC);
+
+        const missChance = 0.02 + rand * 0.08;
+        if (rollA < missChance) continue;
+
+        const spawnDelay = 0.0 + rollB * 0.2;
+        const fallDuration = 0.48 + rollC * 0.42;
+        const endPhase = spawnDelay + fallDuration;
+
+        if (phase < spawnDelay || phase > endPhase) continue;
+
+        const localPhase = (phase - spawnDelay) / fallDuration;
+        const gravityCurve = 1.6 + rollC * 1.2;
+        const accelerated = Math.pow(localPhase, gravityCurve);
+
+        const midWeight = Math.max(0, 1 - Math.abs(localPhase - 0.5) * 2);
+        const wobbleSeed = cycleIndex * 0.73 + pc * 1.31 + rand * 4.7;
+        const midWobble = Math.sin(wobbleSeed + localPhase * Math.PI * 6) * 0.1 * midWeight;
+
+        const y = Math.floor((accelerated + midWobble) * (height + 1)) - 1;
+        if (y < 0 || y >= height) continue;
+
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
-        const columnPhase = (t / period + pc * offset) % 1;
-        const easeOut = 1 - (1 - columnPhase) * (1 - columnPhase);
-        const yOffset = easeOut * dropAmplitude;
-        const dropPos = columnPhase * (height + 1) - 1 + yOffset;
-        const dropY = Math.floor(dropPos);
-
-        for (let dropOffset = 0; dropOffset < 2; dropOffset++) {
-          const actualY = dropY - dropOffset;
-          if (actualY >= 0 && actualY < height) {
-            field[charIdx] = setDot(field[charIdx], actualY, dc);
-          }
-        }
+        field[charIdx] = setDot(field[charIdx], y, dc);
+        activeDrops++;
       }
+
+      if (activeDrops === 0) {
+        const fallbackPos = (t / 1600) % 1;
+        const fallbackPc = Math.floor(fallbackPos * pixelCols) % pixelCols;
+        const fallbackPhase = fallbackPos * (height + 1);
+        const fallbackY = clamp(Math.floor(fallbackPhase), 0, height - 1);
+        const fallbackCharIdx = Math.floor(fallbackPc / 2);
+        const fallbackDc = fallbackPc % 2;
+        field[fallbackCharIdx] = setDot(field[fallbackCharIdx], fallbackY, fallbackDc);
+      }
+
       return field;
     },
   },
@@ -502,28 +549,42 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
+      const t = frame * 40;
+      const phaseFrames = Math.max(2, Math.floor(totalFrames / 8));
 
-      for (let pc = 0; pc < width * 2; pc++) {
+      for (let pc = 0; pc < pixelCols; pc++) {
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
-        for (let row = 0; row < height; row++) {
-          const dotIndex = pc * height + row;
-          const localRand = seededRandom(dotIndex * 47);
-          const phaseOffset = localRand();
-          const periodMin = 600;
-          const periodMax = 1400;
-          const period = periodMin + (periodMax - periodMin) * localRand();
-          const t = frame * 40;
+        for (let row = 0; row < drawableHeight; row++) {
+          const dotIndex = pc * drawableHeight + row;
+          const spacedMask = ((pc % 3) === 0) || ((row % 2) === 0 && (pc % 3) === 1);
+          if (!spacedMask) continue;
 
-          const alpha = 0.5 + 0.5 * Math.sin(2 * Math.PI * (t / period + phaseOffset));
-          const jitterAmp = 0.15;
-          const microJitter = jitterAmp * Math.sin(2 * Math.PI * (t / 200 + phaseOffset * 10));
+          const seedNoise = Math.sin((dotIndex + 23) * 12.9898) * 43758.5453;
+          const seed = seedNoise - Math.floor(seedNoise);
 
-          if (alpha > 0.5 + microJitter) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
+          const phaseLagFrames = Math.floor(seed * phaseFrames);
+          const localPhase = Math.floor((frame + phaseLagFrames) / phaseFrames) % 2;
+          const checkerActive = ((pc + row) % 2) === localPhase;
+
+          const twinklePeriod = 220 + seed * 160;
+          const drift = 0.08 * Math.sin(2 * Math.PI * (t / (1200 + seed * 700) + seed * 1.7));
+          const twinkle = 0.5 + 0.5 * Math.sin(2 * Math.PI * (t / twinklePeriod + seed * 0.8 + drift));
+
+          if (checkerActive) {
+            if (twinkle > 0.44) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
+          } else {
+            if (twinkle > 0.96) {
+              field[charIdx] = setDot(field[charIdx], row, dc);
+            }
           }
         }
       }
+
       return field;
     },
   },
@@ -533,12 +594,13 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     interval: 40,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
-      const phase = Math.floor(progress * 8) % 2;
+      const drawableHeight = Math.min(height, 4);
+      const phaseFrames = Math.max(2, Math.floor(totalFrames / 8));
+      const phase = Math.floor(frame / phaseFrames) % 2;
       const field = createFieldBuffer(width);
 
       for (let pc = 0; pc < width * 2; pc++) {
-        for (let row = 0; row < height; row++) {
+        for (let row = 0; row < drawableHeight; row++) {
           // True checkerboard: alternate both X (pc) and Y (row) positions
           if ((pc + row) % 2 === phase) {
             const charIdx = Math.floor(pc / 2);
@@ -552,27 +614,49 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   columns: {
-    totalFrames: 30,
+    totalFrames: 48,
     interval: 40,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const period = 1200;
-      const t = frame * 40;
       const field = createFieldBuffer(width);
-      const phaseX = 0.16;
+      const pixelCols = width * 2;
+      const stepsPerColumn = height + 1;
+      const totalSteps = pixelCols * stepsPerColumn;
 
-      for (let pc = 0; pc < width * 2; pc++) {
+      const progress = frame / totalFrames;
+      const step = Math.floor(progress * totalSteps) % totalSteps;
+      const activePc = Math.floor(step / stepsPerColumn);
+      const activeFill = step % stepsPerColumn;
+
+      const fillColumnToTop = (pc: number) => {
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
         for (let row = 0; row < height; row++) {
-          const alpha = (Math.sin(2 * Math.PI * (t / period + pc * phaseX)) + 1) / 2;
-          const rowOffset = row / height;
-          const intensity = Math.max(0, Math.min(1, alpha - rowOffset));
-          if (intensity > 0.3) {
-            field[charIdx] = setDot(field[charIdx], row, dc);
-          }
+          field[charIdx] = setDot(field[charIdx], row, dc);
+        }
+      };
+
+      const fillColumnBottomUp = (pc: number, count: number) => {
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        const dotsToFill = Math.max(0, Math.min(height, count));
+        for (let i = 0; i < dotsToFill; i++) {
+          const row = height - 1 - i;
+          field[charIdx] = setDot(field[charIdx], row, dc);
+        }
+      };
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        if (pc < activePc) {
+          fillColumnToTop(pc);
+          continue;
+        }
+
+        if (pc === activePc) {
+          fillColumnBottomUp(pc, activeFill);
         }
       }
+
       return field;
     },
   },
@@ -605,25 +689,29 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   diagonalSwipe: {
-    totalFrames: 35,
-    interval: 40,
-    gridSize: [5, 5],
+    totalFrames: 60,
+    interval: 30,
+    gridSize: [2, 6],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const period = 1400;
-      const t = frame * 40;
-      const progress = (t / period) % 1;
       const field = createFieldBuffer(width);
-      const trailFactor = 3.5;
-      const N = width * 2 + height;
+      const pixelCols = width * 2;
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        const normalizedX = pc / (width * 2 - 1);
+      const maxDiag = (pixelCols - 1) + (height - 1);
+      const cycleFrame = frame % totalFrames;
+      const clearFrames = Math.max(2, Math.floor(totalFrames / 2));
+      const fillFrames = Math.max(2, totalFrames - clearFrames);
+
+      const clearPhase = cycleFrame < clearFrames;
+      const localFrame = clearPhase ? cycleFrame : cycleFrame - clearFrames;
+      const localTotal = (clearPhase ? clearFrames : fillFrames) - 1;
+      const phaseProgress = localTotal > 0 ? localFrame / localTotal : 1;
+      const sweepFront = phaseProgress * (maxDiag + 1);
+
+      for (let pc = 0; pc < pixelCols; pc++) {
         for (let row = 0; row < height; row++) {
-          const normalizedY = row / (height - 1);
-          const phase = (normalizedX + normalizedY) / 2 - progress;
-          const alpha = Math.exp(-phase * trailFactor);
-
-          if (alpha > 0.1) {
+          const diag = pc + row;
+          const show = clearPhase ? diag >= sweepFront : diag < sweepFront;
+          if (show) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
@@ -639,7 +727,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     interval: 40,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const period = 1600;
+      const period = 900;
       const t = frame * 40;
       const progress = (t / period) % 1;
       const field = createFieldBuffer(width);
@@ -701,33 +789,61 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     },
   },
   helix: {
-    totalFrames: 50,
-    interval: 44,
+    totalFrames: 64,
+    interval: 40,
     gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const period = 1800;
-      const t = frame * 44;
       const field = createFieldBuffer(width);
-      const centerX = (width * 2 - 1) / 2;
-      const centerY = (height - 1) / 2;
-      const helixRadius = 3.0;
-      const colOffset = 0.15;
-      const rowSpacing = 0.1;
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
+      if (drawableHeight < 2) return field;
+      const maxRow = drawableHeight - 1;
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        for (let row = 0; row < height; row++) {
-          const angle = 2 * Math.PI * (t / period + pc * colOffset);
-          const cx = centerX + helixRadius * Math.cos(angle + row * rowSpacing);
-          const cy = centerY + helixRadius * Math.sin(angle + row * rowSpacing) * 0.5;
+      const progress = (frame % totalFrames) / Math.max(1, totalFrames - 1);
+      const ramp = smoothstep(progress);
+      const speedFactor = 0.7 + ramp * 0.7;
+      const scrollSteps = progress * (pixelCols + 8) * speedFactor;
+      const shiftA = Math.floor(scrollSteps);
+      const shiftB = shiftA + 1;
+      const shiftBlend = scrollSteps - shiftA;
 
-          const dist = Math.sqrt((pc - cx) ** 2 + (row - cy) ** 2);
-          if (dist < 1.2) {
-            const charIdx = Math.floor(pc / 2);
-            const dc = pc % 2;
-            field[charIdx] = setDot(field[charIdx], row, dc);
-          }
+      const levelScale = maxRow / 3;
+      const mapLevel = (level: number) => clamp(Math.round(level * levelScale), 0, maxRow);
+
+      const chainStates: Array<{ a: number; b: number; bridge: boolean }> = [
+        { a: 0, b: 3, bridge: false },
+        { a: 1, b: 2, bridge: true },
+        { a: 2, b: 1, bridge: true },
+        { a: 3, b: 0, bridge: false },
+      ];
+
+      const drawDot = (pc: number, row: number) => {
+        if (pc < 0 || pc >= pixelCols || row < 0 || row >= drawableHeight) return;
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        field[charIdx] = setDot(field[charIdx], row, dc);
+      };
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        const idxA = ((pc + shiftA) % chainStates.length + chainStates.length) % chainStates.length;
+        const idxB = ((pc + shiftB) % chainStates.length + chainStates.length) % chainStates.length;
+
+        const columnPhase = (pc + 0.5) / pixelCols;
+        const useB = columnPhase < shiftBlend;
+        const state = useB ? chainStates[idxB] : chainStates[idxA];
+
+        const rowA = mapLevel(state.a);
+        const rowB = mapLevel(state.b);
+
+        drawDot(pc, rowA);
+        drawDot(pc, rowB);
+
+        if (state.bridge) {
+          const bridge = clamp(Math.round((rowA + rowB) / 2), 0, maxRow);
+          drawDot(pc, bridge);
         }
       }
+
       return field;
     },
   },
@@ -784,22 +900,47 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   interference: {
     totalFrames: 60,
     interval: 40,
-    gridSize: [6, 6],
+    gridSize: [4, 6],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
 
-      for (let pc = 0; pc < width * 2; pc++) {
-        const normalizedX = pc / (width * 2);
-        for (let row = 0; row < height; row++) {
-          const normalizedY = row / height;
-          const wave1 = Math.sin(progress * Math.PI * 4 + normalizedX * Math.PI * 3);
-          const wave2 = Math.cos(progress * Math.PI * 3 + normalizedY * Math.PI * 2.5);
-          const wave3 = Math.sin(progress * Math.PI * 2 + (normalizedX + normalizedY) * Math.PI * 2);
-          const combined = (wave1 + wave2 + wave3) / 3;
-          const intensity = (combined + 1) / 2;
+      const t = frame * 0.18;
 
-          if (intensity > 0.35) {
+      const centerY = (drawableHeight - 1) / 2;
+      const srcSpread = Math.max(2, pixelCols * 0.22);
+
+      const source1X = (pixelCols - 1) / 2 - srcSpread + Math.sin(t * 0.73) * 1.0;
+      const source2X = (pixelCols - 1) / 2 + srcSpread + Math.cos(t * 0.91) * 1.0;
+      const source1Y = centerY + Math.sin(t * 1.07) * 0.45;
+      const source2Y = centerY + Math.cos(t * 0.97 + Math.PI / 4) * 0.45;
+
+      const frequency = 2.5;
+      const speed1 = 1.9;
+      const speed2 = 1.45;
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        for (let row = 0; row < drawableHeight; row++) {
+          const dx1 = pc - source1X;
+          const dy1 = row - source1Y;
+          const dx2 = pc - source2X;
+          const dy2 = row - source2Y;
+
+          const dist1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+          const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+          const wave1 = Math.cos(dist1 * frequency - t * speed1 + pc * 0.05);
+          const wave2 = Math.cos(dist2 * frequency + t * speed2 + row * 0.08);
+          const interference = (wave1 + wave2) * 0.5;
+
+          const peakIntensity = (interference + 1) * 0.5;
+          const fringeIntensity = 1 - Math.abs(interference);
+          const intensity = peakIntensity * 0.55 + fringeIntensity * 0.45;
+
+          const threshold = 0.6 + 0.06 * Math.sin(t * 0.37 + pc * 0.12);
+
+          if (intensity > threshold) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
@@ -815,26 +956,33 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     interval: 40,
     gridSize: [5, 5],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
+      const progress = totalFrames > 1 ? frame / (totalFrames - 1) : 0;
+      const drawableHeight = Math.min(height, 4);
       const centerX = (width * 2 - 1) / 2;
-      const centerY = (height - 1) / 2;
+      const centerY = (drawableHeight - 1) / 2;
+
+      const phasePosition = (progress * 8) % 4;
 
       for (let pc = 0; pc < width * 2; pc++) {
-        for (let row = 0; row < height; row++) {
-          const dx = pc - centerX;
-          const dy = row - centerY;
+        for (let row = 0; row < drawableHeight; row++) {
+          const isLeft = pc < centerX;
+          const isTop = row < centerY;
 
-          let phaseOffset = 0;
-          if (dx >= 0 && dy >= 0) phaseOffset = 0;
-          else if (dx < 0 && dy >= 0) phaseOffset = Math.PI / 2;
-          else if (dx < 0 && dy < 0) phaseOffset = Math.PI;
-          else phaseOffset = Math.PI * 1.5;
+          let quadrantIndex = 0;
+          if (isTop && isLeft) quadrantIndex = 0;
+          else if (isTop && !isLeft) quadrantIndex = 1;
+          else if (!isTop && !isLeft) quadrantIndex = 2;
+          else quadrantIndex = 3;
 
-          const phase = Math.sin(progress * Math.PI * 3 + phaseOffset);
-          const intensity = (phase + 1) / 2;
+          const phaseDeltaRaw = Math.abs(phasePosition - quadrantIndex);
+          const phaseDelta = Math.min(phaseDeltaRaw, 4 - phaseDeltaRaw);
 
-          if (intensity > 0.35) {
+          const primary = Math.max(0, 1 - phaseDelta / 0.7);
+          const secondary = Math.max(0, 1 - phaseDelta / 1.35) * 0.45;
+          const intensity = primary + secondary;
+
+          if (intensity > 0.42) {
             const charIdx = Math.floor(pc / 2);
             const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
@@ -850,29 +998,31 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     interval: 40,
     gridSize: [6, 6],
     compute: (frame, totalFrames, width, height, _ctx) => {
-      const progress = frame / totalFrames;
       const field = createFieldBuffer(width);
-      const phase = progress < 0.5 ? progress * 2 : (1 - progress) * 2;
+      const progress = totalFrames > 1 ? frame / (totalFrames - 1) : 0;
+      const drawableHeight = Math.min(height, 4);
       const centerX = (width * 2 - 1) / 2;
+      const outward = progress < 0.5;
+      const local = outward ? progress / 0.5 : (progress - 0.5) / 0.5;
+      const localClamped = clamp(local, 0, 1);
+      const easedLocal = smoothstep(localClamped) * 0.2 + localClamped * 0.8;
+      const radius = outward ? easedLocal * centerX : (1 - easedLocal) * centerX;
+      const ringThickness = 1.1;
 
       for (let pc = 0; pc < width * 2; pc++) {
         const distFromCenter = Math.abs(pc - centerX);
-        const normalizedDist = distFromCenter / centerX;
-        const edgePos = phase * centerX;
-        const delta = Math.abs(distFromCenter - edgePos);
+        const bandStrength = Math.max(0, 1 - Math.abs(distFromCenter - radius) / ringThickness);
 
-        if (delta < 1.5) {
-          const intensity = 1 - delta / 1.5;
-          for (let row = 0; row < height; row++) {
-            const rowIntensity = intensity * (1 - Math.abs(row - (height - 1) / 2) / (height / 2));
-            if (rowIntensity > 0.3) {
-              const charIdx = Math.floor(pc / 2);
-              const dc = pc % 2;
-              field[charIdx] = setDot(field[charIdx], row, dc);
-            }
+        if (bandStrength > 0.3) {
+          const charIdx = Math.floor(pc / 2);
+          const dc = pc % 2;
+
+          for (let row = 0; row < drawableHeight; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }
       }
+
       return field;
     },
   },
