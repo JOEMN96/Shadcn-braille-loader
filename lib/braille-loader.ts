@@ -14,8 +14,6 @@ export const brailleLoaderVariants = [
   "sparkle",
   "helix",
   "braille",
-  "interference",
-  "phase-shift",
   "reflected-ripple",
   "pendulum",
   "compress",
@@ -206,7 +204,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   sort: {
     totalFrames: 100,
     interval: 40,
-    gridSize: [6, 6],
+    gridSize: [5, 6],
 
     compute: (frame, totalFrames, width, height, ctx) => {
       const progress = frame / totalFrames;
@@ -331,7 +329,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
 
   pulse: {
     totalFrames: 23,
-    interval: 40,
+    interval: 60,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const period = 900;
@@ -363,7 +361,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   waveRows: {
-    totalFrames: 60,
+    totalFrames: 20,
     interval: 40,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
@@ -393,9 +391,9 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   snake: {
-    totalFrames: 60,
+    totalFrames: 25,
     interval: 80,
-    gridSize: [4, 4],
+    gridSize: [2, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
       const pixelCols = width * 2;
@@ -413,7 +411,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const progress = frame / totalFrames;
       const trailingCells = 3;
       const headPos = Math.floor(progress * path.length) % path.length;
-      const deadGap = 1;
+      const deadGap = 0;
 
       const drawPathDot = (idx: number) => {
         const { pc, row } = path[idx];
@@ -434,7 +432,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   orbit: {
-    totalFrames: 60,
+    totalFrames: 40,
     interval: 50,
     gridSize: [4, 4],
     compute: (frame: number, totalFrames: number, width: number, height: number, _ctx: PrecomputeContext) => {
@@ -551,35 +549,64 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const field = createFieldBuffer(width);
       const pixelCols = width * 2;
       const drawableHeight = Math.min(height, 4);
-      const t = frame * 40;
-      const phaseFrames = Math.max(2, Math.floor(totalFrames / 8));
+      const patternDurations = [12, 10, 14, 10];
+      const cycleFrames = patternDurations.reduce((sum, value) => sum + value, 0);
+      const cycleFrame = frame % cycleFrames;
+
+      let patternIndex = 0;
+      let localFrame = cycleFrame;
+      for (let i = 0; i < patternDurations.length; i++) {
+        if (localFrame < patternDurations[i]) {
+          patternIndex = i;
+          break;
+        }
+        localFrame -= patternDurations[i];
+      }
+
+      const twinkleShift = Math.floor(localFrame / 3) % 2 === 0 ? 0 : 1;
+
+      const patterns: Array<Array<number[]>> = [
+        [
+          [0.0, 0.5, 1.0],
+          [0.0, 0.5, 0.85],
+          [0.22, 0.7, 0.9],
+          [0.35, 0.8],
+        ],
+        [
+          [0.1, 0.6],
+          [0.3, 0.8],
+          [0.0, 0.5, 0.95],
+          [0.2, 0.7],
+        ],
+        [
+          [0.9, 0.4],
+          [0.7, 0.2],
+          [1.0, 0.55, 0.05],
+          [0.8, 0.3],
+        ],
+        [
+          [0.15, 0.45, 0.75],
+          [0.3, 0.6],
+          [0.05, 0.4, 0.85],
+          [0.25, 0.55, 0.9],
+        ],
+      ];
+
+      const activePattern = patterns[patternIndex];
 
       for (let pc = 0; pc < pixelCols; pc++) {
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
         for (let row = 0; row < drawableHeight; row++) {
-          const dotIndex = pc * drawableHeight + row;
-          const spacedMask = ((pc % 3) === 0) || ((row % 2) === 0 && (pc % 3) === 1);
-          if (!spacedMask) continue;
+          const rowPattern = activePattern[row] ?? [];
+          if (rowPattern.length === 0) continue;
 
-          const seedNoise = Math.sin((dotIndex + 23) * 12.9898) * 43758.5453;
-          const seed = seedNoise - Math.floor(seedNoise);
-
-          const phaseLagFrames = Math.floor(seed * phaseFrames);
-          const localPhase = Math.floor((frame + phaseLagFrames) / phaseFrames) % 2;
-          const checkerActive = ((pc + row) % 2) === localPhase;
-
-          const twinklePeriod = 220 + seed * 160;
-          const drift = 0.08 * Math.sin(2 * Math.PI * (t / (1200 + seed * 700) + seed * 1.7));
-          const twinkle = 0.5 + 0.5 * Math.sin(2 * Math.PI * (t / twinklePeriod + seed * 0.8 + drift));
-
-          if (checkerActive) {
-            if (twinkle > 0.44) {
+          for (const frac of rowPattern) {
+            const baseCol = Math.round(frac * (pixelCols - 1));
+            const col = (baseCol + twinkleShift) % pixelCols;
+            if (col === pc) {
               field[charIdx] = setDot(field[charIdx], row, dc);
-            }
-          } else {
-            if (twinkle > 0.96) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
+              break;
             }
           }
         }
@@ -691,12 +718,12 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   diagonalSwipe: {
     totalFrames: 60,
     interval: 30,
-    gridSize: [2, 6],
+    gridSize: [3, 6],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
       const pixelCols = width * 2;
 
-      const maxDiag = (pixelCols - 1) + (height - 1);
+      const maxDiag = pixelCols - 1 + (height - 1);
       const cycleFrame = frame % totalFrames;
       const clearFrames = Math.max(2, Math.floor(totalFrames / 2));
       const fillFrames = Math.max(2, totalFrames - clearFrames);
@@ -723,7 +750,7 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
   },
 
   scan: {
-    totalFrames: 40,
+    totalFrames: 60,
     interval: 40,
     gridSize: [4, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
@@ -825,8 +852,8 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       };
 
       for (let pc = 0; pc < pixelCols; pc++) {
-        const idxA = ((pc + shiftA) % chainStates.length + chainStates.length) % chainStates.length;
-        const idxB = ((pc + shiftB) % chainStates.length + chainStates.length) % chainStates.length;
+        const idxA = (((pc + shiftA) % chainStates.length) + chainStates.length) % chainStates.length;
+        const idxB = (((pc + shiftB) % chainStates.length) + chainStates.length) % chainStates.length;
 
         const columnPhase = (pc + 0.5) / pixelCols;
         const useB = columnPhase < shiftBlend;
@@ -893,60 +920,6 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
         }
       }
 
-      return field;
-    },
-  },
-
-  interference: {
-    totalFrames: 60,
-    interval: 40,
-    gridSize: [4, 6],
-    compute: (frame, totalFrames, width, height, _ctx) => {
-      const field = createFieldBuffer(width);
-      const pixelCols = width * 2;
-      const drawableHeight = Math.min(height, 4);
-
-      const t = frame * 0.18;
-
-      const centerY = (drawableHeight - 1) / 2;
-      const srcSpread = Math.max(2, pixelCols * 0.22);
-
-      const source1X = (pixelCols - 1) / 2 - srcSpread + Math.sin(t * 0.73) * 1.0;
-      const source2X = (pixelCols - 1) / 2 + srcSpread + Math.cos(t * 0.91) * 1.0;
-      const source1Y = centerY + Math.sin(t * 1.07) * 0.45;
-      const source2Y = centerY + Math.cos(t * 0.97 + Math.PI / 4) * 0.45;
-
-      const frequency = 2.5;
-      const speed1 = 1.9;
-      const speed2 = 1.45;
-
-      for (let pc = 0; pc < pixelCols; pc++) {
-        for (let row = 0; row < drawableHeight; row++) {
-          const dx1 = pc - source1X;
-          const dy1 = row - source1Y;
-          const dx2 = pc - source2X;
-          const dy2 = row - source2Y;
-
-          const dist1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-          const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-          const wave1 = Math.cos(dist1 * frequency - t * speed1 + pc * 0.05);
-          const wave2 = Math.cos(dist2 * frequency + t * speed2 + row * 0.08);
-          const interference = (wave1 + wave2) * 0.5;
-
-          const peakIntensity = (interference + 1) * 0.5;
-          const fringeIntensity = 1 - Math.abs(interference);
-          const intensity = peakIntensity * 0.55 + fringeIntensity * 0.45;
-
-          const threshold = 0.6 + 0.06 * Math.sin(t * 0.37 + pc * 0.12);
-
-          if (intensity > threshold) {
-            const charIdx = Math.floor(pc / 2);
-            const dc = pc % 2;
-            field[charIdx] = setDot(field[charIdx], row, dc);
-          }
-        }
-      }
       return field;
     },
   },

@@ -18,8 +18,6 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   "wave-rows": "Wave Rows",
   helix: "Helix",
   "diagonal-swipe": "Diagonal Swipe",
-  interference: "Interference",
-  "phase-shift": "Phase Shift",
   "reflected-ripple": "Reflected Ripple",
   pendulum: "Pendulum",
   compress: "Compress",
@@ -46,7 +44,6 @@ function Panel({ panelClassName, textClassName, colorClass }: PanelProps) {
             <span className="inline-flex mb-3 shrink-0 items-center justify-center overflow-hidden">
               <BrailleLoader
                 variant={variant}
-               
                 speed="normal"
                 className={colorClass}
                 label={`Animation ${variantLabel[variant]} loading`}

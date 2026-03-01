@@ -18,8 +18,6 @@ A registry-first, accessible braille loader library for shadcn CLI featuring **2
 - **[Quick Reference](./docs/QUICK_REFERENCE.md)** - Fast lookup for common usage patterns and props
 - **[Implementation Guide](./docs/IMPLEMENTATION.md)** - Deep dive into architecture, algorithms, and internals
 
-
-
 ## Architecture Overview
 
 ```
@@ -117,15 +115,15 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 ## Props Reference
 
-| Prop           | Type                             | Default     | Description                                                               |
-| -------------- | -------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| `variant`      | `BrailleLoaderVariant`           | `"breathe"` | Animation pattern (21 available). Invalid values fallback to `"breathe"`. |
-| `gridSize`     | `"sm" \| "md" \| "lg" \| "xl"`   | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
-| `grid`         | `[rows: number, cols: number]`   | `undefined` | Custom grid dimensions (2-12). Height capped at 4 in v1. |
-| `speed`        | `"slow" \| "normal" \| "fast"`   | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`. |
-| `className`    | `string`                         | `undefined` | CSS classes for the wrapper element. |
-| `label`        | `string`                         | `"Loading"` | Screen reader accessible label. |
-| `fontSize`     | `number`                         | `28`        | Font size in pixels for braille characters. |
+| Prop        | Type                           | Default     | Description                                                                    |
+| ----------- | ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
+| `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (21 available). Invalid values fallback to `"breathe"`.      |
+| `gridSize`  | `"sm" \| "md" \| "lg" \| "xl"` | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
+| `grid`      | `[rows: number, cols: number]` | `undefined` | Custom grid dimensions (2-12). Height capped at 4 in v1.                       |
+| `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`.                   |
+| `className` | `string`                       | `undefined` | CSS classes for the wrapper element.                                           |
+| `label`     | `string`                       | `"Loading"` | Screen reader accessible label.                                                |
+| `fontSize`  | `number`                       | `28`        | Font size in pixels for braille characters.                                    |
 
 **Note on height limitation (v1):** Maximum height is 4 rows due to braille character limitation. Full multi-row braille support planned for v2.
 
@@ -133,26 +131,24 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 ## Variant Comparison Matrix
 
-| Variant            | Motion Type | Complexity | Best Grid Size | Use Case       |
-| ------------------ | ----------- | ---------- | -------------- | -------------- |
-| `breathe`          | Uniform     | Low        | Any            | Subtle loading |
-| `pulse`            | Radial      | Medium     | md, lg         | Attention      |
-| `orbit`            | Circular    | Medium     | md, lg         | Processing     |
-| `snake`            | Sequential  | Medium     | Any            | Progress       |
-| `fill-sweep`       | Linear      | Low        | Any            | Progress       |
-| `scan`             | Linear      | Low        | Any            | Scanning       |
-| `rain`             | Random      | Medium     | lg, xl         | Streaming      |
-| `cascade`          | Diagonal    | Medium     | md, lg         | Sequential     |
-| `checkerboard`     | Toggle      | Low        | Any            | Idle           |
-| `columns`          | Linear      | Low        | Any            | Column data    |
-| `wave-rows`        | Sine        | Medium     | lg, xl         | Calm           |
-| `diagonal-swipe`   | Diagonal    | Low        | Any            | Transitions    |
-| `sparkle`          | Random      | Medium     | Any            | Creative       |
-| `helix`            | Spiral      | High       | md, lg         | Scientific     |
-| `braille`          | Pattern     | Medium     | Any            | Accessibility  |
-| `interference`     | Wave        | High       | lg, xl         | Scientific     |
-| `phase-shift`      | Quadrant    | Medium     | md, lg         | Parallel       |
-| `reflected-ripple` | Bounce      | Low        | Any            | Network        |
+| Variant            | Motion Type | Complexity | Best Grid Size | Use Case        |
+| ------------------ | ----------- | ---------- | -------------- | --------------- |
+| `breathe`          | Uniform     | Low        | Any            | Subtle loading  |
+| `pulse`            | Radial      | Medium     | md, lg         | Attention       |
+| `orbit`            | Circular    | Medium     | md, lg         | Processing      |
+| `snake`            | Sequential  | Medium     | Any            | Progress        |
+| `fill-sweep`       | Linear      | Low        | Any            | Progress        |
+| `scan`             | Linear      | Low        | Any            | Scanning        |
+| `rain`             | Random      | Medium     | lg, xl         | Streaming       |
+| `cascade`          | Diagonal    | Medium     | md, lg         | Sequential      |
+| `checkerboard`     | Toggle      | Low        | Any            | Idle            |
+| `columns`          | Linear      | Low        | Any            | Column data     |
+| `wave-rows`        | Sine        | Medium     | lg, xl         | Calm            |
+| `diagonal-swipe`   | Diagonal    | Low        | Any            | Transitions     |
+| `sparkle`          | Random      | Medium     | Any            | Creative        |
+| `helix`            | Spiral      | High       | md, lg         | Scientific      |
+| `braille`          | Pattern     | Medium     | Any            | Accessibility   |
+| `reflected-ripple` | Bounce      | Low        | Any            | Network         |
 | `pendulum`         | Curved wave | Medium     | Any            | Calm/continuous |
 | `compress`         | Inward      | Medium     | Any            | Compacting      |
 | `sort`             | Gradient    | Medium     | Any            | Sorting         |
@@ -163,29 +159,27 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 Representative braille sequences for each variant. These are illustrative snapshots of motion states, not fixed outputs.
 
-| Variant | Animation Description | Example Braille Chars |
-| --- | --- | --- |
-| `breathe` | Whole grid gently expands and contracts in unison. | `⠂⠂` → `⠆⠆` → `⠂⠂` |
-| `pulse` | Radial pulse radiates from center then fades outward. | `⠐⠂` → `⠿⠿` → `⠂⠐` |
-| `orbit` | Bright cluster circles around center on a looped path. | `⢀⠂` → `⠐⢀` → `⠂⢀` |
-| `snake` | Lead dot moves cell-by-cell with trailing tail. | `⠁⠂⠄` → `⠂⠄⠂` |
-| `fill-sweep` | Grid fills linearly in one direction then resets. | `⠁⠃⠇` → `⣿⣿⣿` |
-| `scan` | Thin scan line sweeps across and repeats. | `⠤⠀⠀` → `⠀⠤⠀` → `⠀⠀⠤` |
-| `rain` | Staggered vertical drops fall through columns. | `⠂⠀⠂` → `⠄⠀⠄` |
-| `cascade` | Diagonal cascade activates cells in falling bands. | `⠁⠀⠂` → `⠀⠂⠀⠄` |
-| `checkerboard` | Alternating checker pattern flips phase each beat. | `⠕⠪` ↔ `⠪⠕` |
-| `columns` | Columns animate in sequence with vertical emphasis. | `⡇⠀⡇` → `⠀⡇⠀` |
-| `wave-rows` | Horizontal row waves roll left-to-right. | `⠒⠤⠒` → `⠤⠒⠤` |
-| `diagonal-swipe` | Fill and clear move diagonally across the grid. | `⠁⠂⠄` → `⠄⠂⠁` |
-| `sparkle` | Scattered glints twinkle with controlled randomness. | `⠁⠀⠈` → `⠀⠂⠀` |
-| `helix` | Spiral/helix-like band rotates across columns. | `⡇⠒⢸` → `⢸⠒⡇` |
-| `braille` | Cycles through classic braille-inspired glyph patterns. | `⠿` → `⣶` → `⠿` |
-| `interference` | Two wave sources create moving constructive bands. | `⠂⠆⠂` → `⠆⠂⠆` |
-| `phase-shift` | Quadrants alternate in rotating phase offsets. | `⠛⠃⠀` → `⠀⠘⠛` |
-| `reflected-ripple` | Ripple expands from center, reflects, and returns. | `⢸⡇` → `⣿⣿` → `⡇⢸` |
-| `pendulum` | Arc-like sweep oscillates back and forth smoothly. | `⠂⠄⠂` ↔ `⠄⠂⠄` |
-| `compress` | Active band compresses inward toward center mass. | `⡇⠀⡇` → `⠀⣿⠀` |
-| `sort` | Gradient-like ordering transitions from mixed to grouped. | `⠂⠆⣿` → `⠂⠂⣿` |
+| Variant            | Animation Description                                     | Example Braille Chars |
+| ------------------ | --------------------------------------------------------- | --------------------- |
+| `breathe`          | Whole grid gently expands and contracts in unison.        | `⠂⠂` → `⠆⠆` → `⠂⠂`    |
+| `pulse`            | Radial pulse radiates from center then fades outward.     | `⠐⠂` → `⠿⠿` → `⠂⠐`    |
+| `orbit`            | Bright cluster circles around center on a looped path.    | `⢀⠂` → `⠐⢀` → `⠂⢀`    |
+| `snake`            | Lead dot moves cell-by-cell with trailing tail.           | `⠁⠂⠄` → `⠂⠄⠂`         |
+| `fill-sweep`       | Grid fills linearly in one direction then resets.         | `⠁⠃⠇` → `⣿⣿⣿`         |
+| `scan`             | Thin scan line sweeps across and repeats.                 | `⠤⠀⠀` → `⠀⠤⠀` → `⠀⠀⠤` |
+| `rain`             | Staggered vertical drops fall through columns.            | `⠂⠀⠂` → `⠄⠀⠄`         |
+| `cascade`          | Diagonal cascade activates cells in falling bands.        | `⠁⠀⠂` → `⠀⠂⠀⠄`        |
+| `checkerboard`     | Alternating checker pattern flips phase each beat.        | `⠕⠪` ↔ `⠪⠕`           |
+| `columns`          | Columns animate in sequence with vertical emphasis.       | `⡇⠀⡇` → `⠀⡇⠀`         |
+| `wave-rows`        | Horizontal row waves roll left-to-right.                  | `⠒⠤⠒` → `⠤⠒⠤`         |
+| `diagonal-swipe`   | Fill and clear move diagonally across the grid.           | `⠁⠂⠄` → `⠄⠂⠁`         |
+| `sparkle`          | Scattered glints twinkle with controlled randomness.      | `⠁⠀⠈` → `⠀⠂⠀`         |
+| `helix`            | Spiral/helix-like band rotates across columns.            | `⡇⠒⢸` → `⢸⠒⡇`         |
+| `braille`          | Cycles through classic braille-inspired glyph patterns.   | `⠿` → `⣶` → `⠿`       |
+| `reflected-ripple` | Ripple expands from center, reflects, and returns.        | `⢸⡇` → `⣿⣿` → `⡇⢸`    |
+| `pendulum`         | Arc-like sweep oscillates back and forth smoothly.        | `⠂⠄⠂` ↔ `⠄⠂⠄`         |
+| `compress`         | Active band compresses inward toward center mass.         | `⡇⠀⡇` → `⠀⣿⠀`         |
+| `sort`             | Gradient-like ordering transitions from mixed to grouped. | `⠂⠆⣿` → `⠂⠂⣿`         |
 
 ---
 
@@ -300,7 +294,7 @@ function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-      <BrailleLoader variant="interference" className="text-primary" />
+      <BrailleLoader variant="sparkle" className="text-primary" />
     </div>
   );
 }
@@ -327,8 +321,6 @@ type BrailleLoaderVariant =
   | "sparkle"
   | "helix"
   | "braille"
-  | "interference"
-  | "phase-shift"
   | "reflected-ripple"
   | "pendulum"
   | "compress"

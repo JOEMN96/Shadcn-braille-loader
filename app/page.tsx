@@ -22,8 +22,6 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   "wave-rows": "Wave Rows",
   helix: "Helix",
   "diagonal-swipe": "Diagonal Swipe",
-  interference: "Interference",
-  "phase-shift": "Phase Shift",
   "reflected-ripple": "Reflected Ripple",
   pendulum: "Pendulum",
   compress: "Compress",
@@ -96,7 +94,12 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 
 const propsData = [
   { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 23 variants." },
-  { prop: "grid", type: "[rows, cols]", default: "variant-specific", description: "Custom grid override. Uses variant default if not specified. 2x2 to 12x12 supported." },
+  {
+    prop: "grid",
+    type: "[rows, cols]",
+    default: "variant-specific",
+    description: "Custom grid override. Uses variant default if not specified. 2x2 to 12x12 supported.",
+  },
   { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Speed preset." },
   { prop: "className", type: "string", default: "-", description: "Additional classes for the wrapper." },
   { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
@@ -173,27 +176,25 @@ export default function Home() {
                 <p className="text-muted-foreground">Configure grid dimensions, speed, and size to match your design.</p>
               </div>
 
-<div className="space-y-6">
-  <h3 className="text-xl font-medium">Grid Size</h3>
-  <p className="text-sm text-muted-foreground">Each variant has its own optimized grid size. Use the <code>grid</code> prop to override.</p>
-  <div className="grid gap-4 lg:grid-cols-2">
-    <div className="flex items-center justify-center gap-6 p-8 rounded-xl border bg-muted/30 flex-wrap">
-      <div className="text-center">
-        <BrailleLoader variant="breathe" />
-        <span className="block mt-3 text-xs text-muted-foreground">breathe (3x3)</span>
-      </div>
-      <div className="text-center">
-        <BrailleLoader variant="rain" />
-        <span className="block mt-3 text-xs text-muted-foreground">rain (5x5)</span>
-      </div>
-      <div className="text-center">
-        <BrailleLoader variant="interference" />
-        <span className="block mt-3 text-xs text-muted-foreground">interference (6x6)</span>
-      </div>
-    </div>
-    <CodeBlock code={gridExampleCode} language="tsx" />
-  </div>
-</div>
+              <div className="space-y-6">
+                <h3 className="text-xl font-medium">Grid Size</h3>
+                <p className="text-sm text-muted-foreground">
+                  Each variant has its own optimized grid size. Use the <code>grid</code> prop to override.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex items-center justify-center gap-6 p-8 rounded-xl border bg-muted/30 flex-wrap">
+                    <div className="text-center">
+                      <BrailleLoader variant="breathe" />
+                      <span className="block mt-3 text-xs text-muted-foreground">breathe (3x3)</span>
+                    </div>
+                    <div className="text-center">
+                      <BrailleLoader variant="rain" />
+                      <span className="block mt-3 text-xs text-muted-foreground">rain (5x5)</span>
+                    </div>
+                  </div>
+                  <CodeBlock code={gridExampleCode} language="tsx" />
+                </div>
+              </div>
 
               <div className="space-y-6">
                 <h3 className="text-xl font-medium">Custom Grid</h3>

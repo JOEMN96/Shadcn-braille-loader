@@ -1,8 +1,8 @@
 import fs from "fs";
-import { VARIANT_CONFIGS, getPrecomputeContext } from "./lib/braille-loader";
+import { VARIANT_CONFIGS, getPrecomputeContext } from "./lib/braille-loader.ts";
 
 // ---------- CONFIG ----------
-const VARIANT = "phaseShift";
+const VARIANT = "sparkle";
 const cfg = VARIANT_CONFIGS[VARIANT];
 const WIDTH = cfg.gridSize[0];
 const HEIGHT = cfg.gridSize[1];
