@@ -1,5 +1,5 @@
 import fs from "fs";
-import { VARIANT_CONFIGS, getPrecomputeContext } from "./lib/braille-loader.ts";
+import { VARIANT_CONFIGS, getPrecomputeContext } from "./lib/braille-loader";
 
 // ---------- CONFIG ----------
 const VARIANT = "sparkle";

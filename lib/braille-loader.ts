@@ -545,70 +545,115 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     totalFrames: 60,
     interval: 40,
     gridSize: [5, 5],
+
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
+
       const pixelCols = width * 2;
       const drawableHeight = Math.min(height, 4);
-      const patternDurations = [12, 10, 14, 10];
-      const cycleFrames = patternDurations.reduce((sum, value) => sum + value, 0);
-      const cycleFrame = frame % cycleFrames;
 
-      let patternIndex = 0;
-      let localFrame = cycleFrame;
-      for (let i = 0; i < patternDurations.length; i++) {
-        if (localFrame < patternDurations[i]) {
-          patternIndex = i;
-          break;
-        }
-        localFrame -= patternDurations[i];
-      }
+      /* ---------------------------------- */
+      /* HASH */
+      /* ---------------------------------- */
+      const hash = (x: number, y: number, t: number) => {
+        let n = x * 374761393 + y * 668265263 + t * 1442695041;
+        n = (n ^ (n >> 13)) * 1274126177;
+        return ((n ^ (n >> 16)) >>> 0) / 4294967295;
+      };
 
-      const twinkleShift = Math.floor(localFrame / 3) % 2 === 0 ? 0 : 1;
+      /* ---------------------------------- */
+      /* PARAMETERS */
+      /* ---------------------------------- */
+      const density = 0.095;
+      const lifetime = 4;
+      const phase = Math.floor(frame / 2);
 
-      const patterns: Array<Array<number[]>> = [
-        [
-          [0.0, 0.5, 1.0],
-          [0.0, 0.5, 0.85],
-          [0.22, 0.7, 0.9],
-          [0.35, 0.8],
-        ],
-        [
-          [0.1, 0.6],
-          [0.3, 0.8],
-          [0.0, 0.5, 0.95],
-          [0.2, 0.7],
-        ],
-        [
-          [0.9, 0.4],
-          [0.7, 0.2],
-          [1.0, 0.55, 0.05],
-          [0.8, 0.3],
-        ],
-        [
-          [0.15, 0.45, 0.75],
-          [0.3, 0.6],
-          [0.05, 0.4, 0.85],
-          [0.25, 0.55, 0.9],
-        ],
-      ];
+      const regionSize = 2;
 
-      const activePattern = patterns[patternIndex];
+      for (let row = 0; row < drawableHeight; row++) {
+        for (let col = 0; col < pixelCols; col++) {
+          let v = hash(col, row, phase);
 
-      for (let pc = 0; pc < pixelCols; pc++) {
-        const charIdx = Math.floor(pc / 2);
-        const dc = pc % 2;
-        for (let row = 0; row < drawableHeight; row++) {
-          const rowPattern = activePattern[row] ?? [];
-          if (rowPattern.length === 0) continue;
+          /* ---------------------------------- */
+          /* ⭐ EDGE COMPENSATION (NEW) */
+          /* prevents center bias */
+          /* ---------------------------------- */
+          const edgeBias =
+            0.12 * ((col === 0 || col === pixelCols - 1 ? 1 : 0) + (row === 0 || row === drawableHeight - 1 ? 1 : 0));
 
-          for (const frac of rowPattern) {
-            const baseCol = Math.round(frac * (pixelCols - 1));
-            const col = (baseCol + twinkleShift) % pixelCols;
-            if (col === pc) {
-              field[charIdx] = setDot(field[charIdx], row, dc);
-              break;
+          v -= edgeBias;
+
+          if (v > density) continue;
+
+          /* ---------------------------------- */
+          /* REGIONAL COMPETITION */
+          /* ---------------------------------- */
+          const rx = Math.floor(col / regionSize);
+          const ry = Math.floor(row / regionSize);
+
+          let winner = true;
+
+          for (let oy = 0; oy < regionSize && winner; oy++) {
+            for (let ox = 0; ox < regionSize; ox++) {
+              const nx = rx * regionSize + ox;
+              const ny = ry * regionSize + oy;
+
+              if (nx === col && ny === row) continue;
+              if (nx >= pixelCols || ny >= drawableHeight) continue;
+
+              let nv = hash(nx, ny, phase);
+
+              const nEdgeBias =
+                0.12 * ((nx === 0 || nx === pixelCols - 1 ? 1 : 0) + (ny === 0 || ny === drawableHeight - 1 ? 1 : 0));
+
+              nv -= nEdgeBias;
+
+              if (nv < v) {
+                winner = false;
+                break;
+              }
             }
           }
+
+          if (!winner) continue;
+
+          /* ---------------------------------- */
+          /* LIFECYCLE */
+          /* ---------------------------------- */
+          const offset = Math.floor(hash(col, row, 999) * lifetime);
+
+          const age = (frame + offset) % lifetime;
+
+          if (age > 3) continue;
+
+          /* ---------------------------------- */
+          /* SHIMMER */
+          /* ---------------------------------- */
+          let r = row;
+          let c = col;
+
+          if (hash(col, row, 777) < 0.18 && age === 1) {
+            const dirs = [
+              [-1, -1],
+              [-1, 0],
+              [-1, 1],
+              [0, -1],
+              [0, 1],
+              [1, -1],
+              [1, 0],
+              [1, 1],
+            ];
+
+            const d = dirs[Math.floor(hash(col, row, 555) * dirs.length)];
+
+            r = clamp(r + d[0], 0, drawableHeight - 1);
+            c = clamp(c + d[1], 0, pixelCols - 1);
+          }
+
+          const charIdx = Math.floor(c / 2);
+          const dc = c % 2;
+
+          field[charIdx] = setDot(field[charIdx], r, dc);
         }
       }
 
