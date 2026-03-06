@@ -1,10 +1,10 @@
 # Shadcn Braille Loader Registry
 
-A registry-first, accessible braille loader library for shadcn CLI featuring **21 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
+A registry-first, accessible braille loader library for shadcn CLI featuring **19 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
-- **21 Animation Variants** - From subtle pulses to complex spiral patterns
+- **19 Animation Variants** - From subtle pulses to complex patterns
 - **Fully Accessible** - Screen reader support, respects `prefers-reduced-motion`
 - **Highly Customizable** - Dot size, gap, grid dimensions, animation speed
 - **Theme-Aware** - Inherits color from current text color
@@ -117,7 +117,7 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 | Prop        | Type                           | Default     | Description                                                                    |
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
-| `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (21 available). Invalid values fallback to `"breathe"`.      |
+| `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (19 available). Invalid values fallback to `"breathe"`.      |
 | `gridSize`  | `"sm" \| "md" \| "lg" \| "xl"` | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
 | `grid`      | `[rows: number, cols: number]` | `undefined` | Custom grid dimensions (2-12). Height capped at 4 in v1.                       |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`.                   |

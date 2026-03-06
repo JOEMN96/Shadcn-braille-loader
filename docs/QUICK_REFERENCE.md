@@ -37,7 +37,7 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 
 ---
 
-## All 23 Variants
+## All 19 Variants
 
 | Variant              | Speed  | Best For              | Code                                                 |
 | -------------------- | ------ | --------------------- | ---------------------------------------------------- |
