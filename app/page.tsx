@@ -49,8 +49,8 @@ const gridExampleCode = `<BrailleLoader variant="rain" />
 <BrailleLoader variant="rain" />
 <BrailleLoader variant="rain" />`;
 
-const customGridCode = `<BrailleLoader variant="snake" grid={[5, 8]} />
-<BrailleLoader variant="pulse" grid={[6, 6]} />`;
+const customGridCode = `<BrailleLoader variant="snake" grid={[5, 4]} />
+<BrailleLoader variant="pulse" grid={[6, 4]} />`;
 
 const speedExampleCode = `<BrailleLoader variant="orbit" speed="slow" />
 <BrailleLoader variant="orbit" speed="normal" />
@@ -202,12 +202,12 @@ export default function Home() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-10 p-8 rounded-xl border bg-muted/30">
                     <div className="text-center">
-                      <BrailleLoader variant="snake" grid={[5, 8]} />
-                      <span className="block mt-3 text-xs text-muted-foreground">5x8</span>
+                      <BrailleLoader variant="snake" grid={[5, 4]} />
+                      <span className="block mt-3 text-xs text-muted-foreground">5x4</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="pulse" grid={[6, 6]} />
-                      <span className="block mt-3 text-xs text-muted-foreground">6x6</span>
+                      <BrailleLoader variant="pulse" grid={[6, 4]} />
+                      <span className="block mt-3 text-xs text-muted-foreground">6x4</span>
                     </div>
                   </div>
                   <CodeBlock code={customGridCode} language="tsx" />
