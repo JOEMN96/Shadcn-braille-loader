@@ -114,7 +114,7 @@ export function getPrecomputeContext(width: number, height: number): PrecomputeC
     const target: number[] = [];
     for (let i = 0; i < pixelCols; i++) {
       shuffled.push(rand19() * (height - 1));
-      target.push((i / (pixelCols - 1)) * (height - 1));
+      target.push((1 - i / (pixelCols - 1)) * (height - 1));
     }
 
     const rand123 = seededRandom(123);
