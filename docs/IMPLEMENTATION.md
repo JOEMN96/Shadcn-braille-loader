@@ -318,7 +318,7 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------ |
 | `variant`   | `string`                       | `"breathe"` | Animation variant (23 available)                 |
 | `gridSize`  | `"sm" \| "md" \| "lg" \| "xl"` | `"md"`      | Grid preset (3×3 to 4×4, lg/xl capped to 4 rows) |
-| `grid`      | `[rows: number, cols: number]` | `undefined` | Custom grid dimensions (2-12, rows capped at 4)  |
+| `grid`      | `[cols: number, rows: number]` | `undefined` | Custom grid dimensions [width, height] (2-12)  |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Animation speed                                  |
 | `className` | `string`                       | -           | Additional CSS classes for wrapper               |
 | `label`     | `string`                       | `"Loading"` | Screen reader text                               |
@@ -352,7 +352,7 @@ type BrailleLoaderVariant =
 
 type BrailleLoaderSpeed = "slow" | "normal" | "fast";
 type BrailleGridSize = "sm" | "md" | "lg" | "xl";
-type BrailleGrid = [rows: number, cols: number];
+type BrailleGrid = [cols: number, rows: number];
 ```
 
 ### Exported Functions
@@ -382,7 +382,7 @@ Generates all animation frames for a variant at given grid dimensions.
 #### `resolveGrid`
 
 ```typescript
-function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): [rows: number, cols: number];
+function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): [cols: number, rows: number];
 ```
 
 Resolves grid dimensions from presets or custom values.
@@ -856,15 +856,15 @@ describe("generateFrames", () => {
 // Test grid resolution
 describe("resolveGrid", () => {
   it("should cap xl grid height to 4", () => {
-    const [rows, cols] = resolveGrid("xl");
-    expect(rows).toBe(4);
+    const [cols, rows] = resolveGrid("xl");
     expect(cols).toBe(6);
+    expect(rows).toBe(4);
   });
 
   it("should cap custom grid height to 4", () => {
-    const [rows, cols] = resolveGrid(undefined, [6, 6]);
-    expect(rows).toBe(4);
+    const [cols, rows] = resolveGrid(undefined, [6, 6]);
     expect(cols).toBe(6);
+    expect(rows).toBe(4);
   });
 });
 ```
@@ -956,7 +956,7 @@ describe("All Variants", () => {
 **Solutions:**
 
 1. Check `resolveGrid` orientation (rows, cols)
-2. Use explicit `grid={[rows, cols]}` for custom sizes
+2. Use explicit `grid={[cols, rows]}` for custom sizes
 3. Note that `grid[1]` is columns, not rows
 
 ### TypeScript Errors
@@ -1056,7 +1056,7 @@ Built for shadcn/ui with React, TypeScript, and Unicode Braille Characters.
 - Fixed checkerboard toggle frequency (8× faster)
 - Implemented 3×2 braille dot patterns for braille variant
 - Reduced helix wave frequencies (from 6π to 2π)
-- Fixed grid orientation bug ([rows, cols] instead of [cols, rows])
+- Fixed grid orientation documentation ([cols, rows] instead of [rows, cols])
 - Updated rain to use context `colRandom` for proper desync
 - Added height limitation documentation (max 4 rows)
 - Fixed compress squeeze calculation for smoother motion

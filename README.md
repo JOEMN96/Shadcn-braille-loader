@@ -119,7 +119,7 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
 | `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (19 available). Invalid values fallback to `"breathe"`.      |
 | `gridSize`  | `"sm" \| "md" \| "lg" \| "xl"` | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
-| `grid`      | `[rows: number, cols: number]` | `undefined` | Custom grid dimensions (2-12). Height capped at 4 in v1.                       |
+| `grid`      | `[cols: number, rows: number]` | `undefined` | Custom grid dimensions [width, height]. Range 2-12. Height capped at 4 in v1.  |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`.                   |
 | `className` | `string`                       | `undefined` | CSS classes for the wrapper element.                                           |
 | `label`     | `string`                       | `"Loading"` | Screen reader accessible label.                                                |

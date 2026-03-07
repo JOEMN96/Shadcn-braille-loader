@@ -28,7 +28,7 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 // With custom size
 <BrailleLoader speed="fast" />
 
-// With custom grid (width × height)
+// With custom grid [cols, rows]
 <BrailleLoader grid={[4, 8]} />
 
 // Theming
@@ -104,7 +104,7 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 <BrailleLoader
   variant="breathe"           // Animation variant
                // sm | md | lg | xl
-  grid={[4, 8]}              // Custom [rows, cols], 2-12
+  grid={[4, 8]}              // Custom [cols, rows], 2-12
   speed="normal"              // slow | normal | fast
   className="text-primary"   // Add classes
   label="Loading..."          // Screen reader text
@@ -201,11 +201,11 @@ function SearchInput({ searching, value, onChange }: Props) {
 **Check dimensions:**
 
 ```tsx
-// ✅ Correct - [rows, cols]
-<BrailleLoader grid={[4, 6]} />  // 4 rows × 6 cols
+// ✅ Correct - [cols, rows] aka [width, height]
+<BrailleLoader grid={[6, 4]} />  // 6 cols × 4 rows
 
-// ❌ Wrong - not [width, height]
-<BrailleLoader grid={[6, 4]} />  // Wrong order!
+// ❌ Wrong - not [rows, cols]
+<BrailleLoader grid={[4, 6]} />  // Would be 4 cols × 6 rows (tall)
 ```
 
 ### TypeScript Errors

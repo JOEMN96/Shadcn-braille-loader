@@ -44,13 +44,13 @@ export function Example() {
   )
 }`;
 
-const gridExampleCode = `<BrailleLoader variant="rain" />
-<BrailleLoader variant="rain" />
-<BrailleLoader variant="rain" />
-<BrailleLoader variant="rain" />`;
+const gridExampleCode = `<BrailleLoader variant="breathe" />  {/* default 1×4 */}
+<BrailleLoader variant="rain" />         {/* default 5×5 */}
+<BrailleLoader variant="helix" />        {/* default 5×5 */}
+<BrailleLoader variant="snake" />        {/* default 2×4 */}`;
 
-const customGridCode = `<BrailleLoader variant="snake" grid={[5, 4]} />
-<BrailleLoader variant="pulse" grid={[6, 4]} />`;
+const customGridCode = `<BrailleLoader variant="snake" grid={[6, 4]} />
+<BrailleLoader variant="pulse" grid={[8, 4]} />`;
 
 const speedExampleCode = `<BrailleLoader variant="orbit" speed="slow" />
 <BrailleLoader variant="orbit" speed="normal" />
@@ -93,15 +93,15 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 }`;
 
 const propsData = [
-  { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 23 variants." },
+  { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 19 variants." },
   {
     prop: "grid",
-    type: "[rows, cols]",
+    type: "[cols, rows]",
     default: "variant-specific",
-    description: "Custom grid override. Uses variant default if not specified. 2x2 to 12x12 supported.",
+    description: "Custom grid dimensions [width, height]. Range 2-12. Height capped at 4 rows.",
   },
-  { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Speed preset." },
-  { prop: "className", type: "string", default: "-", description: "Additional classes for the wrapper." },
+  { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Animation speed preset." },
+  { prop: "className", type: "string", default: "-", description: "Additional CSS classes for the wrapper." },
   { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
   { prop: "fontSize", type: "number", default: "28", description: "Font size in pixels for braille characters." },
 ];
@@ -116,7 +116,7 @@ export default function Home() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Braille Loader</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A collection of 23 accessible, animated loading indicators using Unicode braille characters.
+            A collection of 19 accessible, animated loading indicators using Unicode braille characters.
           </p>
           <div className="flex items-center justify-center gap-3 mt-8">
             <OpenInV0Button name="braille-loader-showcase" />
@@ -185,11 +185,11 @@ export default function Home() {
                   <div className="flex items-center justify-center gap-6 p-8 rounded-xl border bg-muted/30 flex-wrap">
                     <div className="text-center">
                       <BrailleLoader variant="breathe" />
-                      <span className="block mt-3 text-xs text-muted-foreground">breathe (3x3)</span>
+                      <span className="block mt-3 text-xs text-muted-foreground">breathe (1×4)</span>
                     </div>
                     <div className="text-center">
                       <BrailleLoader variant="rain" />
-                      <span className="block mt-3 text-xs text-muted-foreground">rain (5x5)</span>
+                      <span className="block mt-3 text-xs text-muted-foreground">rain (5×5)</span>
                     </div>
                   </div>
                   <CodeBlock code={gridExampleCode} language="tsx" />
@@ -202,12 +202,12 @@ export default function Home() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="flex items-center justify-center gap-10 p-8 rounded-xl border bg-muted/30">
                     <div className="text-center">
-                      <BrailleLoader variant="snake" grid={[5, 4]} />
-                      <span className="block mt-3 text-xs text-muted-foreground">5x4</span>
+                      <BrailleLoader variant="snake" grid={[6, 4]} />
+                      <span className="block mt-3 text-xs text-muted-foreground">6×4</span>
                     </div>
                     <div className="text-center">
-                      <BrailleLoader variant="pulse" grid={[6, 4]} />
-                      <span className="block mt-3 text-xs text-muted-foreground">6x4</span>
+                      <BrailleLoader variant="pulse" grid={[8, 4]} />
+                      <span className="block mt-3 text-xs text-muted-foreground">8×6</span>
                     </div>
                   </div>
                   <CodeBlock code={customGridCode} language="tsx" />

@@ -22,7 +22,13 @@ export const brailleLoaderVariants = [
 
 export type BrailleLoaderVariant = (typeof brailleLoaderVariants)[number];
 export type BrailleLoaderSpeed = "slow" | "normal" | "fast";
-export type BrailleGrid = [rows: number, cols: number];
+/**
+ * Grid dimensions: [width, height] where:
+ * - width = number of braille characters (columns)
+ * - height = number of dot rows (max 4 for single-row braille)
+ * Range: 2-12 for each dimension
+ */
+export type BrailleGrid = [cols: number, rows: number];
 
 const MIN_GRID_DIMENSION = 2;
 const MAX_GRID_DIMENSION = 12;
@@ -1064,11 +1070,18 @@ export function generateFrames(variant: string, width: number, height: number): 
     return { frames: [fieldToString(createFieldBuffer(width))], interval: 40 };
   }
 
+  const defaultArea = config.gridSize[0] * config.gridSize[1];
+  const customArea = width * height;
+  const scaleFactor = customArea / defaultArea;
+  const clampedScale = Math.max(0.5, Math.min(3, scaleFactor));
+  const scaledFrames = Math.round(config.totalFrames * clampedScale);
+  const totalFrames = Math.max(30, scaledFrames);
+
   const context = getPrecomputeContext(width, height);
   const frames: string[] = [];
 
-  for (let frame = 0; frame < config.totalFrames; frame++) {
-    const field = config.compute(frame, config.totalFrames, width, height, context);
+  for (let frame = 0; frame < totalFrames; frame++) {
+    const field = config.compute(frame, totalFrames, width, height, context);
     frames.push(fieldToString(field));
   }
 
@@ -1078,9 +1091,9 @@ export function generateFrames(variant: string, width: number, height: number): 
 
 export function resolveGrid(variant: string, grid?: BrailleGrid): [number, number] {
   if (grid) {
-    const rows = clamp(Math.round(grid[0]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
-    const cols = clamp(Math.round(grid[1]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
-    return [cols, rows];
+    const width = clamp(Math.round(grid[0]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
+    const height = clamp(Math.round(grid[1]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
+    return [width, height];
   }
 
   const config = VARIANT_CONFIGS[toCamelCase(variant)];
