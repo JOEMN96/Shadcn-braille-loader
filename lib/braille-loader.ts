@@ -22,16 +22,6 @@ export const brailleLoaderVariants = [
 
 export type BrailleLoaderVariant = (typeof brailleLoaderVariants)[number];
 export type BrailleLoaderSpeed = "slow" | "normal" | "fast";
-/**
- * Grid dimensions: [width, height] where:
- * - width = number of braille characters (columns)
- * - height = number of dot rows (max 4 for single-row braille)
- * Range: 2-12 for each dimension
- */
-export type BrailleGrid = [cols: number, rows: number];
-
-const MIN_GRID_DIMENSION = 2;
-const MAX_GRID_DIMENSION = 12;
 
 export const speedToDuration: Record<BrailleLoaderSpeed, number> = {
   slow: 3000,
@@ -1089,18 +1079,11 @@ export function generateFrames(variant: string, width: number, height: number): 
   return { frames, interval: config.interval };
 }
 
-export function resolveGrid(variant: string, grid?: BrailleGrid): [number, number] {
-  if (grid) {
-    const width = clamp(Math.round(grid[0]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
-    const height = clamp(Math.round(grid[1]), MIN_GRID_DIMENSION, MAX_GRID_DIMENSION);
-    return [width, height];
-  }
-
+export function getVariantGridSize(variant: string): [number, number] {
   const config = VARIANT_CONFIGS[toCamelCase(variant)];
   if (config?.gridSize) {
     return config.gridSize;
   }
-
   return [4, 4];
 }
 

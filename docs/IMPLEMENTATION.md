@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Braille Loader is a comprehensive animation library designed for shadcn/ui that renders loading indicators using Unicode braille characters (U+2800–U+28FF). It features 23 unique animation variants, fully accessible design, and zero runtime dependencies beyond React.
+The Braille Loader is a comprehensive animation library designed for shadcn/ui that renders loading indicators using Unicode braille characters (U+2800–U+28FF). It features 19 unique animation variants, fully accessible design, and zero runtime dependencies beyond React.
 
 **Current Version:** 1.0  
 **Status:** Production Ready
@@ -40,15 +40,15 @@ The Braille Loader is a comprehensive animation library designed for shadcn/ui t
 ### Data Flow
 
 ```
-┌──────────────┐    ┌───────────────┐    ┌──────────────┐    ┌─────────────┐
-│  Props        │───▶│ Resolve Grid  │───▶│ Get Context  │───▶│ Generate    │
-│ (config)      │    │ & Settings    │    │ (cached)     │    │   Frames    │
-└──────────────┘    └───────────────┘    └──────────────┘    │             │
-                                                                 ▼    ┌───────────┐
-                                                          ┌───────────┐ │   │   Cache    │
-                                                          │ Precompute│ │───▶┤  Store     │
-                                                          │  Context   │ │   └───────────┘
-                                                          └───────────┘
+┌──────────────┐    ┌─────────────────┐    ┌──────────────┐    ┌─────────────┐
+│  Props        │───▶│ Get Variant     │───▶│ Get Context  │───▶│ Generate    │
+│ (config)      │    │ Grid Size       │    │ (cached)     │    │   Frames    │
+└──────────────┘    └─────────────────┘    └──────────────┘    │             │
+                                                                  ▼    ┌───────────┐
+                                                           ┌───────────┐ │   │   Cache    │
+                                                           │ Precompute│ │───▶┤  Store     │
+                                                           │  Context   │ │   └───────────┘
+                                                           └───────────┘
 ```
 
 ---
@@ -303,8 +303,6 @@ All 23 variants with animation characteristics and best use cases.
 ```typescript
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant;
-  gridSize?: BrailleGridSize;
-  grid?: BrailleGrid;
   speed?: BrailleLoaderSpeed;
   className?: string;
   label?: string;
@@ -316,9 +314,7 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
 
 | Prop        | Type                           | Default     | Description                                      |
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------ |
-| `variant`   | `string`                       | `"breathe"` | Animation variant (23 available)                 |
-| `gridSize`  | `"sm" \| "md" \| "lg" \| "xl"` | `"md"`      | Grid preset (3×3 to 4×4, lg/xl capped to 4 rows) |
-| `grid`      | `[cols: number, rows: number]` | `undefined` | Custom grid dimensions [width, height] (2-12)  |
+| `variant`   | `string`                       | `"breathe"` | Animation variant (19 available)                 |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Animation speed                                  |
 | `className` | `string`                       | -           | Additional CSS classes for wrapper               |
 | `label`     | `string`                       | `"Loading"` | Screen reader text                               |
@@ -351,8 +347,6 @@ type BrailleLoaderVariant =
   | "sort";
 
 type BrailleLoaderSpeed = "slow" | "normal" | "fast";
-type BrailleGridSize = "sm" | "md" | "lg" | "xl";
-type BrailleGrid = [cols: number, rows: number];
 ```
 
 ### Exported Functions
@@ -379,16 +373,13 @@ Generates all animation frames for a variant at given grid dimensions.
 - `frames`: Array of strings, each string represents one braille row
 - `interval`: Milliseconds between frames (12ms for pendulum, 40ms for others)
 
-#### `resolveGrid`
+#### `getVariantGridSize`
 
 ```typescript
-function resolveGrid(gridSize?: BrailleGridSize, grid?: BrailleGrid): [cols: number, rows: number];
+function getVariantGridSize(variant: string): [cols: number, rows: number];
 ```
 
-Resolves grid dimensions from presets or custom values.
-
-**Height Limitation:** Currently caps rows at 4 (braille limitation).  
-**Note:** lg/xl presets (5×5, 6×6) are returned as 4×5 and 4×6 respectively.
+Returns the default grid size for a given variant from the variant configuration.
 
 #### `normalizeVariant`
 
@@ -411,27 +402,20 @@ export default function Example() {
   return (
     <div>
       <BrailleLoader variant="breathe" />
-      <BrailleLoader variant="helix" gridSize="lg" speed="fast" />
+      <BrailleLoader variant="helix" speed="fast" />
     </div>
   );
 }
 ```
 
-### Custom Grid Dimensions
+### Size Control
 
 ```tsx
-// Wide grid (4 rows × 8 columns)
-<BrailleLoader
-  variant="snake"
-  grid={[4, 8]}
-/>
+// Small loader
+<BrailleLoader variant="snake" fontSize={16} />
 
-// Custom medium grid (4 × 6)
-<BrailleLoader
-  variant="pulse"
-  grid={[4, 6]}
-  speed="slow"
-/>
+// Large loader
+<BrailleLoader variant="pulse" fontSize={48} />
 ```
 
 ### Theming with Tailwind
@@ -487,7 +471,7 @@ function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-      <BrailleLoader variant="gravity-well" gridSize="lg" className="text-primary" fontSize={32} label="Loading..." />
+      <BrailleLoader variant="sparkle" className="text-primary" fontSize={32} label="Loading..." />
     </div>
   );
 }
@@ -587,9 +571,9 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
 | Metric                 | Value                                                 |
 | ---------------------- | ----------------------------------------------------- |
 | Frame Generation       | ~0.1-0.5ms per frame (depends on variant complexity)  |
-| Memory per Cache Entry | ~1-2KB per variant/grid combination                   |
+| Memory per Cache Entry | ~1-2KB per variant                                    |
 | Animation FPS          | 40ms interval = 25 FPS (pendulum: 12ms = 83 FPS)      |
-| Total Animations       | 23 variants × 6-7 grid sizes = ~140 cached frame sets |
+| Total Animations       | 19 variants = ~19 cached frame sets                   |
 
 ### Browser Compatibility
 
@@ -641,33 +625,25 @@ Future implementation would:
 
 ## Known Limitations
 
-### Current Version (v1)
+### Current Version (v2)
 
-1. **Height Constraint**
-   - Maximum vertical rows: **4** (braille character limitation)
-   - lg/xl presets (5×5, 6×6) are capped to 4 rows
-   - Example: `gridSize="xl"` returns `[4, 6]` instead of `[6, 6]`
-   - **Rationale:** v1 prioritizes stability and simplicity
-
-2. **Single-Row Rendering**
+1. **Single-Row Rendering**
    - Renders only one line of braille characters
-   - Multi-line rendering planned for v2
+   - Multi-line rendering planned for future
 
-3. **No Reduced Motion Detection**
-   - Does not respond to `prefers-reduced-motion` media query
-   - All animations run regardless of user preference
+2. **Fixed Grid Sizes**
+   - Each variant has a preset grid size
+   - Size controlled via `fontSize` prop only
 
-4. **Resolution Limits**
-   - Custom grids: minimum 2×2, maximum 12×12
-   - Height capped at 4 rows even for larger grids
+### Version 2 Features
 
-### Version 1 vs Version 2
-
-| Feature          | v1 (Current)     | v2 (Planned)            |
-| ---------------- | ---------------- | ----------------------- |
-| Max height       | 4 rows           | Unlimited (multi-row)   |
-| lg/xl grids      | Capped to 4 rows | Full support (5×5, 6×6) |
-| Reduced motion   | Not supported    | Planned                 |
+| Feature              | Status      |
+| ------------------- | ----------- |
+| 19 variants         | ✅ Ready    |
+| Reduced motion      | ✅ Ready    |
+| Accessibility       | ✅ Ready    |
+| Theme support       | ✅ Ready    |
+| Registry install    | ✅ Ready    |
 | Multi-row output | Single line      | Multi-line braille      |
 | Complexity       | Low/Medium       | High                    |
 
@@ -924,20 +900,8 @@ describe("All Variants", () => {
 **Solutions:**
 
 1. Check if frame interval is appropriate (12-80ms)
-2. Verify `gridSize` is set (defaults to `"md"`)
-3. Ensure `variant` name matches available options
-4. Check browser console for TypeScript errors
-
-### Grid Looks Truncated
-
-**Issue:** lg/xl grids show fewer rows than expected
-
-**Solutions:**
-
-1. Current limitation: height capped at 4 rows for all grids
-2. This is by design for v1 stability
-3. Use sm/md presets (3×3, 4×4) for full fidelity
-4. v2 will support full multi-row rendering
+2. Ensure `variant` name matches available options
+3. Check browser console for TypeScript errors
 
 ### Flickering or Choppy Animation
 
@@ -948,16 +912,6 @@ describe("All Variants", () => {
 1. Reduce `speed` prop to `"slow"`
 2. Check if browser is under heavy load
 3. Verify no other components are fighting for animation loops
-
-### Wrong Number of Columns
-
-**Issue:** Expected different grid dimensions
-
-**Solutions:**
-
-1. Check `resolveGrid` orientation (rows, cols)
-2. Use explicit `grid={[cols, rows]}` for custom sizes
-3. Note that `grid[1]` is columns, not rows
 
 ### TypeScript Errors
 

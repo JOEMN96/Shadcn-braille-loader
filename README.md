@@ -6,7 +6,7 @@ A registry-first, accessible braille loader library for shadcn CLI featuring **1
 
 - **19 Animation Variants** - From subtle pulses to complex patterns
 - **Fully Accessible** - Screen reader support, respects `prefers-reduced-motion`
-- **Highly Customizable** - Dot size, gap, grid dimensions, animation speed
+- **Highly Customizable** - Font size, animation speed
 - **Theme-Aware** - Inherits color from current text color
 - **Registry-First** - Install directly via shadcn CLI
 - **Zero Dependencies** - Pure React + CSS animations
@@ -45,17 +45,17 @@ A registry-first, accessible braille loader library for shadcn CLI featuring **1
 └─────────────────────────────────────────────────────────────────────┘
 
 Data Flow:
-┌──────────┐    ┌───────────────┐    ┌──────────────┐    ┌───────────┐
-│  Props   │───▶│ Resolve Grid  │───▶│ Get Context  │───▶│ Animate   │
-│ (config) │    │ & Settings    │    │ (cached)     │    │ Loop      │
-└──────────┘    └───────────────┘    └──────────────┘    └─────┬─────┘
+┌──────────┐    ┌─────────────────┐    ┌──────────────┐    ┌───────────┐
+│  Props   │───▶│ Get Variant     │───▶│ Get Context  │───▶│ Animate   │
+│ (config) │    │ Grid Size       │    │ (cached)     │    │ Loop      │
+└──────────┘    └─────────────────┘    └──────────────┘    └─────┬─────┘
                                                               │
-                    ┌─────────────────────────────────────────┘
-                    ▼
-         ┌─────────────────────┐    ┌────────────────────┐
-         │  For each dot:      │───▶│  Apply CSS         │
-         │  getDotState()      │    │  opacity + scale   │
-         └─────────────────────┘    └────────────────────┘
+                     ┌─────────────────────────────────────────┘
+                     ▼
+          ┌─────────────────────┐    ┌────────────────────┐
+          │  For each dot:      │───▶│  Render Braille    │
+          │  getDotState()      │    │  Unicode Character │
+          └─────────────────────┘    └────────────────────┘
 ```
 
 ---
@@ -118,40 +118,36 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 | Prop        | Type                           | Default     | Description                                                                    |
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
 | `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (19 available). Invalid values fallback to `"breathe"`.      |
-| `gridSize`  | `"sm" \| "md" \| "lg" \| "xl"` | `"md"`      | Grid preset: `sm=3×3`, `md=4×4`, `lg=4×5`, `xl=4×6`. Height capped at 4 in v1. |
-| `grid`      | `[cols: number, rows: number]` | `undefined` | Custom grid dimensions [width, height]. Range 2-12. Height capped at 4 in v1.  |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`.                   |
 | `className` | `string`                       | `undefined` | CSS classes for the wrapper element.                                           |
 | `label`     | `string`                       | `"Loading"` | Screen reader accessible label.                                                |
-| `fontSize`  | `number`                       | `28`        | Font size in pixels for braille characters.                                    |
-
-**Note on height limitation (v1):** Maximum height is 4 rows due to braille character limitation. Full multi-row braille support planned for v2.
+| `fontSize`  | `number`                       | `28`        | Font size in pixels for braille characters (controls visual size).            |
 
 ---
 
 ## Variant Comparison Matrix
 
-| Variant            | Motion Type | Complexity | Best Grid Size | Use Case        |
-| ------------------ | ----------- | ---------- | -------------- | --------------- |
-| `breathe`          | Uniform     | Low        | Any            | Subtle loading  |
-| `pulse`            | Radial      | Medium     | md, lg         | Attention       |
-| `orbit`            | Circular    | Medium     | md, lg         | Processing      |
-| `snake`            | Sequential  | Medium     | Any            | Progress        |
-| `fill-sweep`       | Linear      | Low        | Any            | Progress        |
-| `scan`             | Linear      | Low        | Any            | Scanning        |
-| `rain`             | Random      | Medium     | lg, xl         | Streaming       |
-| `cascade`          | Diagonal    | Medium     | md, lg         | Sequential      |
-| `checkerboard`     | Toggle      | Low        | Any            | Idle            |
-| `columns`          | Linear      | Low        | Any            | Column data     |
-| `wave-rows`        | Sine        | Medium     | lg, xl         | Calm            |
-| `diagonal-swipe`   | Diagonal    | Low        | Any            | Transitions     |
-| `sparkle`          | Random      | Medium     | Any            | Creative        |
-| `helix`            | Spiral      | High       | md, lg         | Scientific      |
-| `braille`          | Pattern     | Medium     | Any            | Accessibility   |
-| `reflected-ripple` | Bounce      | Low        | Any            | Network         |
-| `pendulum`         | Curved wave | Medium     | Any            | Calm/continuous |
-| `compress`         | Inward      | Medium     | Any            | Compacting      |
-| `sort`             | Gradient    | Medium     | Any            | Sorting         |
+| Variant            | Motion Type | Complexity | Use Case        |
+| ------------------ | ----------- | ---------- | --------------- |
+| `breathe`          | Uniform     | Low        | Subtle loading |
+| `pulse`            | Radial      | Medium     | Attention       |
+| `orbit`            | Circular    | Medium     | Processing      |
+| `snake`            | Sequential  | Medium     | Progress        |
+| `fill-sweep`       | Linear      | Low        | Progress        |
+| `scan`             | Linear      | Low        | Scanning        |
+| `rain`             | Random      | Medium     | Streaming       |
+| `cascade`          | Diagonal    | Medium     | Sequential      |
+| `checkerboard`     | Toggle      | Low        | Idle            |
+| `columns`          | Linear      | Low        | Column data     |
+| `wave-rows`        | Sine        | Medium     | Calm            |
+| `diagonal-swipe`   | Diagonal    | Low        | Transitions     |
+| `sparkle`          | Random      | Medium     | Creative        |
+| `helix`            | Spiral      | High       | Scientific      |
+| `braille`          | Pattern     | Medium     | Accessibility   |
+| `reflected-ripple` | Bounce      | Low        | Network         |
+| `pendulum`         | Curved wave | Medium     | Calm/continuous |
+| `compress`         | Inward      | Medium     | Compacting      |
+| `sort`             | Gradient    | Medium     | Sorting         |
 
 ---
 
@@ -234,14 +230,17 @@ When reduced motion is preferred:
 <BrailleLoader variant="helix" />
 ```
 
-### Custom Dimensions
+### Size Control
 
 ```tsx
-// Custom grid (3 rows x 5 columns)
-<BrailleLoader variant="scan" grid={[3, 5]} />
+// Small loader
+<BrailleLoader variant="breathe" fontSize={16} />
 
-// Wide grid (4 rows x 8 columns)
-<BrailleLoader variant="cascade" grid={[4, 8]} />
+// Default size
+<BrailleLoader variant="helix" fontSize={28} />
+
+// Large loader
+<BrailleLoader variant="sparkle" fontSize={48} />
 ```
 
 ### Speed Control
@@ -327,10 +326,6 @@ type BrailleLoaderVariant =
   | "sort";
 
 type BrailleLoaderSpeed = "slow" | "normal" | "fast";
-
-type BrailleGridSize = "sm" | "md" | "lg" | "xl";
-
-type BrailleGrid = [rows: number, cols: number];
 ```
 
 ---

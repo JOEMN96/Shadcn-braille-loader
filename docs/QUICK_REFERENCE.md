@@ -6,12 +6,6 @@
 npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader.json
 ```
 
-Optional showcase block:
-
-```bash
-npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-showcase.json
-```
-
 ---
 
 ## Basic Usage
@@ -25,11 +19,11 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 // With variant
 <BrailleLoader variant="helix" />
 
-// With custom size
+// With speed
 <BrailleLoader speed="fast" />
 
-// With custom grid [cols, rows]
-<BrailleLoader grid={[4, 8]} />
+// With font size
+<BrailleLoader fontSize={16} />
 
 // Theming
 <BrailleLoader variant="sparkle" className="text-blue-500" />
@@ -39,62 +33,37 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 
 ## All 19 Variants
 
-| Variant              | Speed  | Best For              | Code                                                 |
-| -------------------- | ------ | --------------------- | ---------------------------------------------------- |
-| **breathe**          | normal | Subtle loading        | `<BrailleLoader variant="breathe" />`                |
-| **pulse**            | normal | Attention             | `<BrailleLoader variant="pulse" />`                  |
-| **pendulum**         | fast   | Calm, continuous      | `<BrailleLoader variant="pendulum" />`               |
-| **compress**         | slow   | Compacting            | `<BrailleLoader variant="compress" />`               |
-| **sort**             | normal | Sorting               | `<BrailleLoader variant="sort" />`                   |
-| **orbit**            | normal | Processing            | `<BrailleLoader variant="orbit" />`                  |
-| **spiral**           | normal | Exploration           | `<BrailleLoader variant="spiral" />`                 |
-| **helix**            | normal | Scientific            | `<BrailleLoaderLoader variant="helix" />`            |
-| **snake**            | normal | Progress              | `<BrailleLoaderLoader variant="snake" />`            |
-| **rain**             | normal | Streaming             | `<BrailleLoaderLoader variant="rain" />`             |
-| **waveRows**         | normal | Calm                  | `<BrailleLoaderLoader variant="wave-rows" />`        |
-| **cascade**          | normal | Sequential            | `<BrailleLoaderLoader variant="cascade" />`          |
-| **diagonalSwipe**    | normal | Transitions           | `<BrailleLoaderLoader variant="diagonal-swipe" />`   |
-| **fillSweep**        | normal | Progress              | `<BrailleLoaderLoader variant="fill-sweep" />`       |
-| **scan**             | normal | Scanning              | `<BrailleLoaderLoader variant="scan" />`             |
-| **columns**          | normal | Column data           | `<BrailleLoaderLoader variant="columns" />`          |
-| **checkerboard**     | normal | Idle                  | `<BrailleLoaderLoader variant="checkerboard" />`     |
-| **sparkle**          | normal | Creative              | `<BrailleLoaderLoader variant="sparkle" />`          |
-| **braille**          | normal | Accessibility         | `<BrailleLoaderLoader variant="braille" />`          |
-| **gravityWell**      | normal | Focused               | `<BrailleLoaderLoader variant="gravity-well" />`     |
-| **reflectedRipple**  | normal | Network               | `<BrailleLoaderLoader variant="reflected-ripple" />` |
-| **wave-rows**        | alias  | Use `waveRows`        | -                                                    |
-| **diagonal-swipe**   | alias  | Use `diagonalSwipe`   | -                                                    |
-| **fill-sweep**       | alias  | Use `fillSweep`       | -                                                    |
-| **gravity-well**     | alias  | Use `gravityWell`     | -                                                    |
-| **reflected-ripple** | alias  | Use `reflectedRipple` | -                                                    |
-
----
-
-## Grid Sizes
-
-| Preset | Dimensions | Use Case                               |
-| ------ | ---------- | -------------------------------------- |
-| `sm`   | 3×3        | Compact loaders                        |
-| `md`   | 4×4        | Standard loaders (default)             |
-| `lg`   | 4×5        | Wide loaders (height capped at 4)      |
-| `xl`   | 4×6        | Very wide loaders (height capped at 4) |
-
-**Note:** Current version (v1) caps height at 4 rows.
-
-- `lg: [5, 5]` → renders as 4×5
-- `xl: [6, 6]` → renders as 4×6
-- Full multi-row support planned for v2
+| Variant              | Description                       | Code                                      |
+| -------------------- | --------------------------------- | ----------------------------------------- |
+| **breathe**          | Subtle expand/contract            | `<BrailleLoader variant="breathe" />`     |
+| **pulse**            | Radial pulse from center          | `<BrailleLoader variant="pulse" />`      |
+| **pendulum**         | Smooth arc swing                  | `<BrailleLoader variant="pendulum" />`    |
+| **compress**         | Inward compression                | `<BrailleLoader variant="compress" />`    |
+| **sort**             | Gradient sorting                  | `<BrailleLoader variant="sort" />`        |
+| **orbit**            | Circular orbit around center      | `<BrailleLoader variant="orbit" />`       |
+| **helix**            | Spiral pattern                    | `<BrailleLoader variant="helix" />`       |
+| **snake**            | Sequential snake movement         | `<BrailleLoader variant="snake" />`       |
+| **rain**             | Staggered vertical drops          | `<BrailleLoader variant="rain" />`        |
+| **wave-rows**        | Horizontal sine wave              | `<BrailleLoader variant="wave-rows" />`   |
+| **cascade**          | Diagonal cascade                  | `<BrailleLoader variant="cascade" />`     |
+| **diagonal-swipe**   | Diagonal sweep                    | `<BrailleLoader variant="diagonal-swipe" />` |
+| **fill-sweep**       | Linear fill left-to-right         | `<BrailleLoader variant="fill-sweep" />`  |
+| **scan**             | Thin scan line sweep              | `<BrailleLoader variant="scan" />`        |
+| **columns**          | Column-by-column animation        | `<BrailleLoader variant="columns" />`     |
+| **checkerboard**     | Alternating checker pattern       | `<BrailleLoader variant="checkerboard" />` |
+| **sparkle**          | Random twinkling dots            | `<BrailleLoader variant="sparkle" />`     |
+| **braille**          | Classic braille patterns          | `<BrailleLoader variant="braille" />`     |
+| **reflected-ripple** | Bounce ripple from center         | `<BrailleLoader variant="reflected-ripple" />` |
 
 ---
 
 ## Speed Presets
 
-| Speed        | Duration | Frame Interval    |
-| ------------ | -------- | ----------------- |
-| `slow`       | 3000ms   | 75 frames @ 40ms  |
-| `normal`     | 2400ms   | 60 frames @ 40ms  |
-| `fast`       | 1200ms   | 60 frames @ 20ms  |
-| **pendulum** | 1440ms   | 120 frames @ 12ms |
+| Speed    | Description     |
+| -------- | -------------- |
+| `slow`   | 3000ms cycle   |
+| `normal` | 2400ms cycle   |
+| `fast`   | 1200ms cycle   |
 
 ---
 
@@ -102,13 +71,11 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 
 ```typescript
 <BrailleLoader
-  variant="breathe"           // Animation variant
-               // sm | md | lg | xl
-  grid={[4, 8]}              // Custom [cols, rows], 2-12
-  speed="normal"              // slow | normal | fast
-  className="text-primary"   // Add classes
-  label="Loading..."          // Screen reader text
-  fontSize={24}                // Font size in pixels
+  variant="breathe"        // Animation variant (19 options)
+  speed="normal"           // slow | normal | fast
+  className="text-primary" // Tailwind classes
+  label="Loading..."       // Screen reader text
+  fontSize={28}            // Font size in pixels
 />
 ```
 
@@ -143,37 +110,7 @@ function App({ isLoading }: { isLoading: boolean }) {
 
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-      <BrailleLoader variant="gravity-well" fontSize={32} label="Loading..." />
-    </div>
-  );
-}
-```
-
-### Data Table Loading
-
-```tsx
-function TableLoader({ loading }: { loading: boolean }) {
-  return (
-    <div className="flex items-center justify-center p-12">
-      {loading && (
-        <>
-          <BrailleLoader variant="snake" gap="sm" />
-          <span className="ml-2">Loading data...</span>
-        </>
-      )}
-    </div>
-  );
-}
-```
-
-### Form Input Loading
-
-```tsx
-function SearchInput({ searching, value, onChange }: Props) {
-  return (
-    <div className="relative">
-      <input value={value} onChange={onChange} placeholder="Search..." className="pl-10" />
-      {searching && <BrailleLoader variant="scan" className="absolute left-3 top-1/2 -translate-y-1/2" fontSize={14} />}
+      <BrailleLoader variant="sparkle" fontSize={32} label="Loading..." />
     </div>
   );
 }
@@ -181,63 +118,34 @@ function SearchInput({ searching, value, onChange }: Props) {
 
 ---
 
-## Troubleshooting
+## Accessibility
 
-### Animation Not Showing
+The BrailleLoader includes built-in accessibility support:
 
-**Check:**
-
-```tsx
-// ✅ Correct
-<BrailleLoader variant="breathe" />
-
-// ❌ Wrong - variant name must match
-<BrailleLoader variant="Breathe" />
-<BrailleLoader variant=" Breathing" />
-```
-
-### Grid Looks Wrong
-
-**Check dimensions:**
+- `role="status"` and `aria-live="polite"` for screen readers
+- Respects `prefers-reduced-motion` automatically
+- Customizable `label` prop for context-specific announcements
 
 ```tsx
-// ✅ Correct - [cols, rows] aka [width, height]
-<BrailleLoader grid={[6, 4]} />  // 6 cols × 4 rows
-
-// ❌ Wrong - not [rows, cols]
-<BrailleLoader grid={[4, 6]} />  // Would be 4 cols × 6 rows (tall)
-```
-
-### TypeScript Errors
-
-**Common fix:**
-
-```typescript
-// If you get "cannot find name 'ctx'"
-// Change this:
-compute: (frame, totalFrames, width, height, _ctx) => {
-
-// To this:
-compute: (frame, totalFrames, width, height, ctx) => {
-```
-
-### Lint Errors
-
-**Add eslint-comments for unused params:**
-
-```typescript
-compute: (frame, totalFrames, width, height, _ctx: unknown) => {
-  // _ctx intentionally unused
+<BrailleLoader label="Loading your data..." />
 ```
 
 ---
 
-## Performance Tips
+## Theming
 
-1. **Prefer `gridSize` over `grid`**: Uses cached context
-2. **Use appropriate speed**: Don't use "fast" for long-running loaders
-3. **Limit variant count**: Don't use many loaders on same page
-4. **Cache frames**: Already handled automatically by the system
+Use Tailwind classes to match your design system:
+
+```tsx
+// Primary color
+<BrailleLoader variant="helix" className="text-primary" />
+
+// Muted for dark backgrounds
+<BrailleLoader variant="sparkle" className="text-muted-foreground" />
+
+// Custom color
+<BrailleLoader variant="rain" className="text-blue-500" />
+```
 
 ---
 
@@ -245,91 +153,43 @@ compute: (frame, totalFrames, width, height, _ctx: unknown) => {
 
 ```typescript
 import { BrailleLoader } from "@/components/ui/braille-loader";
-import { generateFrames, resolveGrid, normalizeVariant, brailleLoaderVariants } from "@/lib/braille-loader";
-import type { BrailleLoaderVariant, BrailleLoaderSpeed, BrailleGridSize, BrailleGrid } from "@/lib/braille-loader";
+import { generateFrames, getVariantGridSize, normalizeVariant, brailleLoaderVariants } from "@/lib/braille-loader";
+import type { BrailleLoaderVariant, BrailleLoaderSpeed } from "@/lib/braille-loader";
 ```
 
 ---
 
 ## Browser Support
 
-| Browser | Version | Notes        |
-| ------- | ------- | ------------ |
-| Chrome  | 88+     | Full support |
-| Firefox | 78+     | Full support |
-| Safari  | 14+     | Full support |
-| Edge    | 88+     | Full support |
+| Browser | Version |
+| ------- | ------- |
+| Chrome  | 88+     |
+| Firefox | 78+     |
+| Safari  | 14+     |
+| Edge    | 88+     |
 
 ---
 
 ## FAQ
 
-**Q: Why height capped at 4?**  
-A: Braille characters have 4 vertical dots. Multi-row braille coming in v2.
-
 **Q: How do I make it faster/slower?**  
 A: Use `speed="fast"` or `speed="slow"` props.
-
-**Q: Can I use my own custom animation?**  
-A: Not yet. Custom builder planned for v2.
-
-**Q: Why does pendulum run faster?**  
-A: Uses 120 frames at 12ms (83 FPS) vs 60 frames at 40ms (25 FPS).
 
 **Q: Can I change colors?**  
 A: Use `className` with Tailwind: `<BrailleLoader className="text-blue-500" />`
 
-**Q: How do I use this in vanilla JS?**  
-A: Import `generateFrames()` and render strings to `innerHTML`.
-
 **Q: Does it work with SSR?**  
 A: Yes, Next.js SSR compatible (client component with "use client").
-
-**Q: Can I export as GIF?**  
-A: Not built-in, but you could capture frames and encode manually.
-
-**Q: How do I reduce file size?**  
-A: Use tree-shaking, only import variants you need.
-
----
-
-## Migration from Old Versions
-
-### Before v1.0
-
-If you have an older version, update imports:
-
-```tsx
-// Old (with deprecations)
-<BrailleLoader
-  dotSize="md"
-  gap="sm"
-
-  speed="normal"
-  dotClassName="..."
-  duration={3000}
-/>
-
-// New (v1.0 current)
-<BrailleLoader
-  grid={[]}         // Use `grid` for custom, `gridSize` for presets
-  speed="normal"
-  className="..."   // Inline styles via Tailwind
-  fontSize={24}    // Font size directly
-/>
-```
 
 ---
 
 ## Support
 
 - Issues: [GitHub Issues](https://github.com/your-org/braille-loader/issues)
-- Questions: [Discussions](https://github.com/your-org/braille-loader/discussions)
 - Documentation: [README.md](../README.md)
-- Implementation: [IMPLEMENTATION.md](./IMPLEMENTATION.md)
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** 2026-02-24  
+**Version:** 2.0.0  
+**Last Updated:** 2026-03-08  
 **Status:** Production Ready ✓

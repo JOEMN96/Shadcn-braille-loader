@@ -3,19 +3,16 @@
 import * as React from "react";
 
 import {
-  type BrailleGrid,
   type BrailleLoaderSpeed,
   type BrailleLoaderVariant,
   generateFrames,
   normalizeVariant,
-  resolveGrid,
-  speedToDuration,
+  getVariantGridSize,
 } from "@/lib/braille-loader";
 import { cn } from "@/lib/utils";
 
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant;
-  grid?: BrailleGrid;
   speed?: BrailleLoaderSpeed;
   label?: string;
   fontSize?: number;
@@ -23,7 +20,6 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
 
 function BrailleLoader({
   variant = "breathe",
-  grid,
   speed = "normal",
   className,
   label = "Loading",
@@ -32,13 +28,13 @@ function BrailleLoader({
   ...props
 }: BrailleLoaderProps) {
   const resolvedVariant = normalizeVariant(variant);
-  const [width, height] = resolveGrid(variant, grid);
+  const [width, height] = getVariantGridSize(variant);
   const spanRef = React.useRef<HTMLSpanElement>(null);
   const [mounted, setMounted] = React.useState(false);
 
   const framesData = React.useMemo(() => {
     return generateFrames(resolvedVariant, width, height);
-  }, [resolvedVariant, width, height]);
+  }, [resolvedVariant]);
 
   React.useEffect(() => {
     setMounted(true);
