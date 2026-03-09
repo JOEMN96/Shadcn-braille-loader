@@ -54,18 +54,6 @@ function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
-function getCenterX(width: number): number {
-  return (width * 2 - 1) / 2;
-}
-
-function scaleToHeight(value: number, height: number): number {
-  return value * (height - 1);
-}
-
-function getThreshold(height: number): number {
-  return 0.7 + height * 0.15;
-}
-
 function setDot(brailleChar: number, row: number, col: number): number {
   if (row < 0 || row > 3) return brailleChar;
   return brailleChar | DOT_BITS[row][col];
@@ -331,7 +319,6 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
       const period = 900;
       const t = frame * 40;
       const scale = 1 + 0.06 * Math.sin((2 * Math.PI * t) / period);
-      const alpha = 0.85 + 0.15 * Math.sin((2 * Math.PI * t) / period);
       const field = createFieldBuffer(width);
       const centerX = (width * 2 - 1) / 2;
       const centerY = (height - 1) / 2;
