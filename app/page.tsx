@@ -1,10 +1,29 @@
 import * as React from "react";
+import { Metadata } from "next";
 import { OpenInV0Button } from "@/components/open-in-v0-button";
 import { BrailleLoaderShowcase } from "@/registry/new-york/blocks/braille-loader-showcase/braille-loader-showcase";
 import { BrailleLoader } from "@/components/ui/braille-loader";
 import { CodeBlock } from "@/components/code-block";
 import { VariantCard } from "@/components/variant-card";
 import { brailleLoaderVariants, type BrailleLoaderVariant } from "@/lib/braille-loader";
+
+export const metadata: Metadata = {
+  title: "Braille Loader - Accessible Loading Animations for shadcn/ui",
+  description:
+    "Install beautiful, accessible loading animations for your shadcn/ui project. 19 unique braille-inspired variants, zero dependencies, fully customizable.",
+  openGraph: {
+    title: "Braille Loader - 19 Accessible Loading Animations",
+    description:
+      "Install beautiful, accessible loading animations for your shadcn/ui project. Zero dependencies, fully customizable.",
+    images: ["/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Braille Loader - Accessible Loading Animations",
+    description: "19 unique braille-inspired loading animations for shadcn/ui",
+    images: ["/og-image.png"],
+  },
+};
 
 const variantLabel: Record<BrailleLoaderVariant, string> = {
   braille: "Braille",
