@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "acme",
-  "homepage": "https://acme.com",
+  "name": "braille-loader",
+  "homepage": "https://github.com/anomalyco/shadcn-braille-loader",
   "items": [
     {
       "name": "hello-world",
@@ -78,16 +78,21 @@
     },
     {
       "name": "braille-loader",
-      "type": "registry:component",
+      "type": "registry:ui",
       "title": "Braille Loader",
-      "description": "Accessible braille-inspired loading indicator with 23 animation variants.",
+      "description": "Accessible braille-inspired loading indicator with 19 animation variants.",
+      "dependencies": ["clsx", "tailwind-merge"],
       "files": [
         {
           "path": "registry/new-york/ui/braille-loader.tsx",
-          "type": "registry:component"
+          "type": "registry:ui"
         },
         {
           "path": "lib/braille-loader.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/utils.ts",
           "type": "registry:lib"
         }
       ]
