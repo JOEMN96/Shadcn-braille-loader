@@ -10,9 +10,9 @@ import { brailleLoaderVariants, type BrailleLoaderVariant } from "@/lib/braille-
 export const metadata: Metadata = {
   title: "Braille Loader - Accessible Loading Animations for shadcn/ui",
   description:
-    "Install beautiful, accessible loading animations for your shadcn/ui project. 19 unique braille-inspired variants, zero dependencies, fully customizable.",
+    "Install beautiful, accessible loading animations for your shadcn/ui project. 24 unique braille-inspired variants, zero dependencies, fully customizable.",
   openGraph: {
-    title: "Braille Loader - 19 Accessible Loading Animations",
+    title: "Braille Loader - 24 Accessible Loading Animations",
     description:
       "Install beautiful, accessible loading animations for your shadcn/ui project. Zero dependencies, fully customizable.",
     images: ["/og-image.png"],
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Braille Loader - Accessible Loading Animations",
-    description: "19 unique braille-inspired loading animations for shadcn/ui",
+    description: "24 unique braille-inspired loading animations for shadcn/ui",
     images: ["/og-image.png"],
   },
 };
@@ -45,11 +45,17 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   pendulum: "Pendulum",
   compress: "Compress",
   sort: "Sort",
+  equalizer: "Equalizer",
+  heartbeat: "Heartbeat",
+  typing: "Typing",
+  spiral: "Spiral",
 };
 
-const installCode = `npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader.json`;
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://braille-loader.dev";
 
-const showcaseInstallCode = `npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json`;
+const installCode = `npx shadcn@latest add ${siteUrl}/r/braille-loader.json`;
+
+const showcaseInstallCode = `npx shadcn@latest add ${siteUrl}/r/braille-loader-showcase.json`;
 
 const basicUsageCode = `import { BrailleLoader } from "@/components/ui/braille-loader"
 
@@ -104,7 +110,7 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 }`;
 
 const propsData = [
-  { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 19 variants." },
+  { prop: "variant", type: "string", default: '"breathe"', description: "Animation pattern. One of 24 variants." },
   { prop: "speed", type: '"slow" | "normal" | "fast"', default: '"normal"', description: "Animation speed preset." },
   { prop: "className", type: "string", default: "-", description: "Additional CSS classes for the wrapper." },
   { prop: "label", type: "string", default: '"Loading"', description: "Screen-reader accessible label." },
@@ -121,7 +127,7 @@ export default function Home() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Braille Loader</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A collection of 19 accessible, animated loading indicators using Unicode braille characters.
+            A collection of 24 accessible, animated loading indicators using Unicode braille characters.
           </p>
           <div className="flex items-center justify-center gap-3 mt-8">
             <OpenInV0Button name="braille-loader-showcase" />

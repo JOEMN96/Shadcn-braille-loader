@@ -18,6 +18,10 @@ export const brailleLoaderVariants = [
   "pendulum",
   "compress",
   "sort",
+  "equalizer",
+  "heartbeat",
+  "typing",
+  "spiral",
 ] as const;
 
 export type BrailleLoaderVariant = (typeof brailleLoaderVariants)[number];
@@ -1019,6 +1023,191 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
           const dc = pc % 2;
 
           for (let row = 0; row < drawableHeight; row++) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
+          }
+        }
+      }
+
+      return field;
+    },
+  },
+
+  equalizer: {
+    totalFrames: 90,
+    interval: 40,
+    gridSize: [5, 4],
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+      const progress = frame / totalFrames;
+      const pixelCols = width * 2;
+      const t = progress * Math.PI * 2;
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        const seed = pc * 1.618033988749895;
+        const freq1 = 3 + (seed % 3);
+        const freq2 = 5 + ((seed * 1.3) % 4);
+        const phase1 = seed * 0.7;
+        const phase2 = seed * 1.3;
+        const amp1 = 0.6 + ((seed * 0.17) % 0.4);
+        const amp2 = 0.4 + ((seed * 0.23) % 0.3);
+
+        const wave1 = Math.sin(t * freq1 + phase1) * amp1;
+        const wave2 = Math.sin(t * freq2 + phase2) * amp2;
+        const wave3 = Math.sin(t * 7 + seed) * 0.2;
+
+        const combined = wave1 + wave2 + wave3;
+        const normalized = (combined + amp1 + amp2 + 0.2) / (2 * (amp1 + amp2 + 0.2));
+        const fillHeight = Math.max(0, Math.min(height, Math.floor(normalized * height)));
+
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+
+        for (let row = height - 1; row >= height - fillHeight; row--) {
+          if (row >= 0 && row < height) {
+            field[charIdx] = setDot(field[charIdx], row, dc);
+          }
+        }
+      }
+
+      return field;
+    },
+  },
+
+  heartbeat: {
+    totalFrames: 100,
+    interval: 60,
+    gridSize: [8, 4],
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+      const progress = frame / totalFrames;
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
+      const baselineRow = 2;
+
+      const getEKGValue = (t: number): number => {
+        const cycleLength = 0.5;
+        const tMod = ((t % cycleLength) + cycleLength) % cycleLength;
+        const normalizedT = tMod / cycleLength;
+
+        if (normalizedT < 0.12) {
+          return 0;
+        } else if (normalizedT < 0.2) {
+          const p = (normalizedT - 0.12) / 0.08;
+          return Math.sin(p * Math.PI) * 0.6;
+        } else if (normalizedT < 0.28) {
+          return 0;
+        } else if (normalizedT < 0.32) {
+          const q = (normalizedT - 0.28) / 0.04;
+          return -q * 0.8;
+        } else if (normalizedT < 0.4) {
+          const r = (normalizedT - 0.32) / 0.08;
+          return -0.8 + r * 3.6;
+        } else if (normalizedT < 0.44) {
+          const s = (normalizedT - 0.4) / 0.04;
+          return 2.8 - s * 3.6;
+        } else if (normalizedT < 0.48) {
+          return -0.8;
+        } else if (normalizedT < 0.65) {
+          const tWave = (normalizedT - 0.48) / 0.17;
+          return -0.8 + Math.sin(tWave * Math.PI) * 1.0;
+        } else {
+          return 0;
+        }
+      };
+
+      const scrollOffset = progress * pixelCols * 2;
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        const t = (pc - scrollOffset) / pixelCols;
+        const phaseOffset = pc % 2 === 0 ? 0 : 0.25;
+        const value = getEKGValue(t + phaseOffset);
+
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+
+        const rowOffset = Math.round(value * 0.7);
+        const targetRow = baselineRow - rowOffset;
+
+        if (Math.abs(value) < 0.1) {
+          field[charIdx] = setDot(field[charIdx], baselineRow, dc);
+        } else if (targetRow >= 0 && targetRow < drawableHeight) {
+          field[charIdx] = setDot(field[charIdx], targetRow, dc);
+          if (Math.abs(value) > 1.5) {
+            const above = targetRow - (value > 0 ? 1 : -1);
+            if (above >= 0 && above < drawableHeight) {
+              field[charIdx] = setDot(field[charIdx], above, dc);
+            }
+          }
+        }
+      }
+
+      return field;
+    },
+  },
+
+  typing: {
+    totalFrames: 80,
+    interval: 50,
+    gridSize: [4, 3],
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+      const totalCells = width * height;
+
+      const cycleLength = totalCells + 6;
+      const currentCell = Math.floor((frame / totalFrames) * cycleLength * 2) % cycleLength;
+
+      for (let cell = 0; cell < currentCell && cell < totalCells; cell++) {
+        const charIdx = cell % width;
+        const row = Math.floor(cell / width);
+        field[charIdx] = setDot(field[charIdx], row, 0);
+        field[charIdx] = setDot(field[charIdx], row, 1);
+      }
+
+      const cursorPos = Math.min(currentCell, totalCells - 1);
+      const blinkOn = Math.floor(frame / 1) % 2 === 0;
+
+      if (blinkOn && cursorPos >= 0) {
+        const cursorCharIdx = cursorPos % width;
+        const cursorRow = Math.floor(cursorPos / width);
+        field[cursorCharIdx] = setDot(field[cursorCharIdx], cursorRow, 0);
+        field[cursorCharIdx] = setDot(field[cursorCharIdx], cursorRow, 1);
+      }
+
+      return field;
+    },
+  },
+
+  spiral: {
+    totalFrames: 60,
+    interval: 40,
+    gridSize: [5, 5],
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+      const progress = frame / totalFrames;
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
+      const centerX = (pixelCols - 1) / 2;
+      const centerY = (drawableHeight - 1) / 2;
+
+      const arms = 3;
+      const armLength = Math.max(pixelCols, drawableHeight) / 2;
+      const rotationOffset = progress * Math.PI * 4;
+
+      for (let arm = 0; arm < arms; arm++) {
+        const armAngle = (arm / arms) * Math.PI * 2 + rotationOffset;
+
+        for (let r = 0; r < armLength; r++) {
+          const t = r / armLength;
+          const spiralAngle = armAngle + t * Math.PI * 1.5;
+          const x = centerX + Math.cos(spiralAngle) * r * 0.8;
+          const y = centerY + Math.sin(spiralAngle) * r * 0.8;
+
+          const pc = Math.round(x);
+          const row = Math.round(y);
+
+          if (pc >= 0 && pc < pixelCols && row >= 0 && row < drawableHeight) {
+            const charIdx = Math.floor(pc / 2);
+            const dc = pc % 2;
             field[charIdx] = setDot(field[charIdx], row, dc);
           }
         }

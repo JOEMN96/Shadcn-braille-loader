@@ -25,7 +25,7 @@ describe("normalizeVariant", () => {
     expect(normalizeVariant("snake")).toBe("snake");
   });
 
-  it("accepts all 19 defined variants", () => {
+  it("accepts all 24 defined variants", () => {
     brailleLoaderVariants.forEach((variant) => {
       expect(normalizeVariant(variant)).toBe(variant);
     });
@@ -175,8 +175,8 @@ describe("all variants generate valid frames", () => {
 });
 
 describe("brailleLoaderVariants", () => {
-  it("contains exactly 19 variants", () => {
-    expect(brailleLoaderVariants.length).toBe(19);
+  it("contains exactly 24 variants", () => {
+    expect(brailleLoaderVariants.length).toBe(23);
   });
 
   it("contains expected variants", () => {
@@ -186,5 +186,12 @@ describe("brailleLoaderVariants", () => {
     expect(brailleLoaderVariants).toContain("snake");
     expect(brailleLoaderVariants).toContain("helix");
     expect(brailleLoaderVariants).toContain("sparkle");
+  });
+
+  it("contains new variants", () => {
+    expect(brailleLoaderVariants).toContain("equalizer");
+    expect(brailleLoaderVariants).toContain("heartbeat");
+    expect(brailleLoaderVariants).toContain("typing");
+    expect(brailleLoaderVariants).toContain("spiral");
   });
 });

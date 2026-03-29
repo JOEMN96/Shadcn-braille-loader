@@ -22,6 +22,10 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   pendulum: "Pendulum",
   compress: "Compress",
   sort: "Sort",
+  equalizer: "Equalizer",
+  heartbeat: "Heartbeat",
+  typing: "Typing",
+  spiral: "Spiral",
 };
 
 type PanelProps = {
