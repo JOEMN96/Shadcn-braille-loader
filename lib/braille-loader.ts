@@ -19,7 +19,9 @@ export const brailleLoaderVariants = [
   "compress",
   "sort",
   "equalizer",
-  "heartbeat",
+  "chase",
+  "bars",
+  "marquee",
   "typing",
   "spiral",
 ] as const;
@@ -1073,70 +1075,78 @@ export const VARIANT_CONFIGS: Record<string, VariantConfig> = {
     },
   },
 
-  heartbeat: {
-    totalFrames: 100,
+  chase: {
+    totalFrames: 48,
     interval: 60,
-    gridSize: [8, 4],
+    gridSize: [5, 4],
     compute: (frame, totalFrames, width, height, _ctx) => {
       const field = createFieldBuffer(width);
       const progress = frame / totalFrames;
       const pixelCols = width * 2;
       const drawableHeight = Math.min(height, 4);
-      const baselineRow = 2;
+      const row = Math.floor((drawableHeight - 1) / 2);
+      const head = Math.floor(progress * pixelCols) % pixelCols;
 
-      const getEKGValue = (t: number): number => {
-        const cycleLength = 0.5;
-        const tMod = ((t % cycleLength) + cycleLength) % cycleLength;
-        const normalizedT = tMod / cycleLength;
+      for (let i = 0; i < 4; i++) {
+        const pc = (head - i + pixelCols) % pixelCols;
+        const charIdx = Math.floor(pc / 2);
+        const dc = pc % 2;
+        field[charIdx] = setDot(field[charIdx], row, dc);
 
-        if (normalizedT < 0.12) {
-          return 0;
-        } else if (normalizedT < 0.2) {
-          const p = (normalizedT - 0.12) / 0.08;
-          return Math.sin(p * Math.PI) * 0.6;
-        } else if (normalizedT < 0.28) {
-          return 0;
-        } else if (normalizedT < 0.32) {
-          const q = (normalizedT - 0.28) / 0.04;
-          return -q * 0.8;
-        } else if (normalizedT < 0.4) {
-          const r = (normalizedT - 0.32) / 0.08;
-          return -0.8 + r * 3.6;
-        } else if (normalizedT < 0.44) {
-          const s = (normalizedT - 0.4) / 0.04;
-          return 2.8 - s * 3.6;
-        } else if (normalizedT < 0.48) {
-          return -0.8;
-        } else if (normalizedT < 0.65) {
-          const tWave = (normalizedT - 0.48) / 0.17;
-          return -0.8 + Math.sin(tWave * Math.PI) * 1.0;
-        } else {
-          return 0;
+        if (i === 0) {
+          field[charIdx] = setDot(field[charIdx], Math.max(0, row - 1), dc);
+          field[charIdx] = setDot(field[charIdx], Math.min(drawableHeight - 1, row + 1), dc);
         }
-      };
+      }
 
-      const scrollOffset = progress * pixelCols * 2;
+      return field;
+    },
+  },
+
+  bars: {
+    totalFrames: 64,
+    interval: 50,
+    gridSize: [5, 4],
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+      const progress = frame / totalFrames;
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
+      const phase = progress * Math.PI * 2;
 
       for (let pc = 0; pc < pixelCols; pc++) {
-        const t = (pc - scrollOffset) / pixelCols;
-        const phaseOffset = pc % 2 === 0 ? 0 : 0.25;
-        const value = getEKGValue(t + phaseOffset);
-
+        const distanceFromCenter = Math.abs(pc - (pixelCols - 1) / 2) / Math.max(1, pixelCols / 2);
+        const wave = (Math.sin(phase - distanceFromCenter * Math.PI * 1.7) + 1) / 2;
+        const barHeight = clamp(Math.round(1 + wave * (drawableHeight - 1)), 1, drawableHeight);
         const charIdx = Math.floor(pc / 2);
         const dc = pc % 2;
 
-        const rowOffset = Math.round(value * 0.7);
-        const targetRow = baselineRow - rowOffset;
+        for (let i = 0; i < barHeight; i++) {
+          const row = drawableHeight - 1 - i;
+          field[charIdx] = setDot(field[charIdx], row, dc);
+        }
+      }
 
-        if (Math.abs(value) < 0.1) {
-          field[charIdx] = setDot(field[charIdx], baselineRow, dc);
-        } else if (targetRow >= 0 && targetRow < drawableHeight) {
-          field[charIdx] = setDot(field[charIdx], targetRow, dc);
-          if (Math.abs(value) > 1.5) {
-            const above = targetRow - (value > 0 ? 1 : -1);
-            if (above >= 0 && above < drawableHeight) {
-              field[charIdx] = setDot(field[charIdx], above, dc);
-            }
+      return field;
+    },
+  },
+
+  marquee: {
+    totalFrames: 48,
+    interval: 55,
+    gridSize: [5, 4],
+    compute: (frame, totalFrames, width, height, _ctx) => {
+      const field = createFieldBuffer(width);
+      const pixelCols = width * 2;
+      const drawableHeight = Math.min(height, 4);
+      const offset = Math.floor((frame / totalFrames) * 8);
+
+      for (let pc = 0; pc < pixelCols; pc++) {
+        for (let row = 0; row < drawableHeight; row++) {
+          const stripe = (pc + row + offset) % 4;
+          if (stripe < 2) {
+            const charIdx = Math.floor(pc / 2);
+            field[charIdx] = setDot(field[charIdx], row, pc % 2);
           }
         }
       }

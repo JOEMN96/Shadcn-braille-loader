@@ -25,7 +25,7 @@ describe("normalizeVariant", () => {
     expect(normalizeVariant("snake")).toBe("snake");
   });
 
-  it("accepts all 24 defined variants", () => {
+  it("accepts all 25 defined variants", () => {
     brailleLoaderVariants.forEach((variant) => {
       expect(normalizeVariant(variant)).toBe(variant);
     });
@@ -130,6 +130,17 @@ describe("generateFrames", () => {
 
     expect(result1.frames).toBe(result2.frames);
   });
+
+  it("keeps chase, bars, and marquee visibly animated", () => {
+    ["chase", "bars", "marquee"].forEach((variant) => {
+      const [width, height] = getVariantGridSize(variant);
+      const result = generateFrames(variant, width, height);
+      const uniqueFrames = new Set(result.frames);
+
+      expect(uniqueFrames.size).toBeGreaterThan(3);
+      expect(result.frames.some((frame) => frame !== result.frames[0])).toBe(true);
+    });
+  });
 });
 
 describe("getPrecomputeContext", () => {
@@ -175,8 +186,8 @@ describe("all variants generate valid frames", () => {
 });
 
 describe("brailleLoaderVariants", () => {
-  it("contains exactly 24 variants", () => {
-    expect(brailleLoaderVariants.length).toBe(23);
+  it("contains exactly 25 variants", () => {
+    expect(brailleLoaderVariants.length).toBe(25);
   });
 
   it("contains expected variants", () => {
@@ -190,7 +201,9 @@ describe("brailleLoaderVariants", () => {
 
   it("contains new variants", () => {
     expect(brailleLoaderVariants).toContain("equalizer");
-    expect(brailleLoaderVariants).toContain("heartbeat");
+    expect(brailleLoaderVariants).toContain("chase");
+    expect(brailleLoaderVariants).toContain("bars");
+    expect(brailleLoaderVariants).toContain("marquee");
     expect(brailleLoaderVariants).toContain("typing");
     expect(brailleLoaderVariants).toContain("spiral");
   });

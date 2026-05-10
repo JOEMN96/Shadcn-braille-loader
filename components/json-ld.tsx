@@ -6,7 +6,7 @@ export function JsonLd() {
     "@type": "SoftwareApplication",
     name: "Braille Loader",
     description:
-      "A registry-first, accessible braille loader library for shadcn/ui featuring 19 unique animation variants. Built with React, TypeScript, and Tailwind CSS.",
+      "A registry-first, accessible braille loader library for shadcn/ui featuring 25 unique animation variants. Built with React, TypeScript, and Tailwind CSS.",
     url: siteUrl,
     applicationCategory: "DeveloperApplication",
     operatingSystem: "Any",
@@ -30,7 +30,7 @@ export function JsonLd() {
     "@type": "WebSite",
     name: "Braille Loader",
     description:
-      "Accessible braille loader animations for shadcn/ui with 19 unique variants",
+      "Accessible braille loader animations for shadcn/ui with 25 unique variants",
     url: siteUrl,
     author: {
       "@type": "Organization",

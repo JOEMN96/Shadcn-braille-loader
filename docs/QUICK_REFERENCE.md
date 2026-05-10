@@ -31,29 +31,35 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 
 ---
 
-## All 19 Variants
+## All 25 Variants
 
-| Variant              | Description                       | Code                                      |
-| -------------------- | --------------------------------- | ----------------------------------------- |
-| **breathe**          | Subtle expand/contract            | `<BrailleLoader variant="breathe" />`     |
-| **pulse**            | Radial pulse from center          | `<BrailleLoader variant="pulse" />`      |
-| **pendulum**         | Smooth arc swing                  | `<BrailleLoader variant="pendulum" />`    |
-| **compress**         | Inward compression                | `<BrailleLoader variant="compress" />`    |
-| **sort**             | Gradient sorting                  | `<BrailleLoader variant="sort" />`        |
-| **orbit**            | Circular orbit around center      | `<BrailleLoader variant="orbit" />`       |
-| **helix**            | Spiral pattern                    | `<BrailleLoader variant="helix" />`       |
-| **snake**            | Sequential snake movement         | `<BrailleLoader variant="snake" />`       |
-| **rain**             | Staggered vertical drops          | `<BrailleLoader variant="rain" />`        |
-| **wave-rows**        | Horizontal sine wave              | `<BrailleLoader variant="wave-rows" />`   |
-| **cascade**          | Diagonal cascade                  | `<BrailleLoader variant="cascade" />`     |
-| **diagonal-swipe**   | Diagonal sweep                    | `<BrailleLoader variant="diagonal-swipe" />` |
-| **fill-sweep**       | Linear fill left-to-right         | `<BrailleLoader variant="fill-sweep" />`  |
-| **scan**             | Thin scan line sweep              | `<BrailleLoader variant="scan" />`        |
-| **columns**          | Column-by-column animation        | `<BrailleLoader variant="columns" />`     |
-| **checkerboard**     | Alternating checker pattern       | `<BrailleLoader variant="checkerboard" />` |
-| **sparkle**          | Random twinkling dots            | `<BrailleLoader variant="sparkle" />`     |
-| **braille**          | Classic braille patterns          | `<BrailleLoader variant="braille" />`     |
-| **reflected-ripple** | Bounce ripple from center         | `<BrailleLoader variant="reflected-ripple" />` |
+| Variant | Description | Code |
+| ------- | ----------- | ---- |
+| **breathe** | Subtle expand/contract | `<BrailleLoader variant="breathe" />` |
+| **pulse** | Radial pulse from center | `<BrailleLoader variant="pulse" />` |
+| **orbit** | Circular orbit around center | `<BrailleLoader variant="orbit" />` |
+| **snake** | Sequential snake movement | `<BrailleLoader variant="snake" />` |
+| **fill-sweep** | Linear fill left-to-right | `<BrailleLoader variant="fill-sweep" />` |
+| **scan** | Thin scan line sweep | `<BrailleLoader variant="scan" />` |
+| **rain** | Staggered vertical drops | `<BrailleLoader variant="rain" />` |
+| **cascade** | Diagonal cascade | `<BrailleLoader variant="cascade" />` |
+| **checkerboard** | Alternating checker pattern | `<BrailleLoader variant="checkerboard" />` |
+| **columns** | Column-by-column animation | `<BrailleLoader variant="columns" />` |
+| **wave-rows** | Horizontal sine wave | `<BrailleLoader variant="wave-rows" />` |
+| **diagonal-swipe** | Diagonal sweep | `<BrailleLoader variant="diagonal-swipe" />` |
+| **sparkle** | Random twinkling dots | `<BrailleLoader variant="sparkle" />` |
+| **helix** | Double helix pattern | `<BrailleLoader variant="helix" />` |
+| **braille** | Classic braille patterns | `<BrailleLoader variant="braille" />` |
+| **reflected-ripple** | Bounce ripple from center | `<BrailleLoader variant="reflected-ripple" />` |
+| **pendulum** | Smooth arc swing | `<BrailleLoader variant="pendulum" />` |
+| **compress** | Inward compression | `<BrailleLoader variant="compress" />` |
+| **sort** | Gradient sorting | `<BrailleLoader variant="sort" />` |
+| **equalizer** | Audio visualizer bars | `<BrailleLoader variant="equalizer" />` |
+| **chase** | Compact dots chase across the row | `<BrailleLoader variant="chase" />` |
+| **bars** | Symmetric bars rise and fall | `<BrailleLoader variant="bars" />` |
+| **marquee** | Scrolling diagonal stripe band | `<BrailleLoader variant="marquee" />` |
+| **typing** | Sequential typing cursor | `<BrailleLoader variant="typing" />` |
+| **spiral** | Rotating arms around center | `<BrailleLoader variant="spiral" />` |
 
 ---
 
@@ -71,7 +77,7 @@ import { BrailleLoader } from "@/components/ui/braille-loader"
 
 ```typescript
 <BrailleLoader
-  variant="breathe"        // Animation variant (19 options)
+  variant="breathe"        // Animation variant (25 options)
   speed="normal"           // slow | normal | fast
   className="text-primary" // Tailwind classes
   label="Loading..."       // Screen reader text

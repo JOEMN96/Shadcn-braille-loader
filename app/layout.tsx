@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Braille Loader",
   },
   description:
-    "A registry-first, accessible braille loader library for shadcn/ui featuring 19 unique animation variants. Built with React, TypeScript, and Tailwind CSS. Zero dependencies, fully customizable.",
+    "A registry-first, accessible braille loader library for shadcn/ui featuring 25 unique animation variants. Built with React, TypeScript, and Tailwind CSS. Zero dependencies, fully customizable.",
   keywords: [
     "shadcn",
     "shadcn/ui",
@@ -63,13 +63,13 @@ export const metadata: Metadata = {
     siteName: "Braille Loader",
     title: "Braille Loader - Accessible Loading Animations for shadcn/ui",
     description:
-      "A registry-first, accessible braille loader library for shadcn/ui featuring 19 unique animation variants. Zero dependencies, fully customizable.",
+      "A registry-first, accessible braille loader library for shadcn/ui featuring 25 unique animation variants. Zero dependencies, fully customizable.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Braille Loader - 19 Accessible Loading Animations",
+        alt: "Braille Loader - 25 Accessible Loading Animations",
       },
     ],
   },
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Braille Loader - Accessible Loading Animations for shadcn/ui",
     description:
-      "A registry-first, accessible braille loader library featuring 19 unique animation variants.",
+      "A registry-first, accessible braille loader library featuring 25 unique animation variants.",
     images: ["/og-image.png"],
     creator: "@brailleloader",
   },

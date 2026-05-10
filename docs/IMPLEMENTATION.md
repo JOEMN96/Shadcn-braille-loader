@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Braille Loader is a comprehensive animation library designed for shadcn/ui that renders loading indicators using Unicode braille characters (U+2800–U+28FF). It features 19 unique animation variants, fully accessible design, and zero runtime dependencies beyond React.
+The Braille Loader is a comprehensive animation library designed for shadcn/ui that renders loading indicators using Unicode braille characters (U+2800–U+28FF). It features 25 unique animation variants, fully accessible design, and zero runtime dependencies beyond React.
 
 **Current Version:** 1.0  
 **Status:** Production Ready
@@ -116,7 +116,7 @@ type PrecomputeContext = {
 
 ## Variants
 
-All 23 variants with animation characteristics and best use cases.
+All 25 variants with animation characteristics and best use cases.
 
 ### Motion Classification
 
@@ -289,7 +289,7 @@ All 23 variants with animation characteristics and best use cases.
 
 #### 21. reflectedRipple
 
-**Motion:** Wave bounces back and forth across columns  
+**Motion:** Wave chases back and forth across columns  
 **Best for:** Network ping, back-and-forth processes  
 **Duration:** 60 frames @ 40ms = 2.4s  
 **Algorithm:** Reflected position with distance-based falloff
@@ -314,7 +314,7 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
 
 | Prop        | Type                           | Default     | Description                                      |
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------ |
-| `variant`   | `string`                       | `"breathe"` | Animation variant (19 available)                 |
+| `variant`   | `string`                       | `"breathe"` | Animation variant (25 available)                 |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Animation speed                                  |
 | `className` | `string`                       | -           | Additional CSS classes for wrapper               |
 | `label`     | `string`                       | `"Loading"` | Screen reader text                               |
@@ -573,7 +573,7 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
 | Frame Generation       | ~0.1-0.5ms per frame (depends on variant complexity)  |
 | Memory per Cache Entry | ~1-2KB per variant                                    |
 | Animation FPS          | 40ms interval = 25 FPS (pendulum: 12ms = 83 FPS)      |
-| Total Animations       | 19 variants = ~19 cached frame sets                   |
+| Total Animations       | 25 variants = ~19 cached frame sets                   |
 
 ### Browser Compatibility
 
@@ -639,7 +639,7 @@ Future implementation would:
 
 | Feature              | Status      |
 | ------------------- | ----------- |
-| 19 variants         | ✅ Ready    |
+| 25 variants         | ✅ Ready    |
 | Reduced motion      | ✅ Ready    |
 | Accessibility       | ✅ Ready    |
 | Theme support       | ✅ Ready    |
@@ -983,7 +983,7 @@ Built for shadcn/ui with React, TypeScript, and Unicode Braille Characters.
 
 ### v1.0 (Current)
 
-- Initial release with 23 animation variants
+- Initial release with 25 animation variants
 - Height limitation to 4 rows
 - All variants working with smooth animations
 - Frame caching and context caching
@@ -1004,7 +1004,7 @@ Built for shadcn/ui with React, TypeScript, and Unicode Braille Characters.
 
 ### v1.0.0 (2026-02-24)
 
-- Initial implementation with 23 animation variants
+- Initial implementation with 25 animation variants
 - Fixed sparkle re-seeding bug (added `sparkleNoise` to context)
 - Fixed fill-sweep stepping (smooth edge effect)
 - Fixed checkerboard toggle frequency (8× faster)
@@ -1014,5 +1014,5 @@ Built for shadcn/ui with React, TypeScript, and Unicode Braille Characters.
 - Updated rain to use context `colRandom` for proper desync
 - Added height limitation documentation (max 4 rows)
 - Fixed compress squeeze calculation for smoother motion
-- All 23 variants working with <15 frame static streaks
+- All 25 variants working with <15 frame static streaks
 - Average 0.90 changes/frame across all variants

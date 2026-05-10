@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { BrailleLoader } from "@/components/ui/braille-loader";
 import { CopyButton } from "@/components/copy-button";
 import { cn } from "@/lib/utils";
@@ -22,55 +21,48 @@ const variantDescriptions: Partial<Record<BrailleLoaderVariant, string>> = {
   columns: "Alternating column highlight",
   checkerboard: "Classic checkerboard toggle",
   scan: "Vertical scan line effect",
-  rain: "Raindrops falling down columns",
+  rain: "Drops moving down staggered columns",
   cascade: "Diagonal cascade movement",
   sparkle: "Random sparkle burst pattern",
   "wave-rows": "Sine wave across rows",
   helix: "Double helix orbit pattern",
   "diagonal-swipe": "Diagonal reveal animation",
-  "reflected-ripple": "Mirror bounce wave",
+  "reflected-ripple": "Mirror ripple wave",
   pendulum: "Horizontal swing wave pattern",
   compress: "Compress inward with popping dots",
   sort: "Sort from random to ordered gradient",
+  equalizer: "Audio bars rising by frequency",
+  chase: "Compact dots chase across the row",
+  bars: "Symmetric bars rise and fall",
+  marquee: "Scrolling diagonal stripe band",
+  typing: "Sequential type-in cursor effect",
+  spiral: "Rotating arms around center",
 };
 
 function VariantCard({ variant, label, className }: VariantCardProps) {
-  const [showCode, setShowCode] = React.useState(false);
-
   const code = `<BrailleLoader variant="${variant}" />`;
 
   return (
     <div
       className={cn(
-        "group relative rounded-xl border bg-card overflow-hidden",
-        "transition-all duration-300",
-        "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
+        "group relative overflow-hidden rounded-lg border bg-card transition-all duration-200",
+        "hover:border-primary/30 hover:shadow-md hover:shadow-primary/5",
         className,
       )}
     >
-      <div className="flex items-center justify-center h-28 bg-gradient-to-br from-muted/30 to-muted/10">
+      <div className="flex h-28 items-center justify-center bg-muted/20">
         <BrailleLoader variant={variant} speed="normal" className="text-primary" />
       </div>
 
-      <div className="p-3 border-t">
-        <div className="flex items-center justify-between">
-          <div className="min-w-0 flex-1">
-            <h4 className="font-medium text-sm truncate">{label}</h4>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{variantDescriptions[variant] || "Animation variant"}</p>
-          </div>
-          <CopyButton content={code} className="h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="flex items-center justify-between gap-3 border-t p-3">
+        <div className="min-w-0 flex-1">
+          <h4 className="truncate text-sm font-medium">{label}</h4>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {variantDescriptions[variant] || "Animation variant"}
+          </p>
         </div>
+        <CopyButton content={code} className="h-7 shrink-0 px-2" />
       </div>
-
-      <button
-        onClick={() => setShowCode(!showCode)}
-        className="absolute top-2 right-2 p-1.5 rounded-md bg-background/80 border opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-        aria-label="Toggle code"
-      >
-        <svg className="size-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-        </svg>
-      </button>
     </div>
   );
 }

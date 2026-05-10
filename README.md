@@ -1,10 +1,10 @@
 # Shadcn Braille Loader Registry
 
-A registry-first, accessible braille loader library for shadcn CLI featuring **24 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
+A registry-first, accessible braille loader library for shadcn CLI featuring **25 unique animation variants**. Built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
-- **24 Animation Variants** - From subtle pulses to complex patterns
+- **25 Animation Variants** - From subtle pulses to complex patterns
 - **Fully Accessible** - Screen reader support, respects `prefers-reduced-motion`
 - **Highly Customizable** - Font size, animation speed
 - **Theme-Aware** - Inherits color from current text color
@@ -117,7 +117,7 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 | Prop        | Type                           | Default     | Description                                                                    |
 | ----------- | ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
-| `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (24 available). Invalid values fallback to `"breathe"`.      |
+| `variant`   | `BrailleLoaderVariant`         | `"breathe"` | Animation pattern (25 available). Invalid values fallback to `"breathe"`.      |
 | `speed`     | `"slow" \| "normal" \| "fast"` | `"normal"`  | Speed preset: `slow=3000ms`, `normal=2400ms`, `fast=1200ms`.                   |
 | `className` | `string`                       | `undefined` | CSS classes for the wrapper element.                                           |
 | `label`     | `string`                       | `"Loading"` | Screen reader accessible label.                                                |
@@ -127,37 +127,33 @@ npx shadcn@latest add YOUR_REGISTRY_URL/r/braille-loader-showcase.json
 
 ## Variant Comparison Matrix
 
-| Variant            | Motion Type | Complexity | Use Case        |
-| ------------------ | ----------- | ---------- | --------------- |
-| `breathe`          | Uniform     | Low        | Subtle loading |
-| `pulse`            | Radial      | Medium     | Attention       |
-| `orbit`            | Circular    | Medium     | Processing      |
-| `snake`            | Sequential  | Medium     | Progress        |
-| `fill-sweep`       | Linear      | Low        | Progress        |
-| `scan`             | Linear      | Low        | Scanning        |
-| `rain`             | Random      | Medium     | Streaming       |
-| `cascade`          | Diagonal    | Medium     | Sequential      |
-| `checkerboard`     | Toggle      | Low        | Idle            |
-| `columns`          | Linear      | Low        | Column data     |
-| `wave-rows`        | Sine        | Medium     | Calm            |
-| `diagonal-swipe`   | Diagonal    | Low        | Transitions     |
-| `sparkle`          | Random      | Medium     | Creative        |
-| `helix`            | Spiral      | High       | Scientific      |
-| `braille`          | Pattern     | Medium     | Accessibility   |
-| `reflected-ripple` | Bounce      | Low        | Network         |
-| `pendulum`         | Curved wave | Medium     | Calm/continuous |
-| `compress`         | Inward      | Medium     | Compacting      |
-| `sort`             | Gradient    | Medium     | Sorting         |
-| `equalizer`        | Audio bars  | Medium     | Music/audio     |
-| `heartbeat`        | EKG pulse   | Medium     | Health/fitness   |
-| `typing`            | Sequential  | Low        | Text input      |
-| `morse`            | Code        | Medium     | Communication   |
-| `spiral`            | Rotation    | Medium     | Creative        |
-| `equalizer`        | Audio bars  | Medium     | Music/audio     |
-| `heartbeat`        | EKG pattern | Medium     | Health/fitness  |
-| `typing`           | Sequential  | Low        | Text input      |
-| `morse`            | Code        | Medium     | Communication   |
-| `spiral`           | Rotation    | Medium     | Creative        |
+| Variant | Motion Type | Complexity | Use Case |
+| ------- | ----------- | ---------- | -------- |
+| `breathe` | Uniform | Low | Subtle loading |
+| `pulse` | Radial | Medium | Attention |
+| `orbit` | Circular | Medium | Processing |
+| `snake` | Sequential | Medium | Progress |
+| `fill-sweep` | Linear | Low | Progress |
+| `scan` | Linear | Low | Scanning |
+| `rain` | Random | Medium | Streaming |
+| `cascade` | Diagonal | Medium | Sequential |
+| `checkerboard` | Toggle | Low | Idle |
+| `columns` | Linear | Low | Column data |
+| `wave-rows` | Sine | Medium | Calm |
+| `diagonal-swipe` | Diagonal | Low | Transitions |
+| `sparkle` | Random | Medium | Creative |
+| `helix` | Spiral | High | Scientific |
+| `braille` | Pattern | Medium | Accessibility |
+| `reflected-ripple` | Bounce | Low | Network |
+| `pendulum` | Curved wave | Medium | Calm/continuous |
+| `compress` | Inward | Medium | Compacting |
+| `sort` | Gradient | Medium | Sorting |
+| `equalizer` | Audio bars | Medium | Music/audio |
+| `chase` | Linear chase | Low | Waiting states |
+| `bars` | Vertical bars | Low | Processing |
+| `marquee` | Diagonal stripes | Low | Activity |
+| `typing` | Sequential | Low | Text input |
+| `spiral` | Rotation | Medium | Creative |
 
 ---
 
@@ -187,9 +183,10 @@ Representative braille sequences for each variant. These are illustrative snapsh
 | `compress`         | Active band compresses inward toward center mass.         | `⡇⠀⡇` → `⠀⣿⠀`         |
 | `sort`             | Gradient-like ordering transitions from mixed to grouped. | `⠂⠆⣿` → `⠂⠂⣿`         |
 | `equalizer`        | Audio visualizer bars animate up/down like frequency bands. | `⢸⢸` → `⣿⣿` → `⢸⢸`     |
-| `heartbeat`        | Double-beat EKG pulse travels across the grid. | `⠂⠤⠄` → `⠈⠭⠈` → `⠂⠤⠂` |
+| `chase`           | Compact dots chase across the row. | `⠂⠀` → `⠀⠒` → `⠀⠀⠤`     |
+| `bars`            | Symmetric bars rise and fall from the baseline. | `⣀⣀` → `⣤⣤` → `⣿⣿`       |
+| `marquee`         | Diagonal stripe bands scroll across the grid. | `⠓⠒` → `⠤⣄` → `⣄⠤`       |
 | `typing`           | Dots appear sequentially like characters being typed. | `⠁` → `⠃` → `⠇` → `⣿`   |
-| `morse`            | Random dots and dashes cycle like morse code signals. | `⠂⠒⠂` → `⠒⠀⠂` → `⠂⠒`  |
 | `spiral`           | Rotating arm spirals around the center point. | `⠘⠃` → `⠙⠄` → `⠐⠚`     |
 
 ---
@@ -340,9 +337,10 @@ type BrailleLoaderVariant =
   | "compress"
   | "sort"
   | "equalizer"
-  | "heartbeat"
+  | "chase"
+  | "bars"
+  | "marquee"
   | "typing"
-  | "morse"
   | "spiral";
 
 type BrailleLoaderSpeed = "slow" | "normal" | "fast";

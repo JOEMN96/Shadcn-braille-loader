@@ -23,7 +23,9 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   compress: "Compress",
   sort: "Sort",
   equalizer: "Equalizer",
-  heartbeat: "Heartbeat",
+  chase: "Chase",
+  bars: "Bars",
+  marquee: "Marquee",
   typing: "Typing",
   spiral: "Spiral",
 };
@@ -36,16 +38,11 @@ type PanelProps = {
 
 function Panel({ panelClassName, textClassName, colorClass }: PanelProps) {
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-[18px] border px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_0_rgba(0,0,0,0.12)]",
-        panelClassName,
-      )}
-    >
-      <ul className="space-y-[7px]">
+    <div className={cn("overflow-hidden rounded-lg border px-5 py-6", panelClassName)}>
+      <ul className="flex flex-col gap-2">
         {brailleLoaderVariants.map((variant) => (
-          <li key={variant} className={cn("flex min-h-[30px] items-center gap-4 text-[15px] leading-[1.2]", textClassName)}>
-            <span className="inline-flex mb-3 shrink-0 items-center justify-center overflow-hidden">
+          <li key={variant} className={cn("flex min-h-8 items-center gap-4 text-[15px] leading-tight", textClassName)}>
+            <span className="inline-flex shrink-0 items-center justify-center overflow-hidden">
               <BrailleLoader
                 variant={variant}
                 speed="normal"
@@ -65,17 +62,17 @@ function Panel({ panelClassName, textClassName, colorClass }: PanelProps) {
 
 export function BrailleLoaderShowcase() {
   return (
-    <div className="w-full overflow-hidden rounded-[30px] border border-[#1a2035]/75 bg-[#080d1f] p-5 shadow-[0_0_0_1px_rgba(98,116,167,0.12),0_22px_60px_rgba(2,6,20,0.75),inset_0_1px_0_rgba(145,159,204,0.14)]">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="w-full overflow-hidden rounded-lg border bg-card p-4 shadow-sm">
+      <div className="grid gap-4 md:grid-cols-2">
         <Panel
-          panelClassName="border-white/5 bg-[#171a27] text-[#d8dbe2]"
-          textClassName="text-[#d8dbe2]"
-          colorClass="text-[#d8dbe2]"
+          panelClassName="border-foreground/10 bg-foreground text-background"
+          textClassName="text-background"
+          colorClass="text-background"
         />
         <Panel
-          panelClassName="border-black/10 bg-[#e8eaee] text-[#2b2f3a]"
-          textClassName="text-[#2b2f3a]"
-          colorClass="text-[#343946]"
+          panelClassName="border-border bg-background text-foreground"
+          textClassName="text-foreground"
+          colorClass="text-foreground"
         />
       </div>
     </div>

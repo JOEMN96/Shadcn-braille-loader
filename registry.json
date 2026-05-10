@@ -7,7 +7,7 @@
       "name": "braille-loader",
       "type": "registry:ui",
       "title": "Braille Loader",
-      "description": "Accessible braille-inspired loading indicator with 24 animation variants.",
+      "description": "Accessible braille-inspired loading indicator with 25 animation variants.",
       "dependencies": ["clsx", "tailwind-merge"],
       "files": [
         {

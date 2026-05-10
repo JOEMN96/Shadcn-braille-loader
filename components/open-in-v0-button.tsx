@@ -1,10 +1,17 @@
 import { Button } from "@/registry/new-york/ui/button"
 import { cn } from "@/lib/utils"
 
+const registryBaseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://braille-loader.dev"
+
 export function OpenInV0Button({
   name,
   className,
 }: { name: string } & React.ComponentProps<typeof Button>) {
+  const registryUrl = new URL(`/r/${name}.json`, registryBaseUrl).toString()
+
   return (
     <Button
       aria-label="Open in v0"
@@ -16,7 +23,7 @@ export function OpenInV0Button({
       asChild
     >
       <a
-        href={`https://v0.dev/chat/api/open?url=${process.env.NEXT_PUBLIC_BASE_URL}/r/${name}.json`}
+        href={`https://v0.dev/chat/api/open?url=${encodeURIComponent(registryUrl)}`}
         target="_blank"
         rel="noreferrer"
       >
