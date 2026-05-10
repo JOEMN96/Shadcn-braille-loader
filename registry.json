@@ -8,19 +8,16 @@
       "type": "registry:ui",
       "title": "Braille Loader",
       "description": "Accessible braille-inspired loading indicator with 25 animation variants.",
-      "dependencies": ["clsx", "tailwind-merge"],
       "files": [
         {
           "path": "registry/new-york/ui/braille-loader.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/braille-loader.tsx"
         },
         {
           "path": "lib/braille-loader.ts",
-          "type": "registry:lib"
-        },
-        {
-          "path": "lib/utils.ts",
-          "type": "registry:lib"
+          "type": "registry:lib",
+          "target": "@lib/braille-loader.ts"
         }
       ]
     }

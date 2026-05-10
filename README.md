@@ -27,10 +27,10 @@ A registry-first, accessible braille loader library for shadcn CLI featuring **2
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │  React Component                                             │    │
-│  │  - Manages animation loop via requestAnimationFrame          │    │
+│  │  - Manages animation loop via setInterval                    │    │
 │  │  - Handles prefers-reduced-motion accessibility              │    │
-│  │  - Renders CSS grid of dot elements                          │    │
-│  │  - Applies opacity/scale transforms per frame                │    │
+│  │  - Renders Unicode braille frames                            │    │
+│  │  - Updates the visible frame without extra dependencies      │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                              │                                       │
 │                              ▼                                       │
@@ -216,10 +216,8 @@ Automatically respects the user's `prefers-reduced-motion` preference:
 // User has reduced motion enabled
 const prefersReducedMotion = usePrefersReducedMotion();
 
-// Static frame is rendered instead of animation
-if (prefersReducedMotion) {
-  return getStaticFrame(variant, rows, cols);
-}
+// Static first frame is rendered instead of starting the interval.
+if (prefersReducedMotion) return;
 ```
 
 When reduced motion is preferred:
@@ -355,16 +353,16 @@ type BrailleLoaderSpeed = "slow" | "normal" | "fast";
 - Safari 14+
 - Edge 88+
 
-Requires `requestAnimationFrame` and CSS `transform` support.
+Requires `setInterval` and `matchMedia` support.
 
 ---
 
 ## Performance
 
-- **60fps animations** using `requestAnimationFrame`
+- **Low-overhead animations** using cached Unicode frame strings
 - **Precomputed paths** for snake/orbit variants
 - **Context caching** per grid dimensions
-- **No layout thrashing** - transforms only (opacity, scale)
+- **No layout thrashing** - one cached text frame update per tick
 - **CSS transitions** for smooth interpolation
 
 ---

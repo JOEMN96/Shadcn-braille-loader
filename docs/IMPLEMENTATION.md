@@ -584,7 +584,8 @@ function getPrecomputeContext(width: number, height: number): PrecomputeContext 
 
 Required browser features:
 
-- `requestAnimationFrame` / `setInterval`
+- `setInterval`
+- `window.matchMedia()`
 - Unicode braille character support (U+2800–U+28FF)
 - `String.fromCharCode()`
 
@@ -607,13 +608,7 @@ Required browser features:
 
 ### Reduced Motion Support
 
-**Note:** Current implementation does not detect `prefers-reduced-motion`. This is a planned enhancement for v2.
-
-Future implementation would:
-
-1. Detect `window.matchMedia('(prefers-reduced-motion: reduce)')`
-2. Render static frame instead of animated loop
-3. Return first frame of animation cycle
+The component detects `window.matchMedia('(prefers-reduced-motion: reduce)')` and keeps the visible braille output on the first generated frame instead of starting the animation interval.
 
 ### Visual Accessibility
 

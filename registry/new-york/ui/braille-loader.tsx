@@ -6,10 +6,9 @@ import {
   type BrailleLoaderSpeed,
   type BrailleLoaderVariant,
   generateFrames,
-  normalizeVariant,
   getVariantGridSize,
+  normalizeVariant,
 } from "@/lib/braille-loader";
-import { cn } from "@/lib/utils";
 
 type BrailleLoaderProps = React.ComponentProps<"div"> & {
   variant?: BrailleLoaderVariant;
@@ -17,6 +16,40 @@ type BrailleLoaderProps = React.ComponentProps<"div"> & {
   label?: string;
   fontSize?: number;
 };
+
+const speedMultiplier: Record<BrailleLoaderSpeed, number> = {
+  slow: 1.5,
+  normal: 1,
+  fast: 0.6,
+};
+
+function getPrefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    "matchMedia" in window &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(getPrefersReducedMotion);
+
+  React.useEffect(() => {
+    if (!("matchMedia" in window)) return;
+
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  return prefersReducedMotion;
+}
 
 function BrailleLoader({
   variant = "breathe",
@@ -28,26 +61,16 @@ function BrailleLoader({
   ...props
 }: BrailleLoaderProps) {
   const resolvedVariant = normalizeVariant(variant);
-  const [width, height] = getVariantGridSize(variant);
+  const [width, height] = getVariantGridSize(resolvedVariant);
   const spanRef = React.useRef<HTMLSpanElement>(null);
-  const [mounted, setMounted] = React.useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const framesData = React.useMemo(() => {
     return generateFrames(resolvedVariant, width, height);
-  }, [resolvedVariant]);
+  }, [resolvedVariant, width, height]);
 
   React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const speedMultiplier: Record<BrailleLoaderSpeed, number> = {
-    slow: 1.5,
-    normal: 1,
-    fast: 0.6,
-  };
-
-  React.useEffect(() => {
-    if (!mounted || !spanRef.current) return;
+    if (prefersReducedMotion || !spanRef.current) return;
 
     const frames = framesData.frames;
     let frameIndex = 0;
@@ -67,27 +90,13 @@ function BrailleLoader({
     return () => {
       clearInterval(intervalId);
     };
-  }, [framesData, mounted, speed]);
-
-  if (!mounted) {
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        className={cn("inline-flex items-center text-current", className)}
-        style={style}
-        {...props}
-      >
-        <span className="sr-only">{label}</span>
-      </div>
-    );
-  }
+  }, [framesData, prefersReducedMotion, speed]);
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className={cn("inline-flex items-center text-current", className)}
+      className={["inline-flex items-center text-current", className].filter(Boolean).join(" ")}
       style={style}
       {...props}
     >
