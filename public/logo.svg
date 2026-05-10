@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="180" viewBox="0 0 760 180" role="img" aria-labelledby="title desc">
+  <title id="title">Braille Loader</title>
+  <desc id="desc">Braille Loader logo with a braille-dot loading mark and wordmark.</desc>
+  <defs>
+    <linearGradient id="accent" x1="48" y1="132" x2="130" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14b8a6" />
+      <stop offset="1" stop-color="#84cc16" />
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#020617" flood-opacity="0.14" />
+    </filter>
+    <style>
+      .shell { fill: #0b0f14; }
+      .dot { fill: #f8fafc; }
+      .quiet { fill: #64748b; opacity: 0.34; }
+      .accent-fill { fill: url(#accent); }
+      .accent-stroke { stroke: url(#accent); }
+      .wordmark { fill: #0b0f14; font: 760 54px/1 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .tagline { fill: #64748b; font: 500 20px/1 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .rule { stroke: #e2e8f0; }
+      @media (prefers-color-scheme: dark) {
+        .shell { fill: #f8fafc; }
+        .dot { fill: #0b0f14; }
+        .quiet { fill: #64748b; opacity: 0.42; }
+        .wordmark { fill: #f8fafc; }
+        .tagline { fill: #94a3b8; }
+        .rule { stroke: #1f2937; }
+      }
+    </style>
+  </defs>
+
+  <g transform="translate(18 18)">
+    <rect class="shell" x="0" y="0" width="144" height="144" rx="34" filter="url(#soft-shadow)" />
+    <path class="accent-stroke" d="M32 101C45 118 70 124 92 112C116 100 126 72 112 50C100 31 76 24 56 34" fill="none" stroke-width="8" stroke-linecap="round" />
+    <g transform="translate(31 25)">
+      <circle class="quiet" cx="0" cy="0" r="8" />
+      <circle class="dot" cx="40" cy="0" r="8" />
+      <circle class="quiet" cx="80" cy="0" r="8" />
+
+      <circle class="dot" cx="0" cy="31" r="8" />
+      <circle class="quiet" cx="40" cy="31" r="8" />
+      <circle class="accent-fill" cx="80" cy="31" r="10" />
+
+      <circle class="quiet" cx="0" cy="62" r="8" />
+      <circle class="dot" cx="40" cy="62" r="8" />
+      <circle class="quiet" cx="80" cy="62" r="8" />
+
+      <circle class="accent-fill" cx="0" cy="93" r="10" />
+      <circle class="dot" cx="40" cy="93" r="8" />
+      <circle class="dot" cx="80" cy="93" r="8" />
+    </g>
+  </g>
+
+  <g transform="translate(194 55)">
+    <text class="wordmark" x="0" y="0" dominant-baseline="hanging">Braille Loader</text>
+    <line class="rule" x1="3" y1="76" x2="392" y2="76" stroke-width="1" />
+    <text class="tagline" x="3" y="94" dominant-baseline="hanging">Accessible loading states for shadcn/ui</text>
+  </g>
+</svg>

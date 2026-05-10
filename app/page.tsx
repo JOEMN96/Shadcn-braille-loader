@@ -12,8 +12,7 @@ export const metadata: Metadata = {
     "Launch-ready Unicode braille loading animations for shadcn/ui. Install as source, theme with currentColor, and ship 25 accessible variants with zero runtime dependencies.",
   openGraph: {
     title: "Braille Loader - Animated shadcn/ui Loaders",
-    description:
-      "Install 25 accessible Unicode braille loading animations for shadcn/ui with zero runtime dependencies.",
+    description: "Install 25 accessible Unicode braille loading animations for shadcn/ui with zero runtime dependencies.",
     images: ["/og-image.png"],
   },
   twitter: {
@@ -52,7 +51,7 @@ const variantLabel: Record<BrailleLoaderVariant, string> = {
   spiral: "Spiral",
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://braille-loader.dev";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://shadcn-braille-loader.vercel.app";
 
 const installCode = `npx shadcn@latest add ${siteUrl}/r/braille-loader.json`;
 
@@ -113,12 +112,17 @@ const propsData = [
   { prop: "fontSize", type: "number", default: "28", description: "Braille character size in pixels." },
 ];
 
-const heroVariants: BrailleLoaderVariant[] = ["chase", "bars", "marquee", "helix", "rain", "sparkle"];
+const heroPreviewItems: { variant: BrailleLoaderVariant; title: string; description: string }[] = [
+  { variant: "chase", title: "Route change", description: "Fast navigation feedback" },
+  { variant: "bars", title: "Analytics sync", description: "Steady background work" },
+  { variant: "marquee", title: "Workspace sync", description: "Visible long-running state" },
+  { variant: "helix", title: "Search results", description: "Polished empty-state motion" },
+];
 
 const quickStats = [
-  { label: "Variants", value: "25" },
-  { label: "Runtime deps", value: "0" },
-  { label: "Install style", value: "Source" },
+  { label: "Variants", value: "25", description: "Braille-only motion patterns" },
+  { label: "Runtime deps", value: "0", description: "Source-owned React code" },
+  { label: "A11y", value: "ARIA", description: "Status semantics included" },
 ];
 
 const launchHighlights = [
@@ -144,31 +148,43 @@ export default function Home() {
       <header className="border-b bg-background/95">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <a href="#top" className="flex min-w-0 items-center gap-3 text-sm font-semibold">
-            <span className="flex size-9 items-center justify-center rounded-lg border bg-muted/40">
-              <BrailleLoader variant="chase" speed="fast" fontSize={18} label="Braille Loader" />
+            <span className="flex size-9 items-center justify-center overflow-hidden rounded-lg border bg-muted/40">
+              <img src="/logo-mark.svg" alt="" className="size-7" />
             </span>
             <span>Braille Loader</span>
           </a>
           <div className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#variants" className="transition-colors hover:text-foreground">Variants</a>
-            <a href="#install" className="transition-colors hover:text-foreground">Install</a>
-            <a href="#api" className="transition-colors hover:text-foreground">API</a>
+            <a href="#variants" className="transition-colors hover:text-foreground">
+              Variants
+            </a>
+            <a href="#install" className="transition-colors hover:text-foreground">
+              Install
+            </a>
+            <a href="#api" className="transition-colors hover:text-foreground">
+              API
+            </a>
           </div>
           <OpenInV0Button name="braille-loader-showcase" />
         </nav>
       </header>
 
       <main id="top">
-        <section className="border-b">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_430px] lg:items-center lg:px-8 lg:py-16">
+        <section className="border-b bg-muted/20">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center lg:px-8 lg:py-14">
             <div className="flex flex-col gap-7">
-              <div className="flex flex-col gap-4">
-                <p className="text-sm font-medium text-muted-foreground">Accessible loaders for shadcn/ui</p>
+              <div className="flex flex-col gap-5">
+                <img src="/logo.svg" alt="Braille Loader" className="h-auto w-full max-w-[390px]" />
+                <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <span className="rounded-md border bg-background px-2.5 py-1">25 variants</span>
+                  <span className="rounded-md border bg-background px-2.5 py-1">zero runtime deps</span>
+                  <span className="rounded-md border bg-background px-2.5 py-1">registry install</span>
+                </div>
                 <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                  Braille Loader
+                  Accessible loading states for shadcn/ui.
                 </h1>
                 <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-                  A polished registry component with 25 Unicode braille animations, readable loading states, and styling that follows your app through currentColor.
+                  Braille Loader turns Unicode braille cells into crisp, theme-aware loading animations you can install as
+                  editable source and use anywhere your app waits.
                 </p>
               </div>
 
@@ -192,29 +208,44 @@ export default function Home() {
                 <CodeBlock code={installCode} language="bash" filename="Terminal" />
               </div>
 
-              <dl className="grid max-w-2xl grid-cols-3 gap-3">
+              <dl className="grid max-w-2xl gap-3 sm:grid-cols-3">
                 {quickStats.map((stat) => (
-                  <div key={stat.label} className="rounded-lg border bg-muted/20 p-4">
+                  <div key={stat.label} className="rounded-lg border bg-background p-4">
                     <dt className="text-xs font-medium uppercase text-muted-foreground">{stat.label}</dt>
                     <dd className="mt-2 text-2xl font-semibold tracking-tight">{stat.value}</dd>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{stat.description}</p>
                   </div>
                 ))}
               </dl>
             </div>
 
-            <div className="rounded-lg border bg-muted/20 p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-3 border-b pb-3">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">Live preview</p>
-                  <p className="text-xs text-muted-foreground">Source-owned motion states</p>
+            <div className="rounded-lg border bg-background p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-3 border-b pb-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <img src="/logo-mark.svg" alt="" className="size-10 shrink-0" />
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <p className="text-sm font-medium">Live loading states</p>
+                    <p className="text-xs text-muted-foreground">Four production-sized examples</p>
+                  </div>
                 </div>
                 <BrailleLoader variant="typing" speed="fast" fontSize={18} label="Preview active" />
               </div>
-              <div className="grid gap-3 pt-4 sm:grid-cols-2">
-                {heroVariants.map((variant) => (
-                  <div key={variant} className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-lg border bg-background p-4 text-center">
-                    <BrailleLoader variant={variant} speed="normal" />
-                    <span className="text-xs font-medium text-muted-foreground">{variantLabel[variant]}</span>
+              <div className="flex flex-col gap-3 pt-4">
+                {heroPreviewItems.map((item) => (
+                  <div
+                    key={item.variant}
+                    className="flex min-h-20 items-center justify-between gap-4 rounded-lg border bg-muted/20 p-4"
+                  >
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="text-sm font-medium">{item.title}</span>
+                      <span className="text-xs text-muted-foreground">{item.description}</span>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
+                        {variantLabel[item.variant]}
+                      </span>
+                      <BrailleLoader variant={item.variant} speed="normal" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -240,7 +271,8 @@ export default function Home() {
                 <p className="text-sm font-medium text-muted-foreground">Variant library</p>
                 <h2 className="text-3xl font-semibold tracking-tight">Pick a loading rhythm that fits the moment.</h2>
                 <p className="text-muted-foreground">
-                  Use compact indicators inside controls, expressive loaders in empty states, and slower motion for calm background work.
+                  Use compact indicators inside controls, expressive loaders in empty states, and slower motion for calm
+                  background work.
                 </p>
               </div>
               <CodeBlock code={variantsCode} language="tsx" />
@@ -259,7 +291,8 @@ export default function Home() {
               <p className="text-sm font-medium text-muted-foreground">Install</p>
               <h2 className="text-3xl font-semibold tracking-tight">Drop it into your app as editable source.</h2>
               <p className="text-muted-foreground">
-                The registry command adds the loader component and animation helpers to your project. The showcase block is optional when you want the full preview surface.
+                The registry command adds the loader component and animation helpers to your project. The showcase block is
+                optional when you want the full preview surface.
               </p>
             </div>
             <div className="flex flex-col gap-4">
@@ -276,12 +309,16 @@ export default function Home() {
                 <p className="text-sm font-medium text-muted-foreground">Usage</p>
                 <h2 className="text-3xl font-semibold tracking-tight">Small API, flexible presentation.</h2>
                 <p className="text-muted-foreground">
-                  The loader is intentionally plain: choose a variant, tune speed and size, then let your existing color tokens do the rest.
+                  The loader is intentionally plain: choose a variant, tune speed and size, then let your existing color tokens do
+                  the rest.
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 {focusedVariants.slice(0, 3).map((variant) => (
-                  <div key={variant} className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-lg border bg-muted/20 p-4">
+                  <div
+                    key={variant}
+                    className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-lg border bg-muted/20 p-4"
+                  >
                     <BrailleLoader variant={variant} />
                     <span className="text-xs text-muted-foreground">{variantLabel[variant]}</span>
                   </div>
@@ -351,7 +388,8 @@ export default function Home() {
                 <p className="text-sm font-medium text-muted-foreground">Example</p>
                 <h2 className="text-3xl font-semibold tracking-tight">Designed for real loading states.</h2>
                 <p className="text-muted-foreground">
-                  Put it in buttons, forms, table refresh states, command palettes, and anywhere a small source-owned loader should feel deliberate.
+                  Put it in buttons, forms, table refresh states, command palettes, and anywhere a small source-owned loader
+                  should feel deliberate.
                 </p>
               </div>
               <div className="flex flex-col gap-3 rounded-lg border bg-muted/20 p-4">
@@ -425,7 +463,9 @@ export default function Home() {
               </article>
               <article className="rounded-lg border bg-muted/20 p-5">
                 <h3 className="font-semibold">aria-hidden cells</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Keeps decorative animation characters out of the spoken output.</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Keeps decorative animation characters out of the spoken output.
+                </p>
               </article>
             </div>
           </div>
@@ -454,9 +494,15 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <p>Built for shadcn/ui projects that need loading states with a little more care.</p>
           <div className="flex flex-wrap items-center gap-4">
-            <a href="#install" className="transition-colors hover:text-foreground">Install</a>
-            <a href="#variants" className="transition-colors hover:text-foreground">Variants</a>
-            <a href="#api" className="transition-colors hover:text-foreground">API</a>
+            <a href="#install" className="transition-colors hover:text-foreground">
+              Install
+            </a>
+            <a href="#variants" className="transition-colors hover:text-foreground">
+              Variants
+            </a>
+            <a href="#api" className="transition-colors hover:text-foreground">
+              API
+            </a>
           </div>
         </div>
       </footer>
