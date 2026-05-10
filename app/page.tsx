@@ -186,6 +186,16 @@ export default function Home() {
                   Braille Loader turns Unicode braille cells into crisp, theme-aware loading animations you can install as
                   editable source and use anywhere your app waits.
                 </p>
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                  Inspired by Braille Animations ⠿ by{" "}
+                  <a
+                    href="https://x.com/gunnargray"
+                    className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"
+                  >
+                    @gunnargray
+                  </a>
+                  . Built independently for shadcn/ui by Joe.
+                </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
